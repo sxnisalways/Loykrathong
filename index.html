@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#040b17">
-<title>ลอยกระทงนะจ๊ะ</title>
+<title>ลอยกระทะ เห้ย กระทง</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@ button:disabled{opacity:.6;cursor:wait}
 .secondary{background:#ffffff14;color:var(--cream);border:1px solid #ffffff2e}
 
 /* ---------- HERO ---------- */
-.hero{position:relative;overflow:hidden;isolation:isolate;padding-bottom:var(--water-h);min-height:calc(var(--water-h) + 340px)}
+.hero{position:relative;overflow:hidden;isolation:isolate;padding-bottom:var(--water-h);min-height:calc(var(--water-h) + 300px)}
 .sky{position:absolute;inset:0;z-index:-5;
   background:
    radial-gradient(ellipse 70% 28% at 50% calc(100% - var(--water-h)),#f5c66b2b,transparent 70%),
@@ -67,7 +67,7 @@ button:disabled{opacity:.6;cursor:wait}
   background:linear-gradient(180deg,#fff7de 10%,#f5c66b 95%);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 4px 24px #f5c66b30)}
 .hero p{color:#cfdde3;margin:0 auto;max-width:560px;line-height:1.85;font-size:clamp(14px,1.6vw,17px)}
-.cta-row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:22px 0 4px}
+.cta-row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:30px 0 34px}
 .cta{position:relative;min-height:58px;padding:15px 34px;font-size:clamp(17px,2vw,19px);border-radius:99px}
 .cta:after{content:"";position:absolute;inset:-6px;border-radius:inherit;border:2px solid #f5c66b99;animation:ring 2.6s ease-out infinite;pointer-events:none}
 @keyframes ring{0%{transform:scale(.96);opacity:.9}100%{transform:scale(1.14);opacity:0}}
@@ -79,16 +79,25 @@ button:disabled{opacity:.6;cursor:wait}
 
 /* ---------- WATER ---------- */
 .water{position:absolute;left:0;right:0;bottom:0;height:var(--water-h);z-index:1;overflow:hidden;
-  background:linear-gradient(180deg,#0f3a5a 0%,#0a2c47 28%,#061b30 70%,#040f1e 100%);
+  background:linear-gradient(180deg,#1a5675 0%,#0f3c5c 16%,#0a2d49 42%,#061c31 74%,#030e1b 100%);
   border-top:1px solid #f5c66b40}
+.water:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 125% 95% at 50% 38%,transparent 52%,#02101e99 100%)}
 .water:before{content:"";position:absolute;inset:0 0 auto 0;height:34%;background:linear-gradient(180deg,#f5c66b22,transparent);pointer-events:none}
-.moon-reflect{position:absolute;top:0;right:var(--moon-right);width:var(--moon-size);height:72%;display:flex;flex-direction:column;align-items:center;gap:7px;padding-top:6px;pointer-events:none}
-.moon-reflect i{display:block;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#ffe9ae,transparent);animation:shimmer 3.2s ease-in-out infinite}
-@keyframes shimmer{0%,100%{transform:translateX(-5px);opacity:.35}50%{transform:translateX(5px);opacity:.9}}
+.moon-reflect{position:absolute;top:0;right:var(--moon-right);width:var(--moon-size);height:72%;pointer-events:none}
+.moon-reflect:before{content:"";position:absolute;left:-40%;right:-40%;top:0;bottom:0;background:radial-gradient(ellipse 50% 70% at 50% 0,#ffe9ae40,transparent 75%)}
+.moon-reflect i{position:absolute;display:block;border-radius:3px;background:linear-gradient(90deg,transparent,#ffe9ae 30%,#fff6d0 50%,#ffe9ae 70%,transparent);animation:shimmer 3.2s ease-in-out infinite}
+@keyframes shimmer{0%,100%{transform:translateX(calc(var(--j,5px)*-1));opacity:.3}50%{transform:translateX(var(--j,5px));opacity:.9}}
+.glint{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff8dc;box-shadow:0 0 6px 2px #ffe9ae99;opacity:0;animation:glint 3.5s ease-in-out infinite}
+@keyframes glint{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.95;transform:scale(1)}}
+.swell{position:absolute;left:-50%;width:200%;height:22%;pointer-events:none;background:linear-gradient(90deg,transparent 5%,#8fd0e81c 30%,#8fd0e80c 55%,transparent 85%);animation:swell var(--t,24s) ease-in-out infinite alternate;will-change:transform;-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%,#000 60%,transparent);mask-image:linear-gradient(180deg,transparent,#000 40%,#000 60%,transparent)}
+@keyframes swell{from{transform:translateX(-9%)}to{transform:translateX(9%)}}
+.skyline-ref{position:absolute;left:0;top:0;width:100%;height:clamp(48px,9vw,100px);display:block;transform:scaleY(-1);opacity:.3;filter:blur(1.2px);pointer-events:none;
+  -webkit-mask-image:linear-gradient(0deg,#000 0,transparent 100%);mask-image:linear-gradient(0deg,#000 0,transparent 100%);animation:refwob 7s ease-in-out infinite alternate}
+@keyframes refwob{from{transform:scaleY(-1) translateX(-3px)}to{transform:scaleY(-1) translateX(3px)}}
 .wave{position:absolute;left:0;width:200%;height:26px;will-change:transform;animation:wavedrift var(--t,30s) linear infinite;pointer-events:none}
 .wave svg{display:block;width:100%;height:100%}
 @keyframes wavedrift{to{transform:translateX(-50%)}}
-.glitter{position:absolute;inset:0;opacity:.14;pointer-events:none;
+.glitter{position:absolute;inset:0;opacity:.1;pointer-events:none;
   background-image:radial-gradient(circle,#fff 0 1px,transparent 1.6px);background-size:44px 20px;animation:glit 18s linear infinite}
 @keyframes glit{to{background-position:-440px 0}}
 .river-label{position:absolute;z-index:3;left:clamp(14px,2vw,22px);top:12px;color:#e2eee9b0;font-size:12px;letter-spacing:1px;pointer-events:none}
@@ -103,7 +112,7 @@ button:disabled{opacity:.6;cursor:wait}
 .kr.is-drag .kr-bob{animation-play-state:paused;transform:translateY(-6px) scale(1.06)}
 .kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
-.kr-name{display:block;margin:-4px auto 0;width:max-content;max-width:100%;font-size:12px;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
+.kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:12px;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
 .kr.mine .kr-name{background:var(--gold);color:#1b2a30;border-color:transparent;font-weight:700}
 @keyframes krIn{from{opacity:0}to{opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.8deg)}25%{transform:translateY(-3px) rotate(.6deg)}50%{transform:translateY(-5px) rotate(2deg)}75%{transform:translateY(-2px) rotate(-.4deg)}}
@@ -111,8 +120,30 @@ button:disabled{opacity:.6;cursor:wait}
 @keyframes flicker{0%,100%{transform:scale(1,1) skewX(0)}20%{transform:scale(.94,1.07) skewX(-2.5deg)}45%{transform:scale(1.05,.93) skewX(2deg)}70%{transform:scale(.97,1.05) skewX(-1deg)}}
 .glow{transform-box:fill-box;transform-origin:50% 50%;animation:glowp 2.6s ease-in-out infinite}
 @keyframes glowp{0%,100%{opacity:.7;transform:scale(.95)}50%{opacity:1;transform:scale(1.06)}}
+.streak{transform-box:fill-box;transform-origin:50% 50%;animation:streak 2.8s ease-in-out infinite}
+@keyframes streak{0%,100%{transform:scaleX(.82);opacity:.55}50%{transform:scaleX(1.08);opacity:1}}
 .ripple{transform-box:fill-box;transform-origin:50% 50%;animation:ripple 3.6s ease-out infinite}
 @keyframes ripple{0%{transform:scale(.88);opacity:.55}100%{transform:scale(1.22);opacity:0}}
+
+/* ---------- เอฟเฟกต์ฉาก (ไม่รับการแตะ อยู่หลังเนื้อหา) ---------- */
+.fx{position:absolute;pointer-events:none;overflow:hidden}
+.fx-sky{left:0;right:0;top:0;bottom:var(--water-h);z-index:-3;--rise:300px}
+.fx-fireflies{left:0;right:0;bottom:0;height:calc(var(--water-h) + 110px);z-index:2}
+.lantern{position:absolute;bottom:0;width:var(--s);height:calc(var(--s)*1.25);border-radius:32% 32% 42% 42%/24% 24% 42% 42%;
+  background:radial-gradient(ellipse at 50% 78%,#fff1b8 0,#ffb64d 46%,#d9712a 100%);
+  box-shadow:0 0 calc(var(--s)*.9) calc(var(--s)*.22) #ffa74a55;
+  opacity:0;will-change:transform,opacity;animation:lanternRise var(--dur) linear var(--delay) infinite}
+.lantern:after{content:"";position:absolute;left:18%;right:18%;top:-6%;height:12%;border-radius:50%;background:#8a4a1c88}
+@keyframes lanternRise{0%{opacity:0;transform:translate3d(0,0,0) scale(.9)}8%{opacity:.85}78%{opacity:.7}100%{opacity:0;transform:translate3d(var(--sway),calc(var(--rise)*-1),0) scale(.5)}}
+.firefly{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:#ffe98a;box-shadow:0 0 8px 3px #ffd95a88;
+  opacity:0;will-change:transform,opacity;animation:fireflyMove var(--dur) ease-in-out var(--delay) infinite}
+@keyframes fireflyMove{0%{opacity:0;transform:translate3d(0,0,0)}15%{opacity:.9}35%{opacity:.25}55%{opacity:.95;transform:translate3d(calc(var(--dx)*.5),calc(var(--dy)*.4),0)}80%{opacity:.3}100%{opacity:0;transform:translate3d(var(--dx),var(--dy),0)}}
+.shoot{position:absolute;left:-130px;top:0;width:130px;height:2px;border-radius:2px;transform-origin:100% 50%;opacity:0;
+  background:linear-gradient(90deg,transparent,#fff2cf 85%,#fffaf0);box-shadow:0 0 6px 1px #ffeec455}
+.fx-paused .lantern,.fx-paused .firefly{animation-play-state:paused}
+#fwCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:15;pointer-events:none}
+.kr.mine:before{content:"";position:absolute;left:0;right:0;top:34%;aspect-ratio:2/1;border:2px solid #f5c66bcc;border-radius:50%;pointer-events:none;animation:mineRing 1.8s ease-out 2 both}
+@keyframes mineRing{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.7);opacity:0}}
 
 /* ---------- MAIN / FEED ---------- */
 main{width:min(100% - 32px,var(--page));margin:auto;padding:22px 0 80px}
@@ -140,17 +171,31 @@ footer{text-align:center;color:#91aab2;font-size:12px;margin-top:40px;line-heigh
 .modal{position:fixed;inset:0;background:#02070fd0;display:none;align-items:center;justify-content:center;z-index:20;
   padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
 .modal.open{display:flex}
-.dialog{width:min(100%,520px);max-height:calc(100vh - 24px);max-height:calc(100svh - 24px);display:flex;flex-direction:column;
+.modal{top:var(--vvt,0px);height:var(--vvh,auto)}
+.dialog{width:min(100%,520px);max-height:calc(100vh - 24px);max-height:calc(100svh - 24px);max-height:calc(var(--vvh,100vh) - 24px);display:flex;flex-direction:column;
   background:var(--panel);border:1px solid #3f5d6b;border-radius:22px;box-shadow:0 24px 90px #000a;overflow:hidden}
 .dlg-head{padding:16px 20px 10px}
 .dialog h2{margin:0 0 4px;font-family:var(--serif);font-size:22px;color:var(--gold)}
 .dialog .sub{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 6px}
-.dlg-body{overflow-y:auto;padding:0 20px 8px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.dlg-main{display:flex;flex-direction:column;flex:1;min-height:0}
+.pv-col{flex:none}
+.dlg-body{overflow-y:auto;flex:1;min-height:0;padding:0 20px 8px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .dlg-actions{display:flex;gap:9px;padding:12px 20px max(14px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel)}
 .dlg-actions button{flex:1}
-.preview{position:sticky;top:0;z-index:2;height:150px;border-radius:16px;margin-bottom:6px;border:1px solid #ffffff1c;overflow:hidden;
-  background:radial-gradient(ellipse 60% 70% at 50% 100%,#1d5d7e,#0a2740 65%,#06182c);display:grid;place-items:center}
-.preview svg{height:100%;width:100%;display:block}
+/* พรีวิวอยู่นอกส่วนที่เลื่อน จึงไม่บังตัวเลือก */
+.preview{position:relative;height:150px;margin:0 20px 6px;border-radius:16px;border:1px solid #ffffff1c;overflow:hidden;transition:height .25s;
+  background:radial-gradient(ellipse 70% 60% at 50% 100%,#2a7396,#0a2740 62%,#06182c);display:grid;place-items:center}
+.preview:before{content:"";position:absolute;inset:0;opacity:.12;background:radial-gradient(circle,#fff 0 1px,transparent 1.5px) 0 0/34px 24px}
+.preview:after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,#02101f66)}
+.preview svg{position:relative;z-index:1;height:100%;width:100%;display:block;overflow:hidden}
+.preview-cap{margin:0 20px 8px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#createDialog.typing .preview{height:72px}
+#createDialog.typing .preview-cap{display:none}
+.opts.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.opt.card{flex-direction:column;justify-content:flex-start;gap:2px;padding:6px 4px 8px;text-align:center;font-size:13px;line-height:1.35}
+.opt.card .thumb{display:block;width:100%}
+.opt.card .thumb svg{width:100%;height:auto;display:block;overflow:visible}
+.num{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#1b2a30;font-size:12px;font-weight:800;margin-right:6px}
 label,.lbl{display:block;font-size:13px;font-weight:700;color:#e5efe9;margin:14px 0 7px}
 .lbl small{font-weight:400;color:var(--muted)}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
@@ -179,21 +224,25 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   .feed{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(min-width:760px),(orientation:landscape) and (max-height:520px) and (min-width:560px){
-  #createDialog{width:min(100%,880px)}
-  #createDialog .dlg-body{display:grid;grid-template-columns:minmax(240px,.9fr) minmax(300px,1.1fr);gap:8px 22px;align-items:start}
-  #createDialog .preview{height:min(320px,56vh);grid-row:1/span 6}
-  #createDialog .form-col{grid-column:2}
+  #createDialog{width:min(100%,900px)}
+  #createDialog .dlg-main{flex-direction:row;gap:22px;padding:0 20px 8px}
+  #createDialog .pv-col{flex:0 0 42%;align-self:flex-start}
+  #createDialog .preview,#createDialog.typing .preview{height:min(340px,52vh);margin:0 0 8px}
+  #createDialog .preview-cap,#createDialog.typing .preview-cap{display:block;margin:0}
+  #createDialog .dlg-body{padding:0 4px 0 0}
 }
 @media(max-width:700px){
   :root{--moon-size:44px;--moon-right:7%}
-  .moon{top:64px}
+  .moon{top:86px}
   .hero-inner{padding-top:54px}
 }
-@media(max-height:720px){.preview{height:120px}}
+@media(max-height:720px){.preview{height:118px}}
 @media(max-width:520px){
   .section-head{flex-direction:column;align-items:flex-start;gap:4px}
 }
+@keyframes ringSm{0%{transform:scale(.99);opacity:.8}100%{transform:scale(1.035);opacity:0}}
 @media(max-width:420px){
+  .cta:after{inset:-4px;animation-name:ringSm}
   .top-link{font-size:12px;padding:0 12px}
   .sound-btn .txt{display:none}
   .sound-btn{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;font-size:16px}
@@ -214,6 +263,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   .preview{height:120px}
 }
 @media(prefers-reduced-motion:reduce){
+  .fx,#fwCanvas{display:none!important}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 </style>
@@ -223,6 +273,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 <div class="hero" id="hero">
   <div class="sky" aria-hidden="true"><div class="stars" id="stars"></div></div>
   <div class="moon" aria-hidden="true"></div>
+  <div class="fx fx-sky" id="fxSky" aria-hidden="true"></div>
   <svg class="skyline" viewBox="0 0 1200 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
     <path fill="#040d1b" d="M0 100V82C50 70 90 86 140 78S230 68 280 78V72h12l4-18 4-22 4-24 2-8 2 8 4 24 4 22 4 18h12v6C400 70 450 86 520 80S640 70 720 80 840 84 880 76V72h10l3-14 3-18 3-22 2-6 2 6 3 22 3 18 3 14h10v6c60-10 110 4 170 0s100-10 150-2V100Z"/>
     <g fill="#f5c66b"><circle cx="300" cy="82" r="1.6"/><circle cx="284" cy="86" r="1.2"/><circle cx="318" cy="86" r="1.2"/><circle cx="900" cy="82" r="1.6"/><circle cx="884" cy="86" r="1.2"/><circle cx="918" cy="86" r="1.2"/><circle cx="520" cy="88" r="1.2"/><circle cx="640" cy="87" r="1.2"/><circle cx="1090" cy="84" r="1.2"/><circle cx="130" cy="86" r="1.2"/></g>
@@ -239,13 +290,11 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 
   <div class="hero-inner">
     <div class="eyebrow">LOY KRATHONG FESTIVAL</div>
-    <h1>ลอยกระทะ เห้ย กระทง</h1>
-    <p>ประกอบกระทงของคุณเอง เขียนคำอธิษฐาน แล้วปล่อยลอยไปกับทุกคน<br>ขอให้สิ่งดี ๆ ลอยเข้ามาในชีวิต</p>
+    <h1>ลอยคนเก่าไปกับสายน้ำ</h1>
     <div class="cta-row">
       <button class="primary cta" id="open" type="button"><span aria-hidden="true">✦</span> สร้างกระทงของฉัน</button>
       <button class="ghost" id="scrollFeed" type="button">อ่านคำอธิษฐานของทุกคน ↓</button>
     </div>
-    <div class="stats"><div class="stat"><strong id="count">—</strong><small>กระทงที่ลอยแล้ว</small></div><div class="stat"><strong>🌕</strong><small>คืนแห่งความหวัง</small></div></div>
   </div>
 
   <section class="water" id="water" aria-label="แม่น้ำออนไลน์">
@@ -257,6 +306,8 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
     <div class="river-empty" id="riverEmpty" hidden>ยังไม่มีกระทงในสายน้ำ<br>มาเป็นคนแรกที่ปล่อยกระทงกันครับ</div>
     <div class="hint" id="hint">แตะกระทงเพื่ออ่านคำอธิษฐาน · ลากเพื่อย้ายตำแหน่งได้</div>
   </section>
+  <div class="fx fx-fireflies" id="fxFireflies" aria-hidden="true"></div>
+
 </div>
 
 <main>
@@ -269,15 +320,16 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   <footer>สร้างพื้นที่เล็ก ๆ สำหรับแบ่งปันความหวัง<br>โปรดไม่ใส่ข้อมูลส่วนตัวหรือข้อความที่ระบุตัวตนได้</footer>
 </main>
 
+<canvas id="fwCanvas" aria-hidden="true"></canvas>
 <button class="primary fab" id="openFab" type="button"><span aria-hidden="true">✦</span> สร้างกระทง</button>
 
 <!-- Create modal -->
 <div class="modal" id="createModal" role="presentation">
   <div class="dialog" id="createDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" aria-describedby="dialogSub" tabindex="-1">
     <div class="dlg-head"><h2 id="dialogTitle">ประกอบกระทงของคุณ</h2><p class="sub" id="dialogSub">เลือกชิ้นส่วนตามใจ แล้วฝากคำอธิษฐานไว้กับสายน้ำ</p></div>
-    <div class="dlg-body">
-      <div class="preview" id="preview" role="img" aria-label="ตัวอย่างกระทงของคุณ"></div>
-      <div class="form-col">
+    <div class="dlg-main">
+      <div class="pv-col"><div class="preview" id="preview" role="img" aria-label="ตัวอย่างกระทงของคุณ"></div><div class="preview-cap" id="previewCap"></div></div>
+      <div class="dlg-body">
         <div id="opts"></div>
         <button class="secondary dice" id="dice" type="button">🎲 สุ่มกระทง</button>
         <label for="name">ชื่อเล่น <small>(ไม่ใส่ก็ได้)</small></label>
@@ -323,44 +375,46 @@ const reduceMotion = window.matchMedia ? window.matchMedia("(prefers-reduced-mot
 
 /* =========================================================
    1) ชิ้นส่วนกระทง + การเข้ารหัส (เก็บในคอลัมน์ flower เดิม)
-   รูปแบบ:  k1:b2.l1.f1-3.c2.m1   (ฐาน.ใบตอง.ดอกไม้.กลางกระทง.แสงเทียน)
+   รูปแบบ:  k1:b2.l1.f1-3.c2.m1.g1   (ฐาน.ใบตอง.ดอกไม้.กลางกระทง.แสงเทียน.สีใบตอง)
    ตรงกับ CHECK constraint ใน Supabase:  ^k1:[a-z0-9.-]{3,40}$
    ========================================================= */
 const PARTS = {
-  base:   [{id:1,name:"หยวกกล้วย"},{id:2,name:"ขนมปัง"},{id:3,name:"กะลามะพร้าว"}],
-  leaf:   [{id:1,name:"ใบตองแหลม"},{id:2,name:"ใบตองกลีบมน"},{id:3,name:"ใบตองสองชั้น"}],
-  bloom:  [{id:1,name:"ดอกบัว"},{id:2,name:"ดาวเรือง"},{id:3,name:"กล้วยไม้"},{id:4,name:"กุหลาบ"}],
+  base:   [{id:1,name:"หยวกกล้วย"},{id:2,name:"ขนมปัง"},{id:3,name:"กะลามะพร้าว"},{id:4,name:"ใบบัว"},{id:5,name:"ไม้ไผ่สาน"}],
+  leaf:   [{id:1,name:"ใบตองแหลม"},{id:2,name:"ใบตองกลีบมน"},{id:3,name:"ใบตองสองชั้น"},{id:4,name:"ใบตองม้วน"},{id:5,name:"ใบตองพัดจีบ"}],
+  leafColor: [{id:1,name:"เขียวสด"},{id:2,name:"เขียวเข้ม"},{id:3,name:"เขียวอ่อน"},{id:4,name:"เขียวทอง"},{id:5,name:"น้ำตาลทอง"}],
+  bloom:  [{id:1,name:"ดอกบัว"},{id:2,name:"ดาวเรือง"},{id:3,name:"กล้วยไม้"},{id:4,name:"กุหลาบ"},{id:5,name:"มะลิ"},{id:6,name:"อัญชัน"},{id:7,name:"เบญจมาศ"},{id:8,name:"ชบา"}],
   center: [{id:1,name:"เทียน + ธูป"},{id:2,name:"เทียนใหญ่"},{id:3,name:"โคมเล็ก"}],
   flame:  [{id:1,name:"แสงทอง"},{id:2,name:"แสงส้ม"},{id:3,name:"แสงขาว"}]
 };
 const SWATCH = {
-  b:["#e9efc0","#d9954a","#6b4226"],
-  l:["#8fcf5f","#6fbf4a","#2f7d32"],
+  g:["#8fcf5f","#2f7a3a","#cdeb94","#c9c45a","#d2ad66"],
   c:["#fff1cf","#ffe7a8","#f2a65a"],
   m:["#ffd35a","#ff8a2a","#ffffff"]
 };
 const GROUPS = [
-  {key:"b", label:"1 · ฐานกระทง", list:PARTS.base},
-  {key:"l", label:"2 · ใบตองพับ", list:PARTS.leaf},
-  {key:"f", label:"3 · ดอกไม้", hint:"เลือกได้หลายชนิด", list:PARTS.bloom, multi:true},
-  {key:"c", label:"4 · กลางกระทง", list:PARTS.center},
-  {key:"m", label:"5 · สีแสงเทียน", list:PARTS.flame}
+  {key:"b", label:"ฐานกระทง", list:PARTS.base},
+  {key:"l", label:"ใบตองพับ", list:PARTS.leaf},
+  {key:"g", label:"สีใบตอง", list:PARTS.leafColor},
+  {key:"f", label:"ดอกไม้", hint:"เลือกได้หลายชนิด", list:PARTS.bloom, multi:true},
+  {key:"c", label:"กลางกระทง", list:PARTS.center},
+  {key:"m", label:"สีแสงเทียน", list:PARTS.flame}
 ];
-const MAXID = {b:3, l:3, c:3, m:3};
+const MAXID = {b:5, l:5, c:3, m:3, g:5};
 const CODE_RE = /^k1:[a-z0-9.-]{3,40}$/;
 // ข้อมูลเก่าที่เป็น emoji ยังแสดงผลได้ โดยจับคู่เป็นกระทงหน้าตาใกล้เคียง
 const LEGACY = {
-  "🪷":{b:1,l:1,f:[1],c:1,m:1},
-  "🌸":{b:2,l:2,f:[4],c:1,m:1},
-  "🌼":{b:1,l:1,f:[2],c:1,m:2}
+  "🪷":{b:1,l:1,g:1,f:[1],c:1,m:1},
+  "🌸":{b:2,l:2,g:1,f:[4],c:1,m:1},
+  "🌼":{b:1,l:1,g:1,f:[2],c:1,m:2}
 };
-const cloneSpec = s => ({b:s.b,l:s.l,f:[...s.f],c:s.c,m:s.m});
+const cloneSpec = s => ({b:s.b,l:s.l,g:s.g,f:[...s.f],c:s.c,m:s.m});
 const DEFAULT_SPEC = LEGACY["🪷"];
-function encode(s) { return "k1:b" + s.b + ".l" + s.l + ".f" + [...s.f].sort().join("-") + ".c" + s.c + ".m" + s.m; }
+// กระทงรุ่นเก่า (ก่อนมีสีใบตอง) ไม่มี .g จึงใช้ค่าเริ่มต้น g=1 = เขียวสด เหมือนเดิม
+function encode(s) { return "k1:b" + s.b + ".l" + s.l + ".f" + [...s.f].sort().join("-") + ".c" + s.c + ".m" + s.m + ".g" + s.g; }
 function decode(code) {
   if (LEGACY[code]) return cloneSpec(LEGACY[code]);
   if (typeof code === "string" && CODE_RE.test(code)) {
-    const spec = {b:1,l:1,f:[],c:1,m:1};
+    const spec = {b:1,l:1,g:1,f:[],c:1,m:1};
     for (const tok of code.slice(3).split(".")) {
       const k = tok[0], v = tok.slice(1);
       if (k === "f") spec.f = v.split("-").map(Number).filter(n => n >= 1 && n <= PARTS.bloom.length);
@@ -379,24 +433,36 @@ function decode(code) {
 const BASES = [
   {rt:62, rb:60, h:22, top:"#f1eec4", s1:"#a9b874", s2:"#ecf1c4", s3:"#98a766", kind:"banana"},
   {rt:60, rb:58, h:26, top:"#e9b86c", s1:"#9a5a24", s2:"#dea255", s3:"#7d4519", kind:"bread"},
-  {rt:58, rb:42, h:24, top:"#7a4a2a", s1:"#3d2312", s2:"#7b4b2b", s3:"#2a170a", kind:"coconut"}
+  {rt:58, rb:42, h:24, top:"#7a4a2a", s1:"#3d2312", s2:"#7b4b2b", s3:"#2a170a", kind:"coconut"},
+  {rt:66, rb:62, h:9,  top:"#6dbb55", s1:"#245a28", s2:"#3f8a3a", s3:"#1d4a22", kind:"lotusleaf"},
+  {rt:56, rb:52, h:27, top:"#dcb66c", s1:"#7d5a22", s2:"#d2a455", s3:"#664818", kind:"weave"}
+];
+// สีใบตอง: lf = ปกติ, lfd = ใบด้านหลัง (เข้มกว่า), lfl = ใบชั้นใน (อ่อนกว่า)
+const LEAFCOL = [
+  {lf:["#2f7d33","#9ad465"], lfd:["#1f5e27","#5ea646"], lfl:["#4c9a3c","#bde784"], st:"#1d5a28", dk:"#16461f"},
+  {lf:["#1c5a2a","#5faa55"], lfd:["#123f1d","#3f8139"], lfl:["#2f7a3a","#7fc46f"], st:"#0f3a1a", dk:"#0c2e14"},
+  {lf:["#6fae52","#d6f1a0"], lfd:["#4f8f43","#a6d07a"], lfl:["#8cc467","#ecfbc0"], st:"#3e7a32", dk:"#356a2a"},
+  {lf:["#6b7f2a","#d8d36a"], lfd:["#4f6320","#a6ad50"], lfl:["#8a9a3a","#efe58a"], st:"#4a5a18", dk:"#3c4912"},
+  {lf:["#8a6a2e","#e0c07a"], lfd:["#6a4f20","#b9955a"], lfl:["#a98342","#f2d896"], st:"#5a4318", dk:"#483512"}
 ];
 const FLAMES = [
   {a:"#fff4c2", b:"#ffd35a", g:"#ffcf5a"},
   {a:"#ffe2a8", b:"#ff7f24", g:"#ff9a3c"},
   {a:"#ffffff", b:"#d6efff", g:"#bfe6ff"}
 ];
-const FLOWER_SCALE = {1:.58, 2:1.05, 3:.8, 4:1.05};
+const FLOWER_SCALE = {1:.58, 2:.92, 3:.8, 4:1.05, 5:1, 6:.95, 7:.95, 8:.92};
 let svgSeq = 0;
+const SEPAL = `<path d="M-4 0L0 4L4 0Z" fill="#3a7d34"/>`;
 
 function flowerMarkup(type, u) {
   if (type === 1) {
-    const pet = (a, f) => `<path transform="rotate(${a})" d="M0 0C-10 -8 -9 -25 0 -32C9 -25 10 -8 0 0Z" fill="url(#${u}${f})" stroke="#c9477a" stroke-opacity=".45" stroke-width=".9"/>`;
+    const pet = (a, f) => `<g transform="rotate(${a})"><path d="M0 0C-10 -8 -9 -25 0 -32C9 -25 10 -8 0 0Z" fill="url(#${u}${f})" stroke="#c9477a" stroke-opacity=".45" stroke-width=".9"/><path d="M0 -3V-26M-3 -6Q-4 -17 -1 -24M3 -6Q4 -17 1 -24" stroke="#c9477a" stroke-opacity=".28" stroke-width=".6" fill="none"/></g>`;
     return pet(-72,"p2") + pet(72,"p2") + pet(-46,"p2") + pet(46,"p2") + pet(-22,"p1") + pet(22,"p1") + pet(0,"p1") +
       `<ellipse cx="0" cy="-6" rx="5" ry="3" fill="#f7c948"/>`;
   }
   if (type === 2) {
     let s = `<circle r="11.5" cy="-10" fill="#e8890c"/>`;
+    for (let i = 0; i < 12; i++) { const a = (i * 30 + 8) * Math.PI / 180; s += `<circle cx="${r1(Math.cos(a)*9.6)}" cy="${r1(-10+Math.sin(a)*9)}" r="5.4" fill="${i%2?"#ef8f0f":"#f6a21a"}" stroke="#c86a00" stroke-opacity=".35" stroke-width=".5"/>`; }
     for (let i = 0; i < 9; i++) { const a = i * 40 * Math.PI / 180; s += `<circle cx="${r1(Math.cos(a)*7.5)}" cy="${r1(-10+Math.sin(a)*7)}" r="5.2" fill="${i%2?"#f9a825":"#fbc02d"}"/>`; }
     for (let i = 0; i < 6; i++) { const a = (i * 60 + 20) * Math.PI / 180; s += `<circle cx="${r1(Math.cos(a)*3.8)}" cy="${r1(-10+Math.sin(a)*3.6)}" r="4.2" fill="${i%2?"#ffb300":"#f57c00"}"/>`; }
     return s + `<circle cy="-10" r="2.6" fill="#c76a00"/><path d="M-5 -1L0 3L5 -1Z" fill="#3a7d34"/>`;
@@ -409,7 +475,34 @@ function flowerMarkup(type, u) {
       <ellipse cx="-6" cy="6" rx="5.5" ry="8" transform="rotate(30 -6 6)" fill="#a78bfa"/>
       <ellipse cx="6" cy="6" rx="5.5" ry="8" transform="rotate(-30 6 6)" fill="#a78bfa"/>
       <ellipse cx="0" cy="3" rx="4.2" ry="6.5" fill="#6d28d9"/>
-      <ellipse cx="0" cy="1.5" rx="2" ry="3" fill="#fde68a"/></g><path d="M-4 0L0 4L4 0Z" fill="#3a7d34"/>`;
+      <ellipse cx="0" cy="1.5" rx="2" ry="3" fill="#fde68a"/></g>` + SEPAL;
+  }
+  if (type === 5) {   // มะลิ: ดอกขาวเล็ก 3 ดอกเป็นพวง
+    const jas = (x, y, k) => {
+      let p = "";
+      for (let i = 0; i < 5; i++) p += `<ellipse cx="0" cy="${r1(-5*k)}" rx="${r1(3.4*k)}" ry="${r1(5.6*k)}" transform="rotate(${i*72})" fill="#fffdf4" stroke="#d9d2b0" stroke-width=".5"/>`;
+      return `<g transform="translate(${x} ${y})">${p}<circle r="${r1(1.7*k)}" fill="#e8d36a"/></g>`;
+    };
+    return SEPAL + jas(-6.5, -8, 1) + jas(6.5, -9, 1) + jas(0, -15.5, 1.05);
+  }
+  if (type === 6) {   // อัญชัน: ม่วงน้ำเงิน กลางเหลือง
+    return SEPAL + `<ellipse cx="-7" cy="-9" rx="6.5" ry="9" transform="rotate(-24 -7 -9)" fill="#2f45c8"/>
+      <ellipse cx="7" cy="-9" rx="6.5" ry="9" transform="rotate(24 7 -9)" fill="#2f45c8"/>
+      <ellipse cx="0" cy="-14" rx="9.5" ry="9" fill="url(#${u}pea)"/>
+      <ellipse cx="0" cy="-11" rx="4" ry="5.5" fill="#a9b8ff" fill-opacity=".75"/>
+      <ellipse cx="0" cy="-9" rx="2.2" ry="3.4" fill="#ffd84d"/>`;
+  }
+  if (type === 7) {   // เบญจมาศ: กลีบเส้นยาว ขาวอมเหลือง
+    let p = SEPAL;
+    for (let ring = 0; ring < 2; ring++) for (let i = 0; i < 14; i++) {
+      p += `<ellipse cx="0" cy="${ring ? -4.6 : -6.4}" rx="1.9" ry="${ring ? 5 : 7}" transform="translate(0 -11) rotate(${r1(i * 360 / 14 + ring * 12)})" fill="${ring ? "#ffe58a" : "#fff6c8"}" stroke="#e0c968" stroke-opacity=".4" stroke-width=".3"/>`;
+    }
+    return p + `<circle cx="0" cy="-11" r="2.6" fill="#f2b01e"/>`;
+  }
+  if (type === 8) {   // ชบา: แดง 5 กลีบ เกสรเหลือง
+    let p = SEPAL;
+    for (let i = 0; i < 5; i++) p += `<ellipse cx="0" cy="-6.5" rx="6.2" ry="8.2" transform="translate(0 -11) rotate(${i * 72})" fill="${i % 2 ? "#e53935" : "#f0504a"}" stroke="#a31515" stroke-opacity=".35" stroke-width=".5"/>`;
+    return p + `<circle cx="0" cy="-11" r="3.2" fill="#8e0b1c"/><path d="M0 -11L5 -19" stroke="#ffe27a" stroke-width="1.1" stroke-linecap="round"/><circle cx="5" cy="-19.4" r="1.4" fill="#ffd54a"/><circle cx="3.4" cy="-17.6" r="1" fill="#ffd54a"/>`;
   }
   return `<circle cy="-10" r="10.5" fill="#d81b4a"/><path d="M-7 -12C-7 -20 7 -20 7 -12" fill="#f0507a"/><circle cy="-10" r="6.5" fill="#e53366"/>
     <path d="M-4 -10C-4 -15 4 -15 4 -10C4 -6 -2 -6 -2 -9C-2 -12 2 -12 2 -10" fill="none" stroke="#8e1236" stroke-width="1.3" stroke-linecap="round"/>
@@ -417,20 +510,36 @@ function flowerMarkup(type, u) {
 }
 function flowerDefs(u) {
   return `<linearGradient id="${u}p1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffeaf1"/><stop offset="1" stop-color="#f06c9a"/></linearGradient>
-  <linearGradient id="${u}p2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbc4d8"/><stop offset="1" stop-color="#dc4d7e"/></linearGradient>`;
+  <linearGradient id="${u}p2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbc4d8"/><stop offset="1" stop-color="#dc4d7e"/></linearGradient>
+  <radialGradient id="${u}pea" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#6a7bff"/><stop offset="1" stop-color="#2a38b5"/></radialGradient>`;
 }
 function flowerIcon(type) {
   const u = "i" + (++svgSeq);
   return `<svg viewBox="-22 -36 44 42" aria-hidden="true"><defs>${flowerDefs(u)}</defs><g transform="scale(${type===1?1:.9}) translate(0 ${type===1?2:0})">${flowerMarkup(type, u)}</g></svg>`;
 }
-function leafMarkup(style, w, h, fill) {
-  const d = style === 2
-    ? `M${-w/2} 0C${r1(-w*.8)} ${r1(-h*.65)} ${r1(-w*.32)} ${-h} 0 ${-h}C${r1(w*.32)} ${-h} ${r1(w*.8)} ${r1(-h*.65)} ${w/2} 0Z`
-    : `M${-w/2} 0Q${r1(-w*.55)} ${r1(-h*.55)} 0 ${-h}Q${r1(w*.55)} ${r1(-h*.55)} ${w/2} 0Z`;
-  const half = style === 2
-    ? `M0 0V${-h}C${r1(w*.32)} ${-h} ${r1(w*.8)} ${r1(-h*.65)} ${w/2} 0Z`
-    : `M0 0V${-h}Q${r1(w*.55)} ${r1(-h*.55)} ${w/2} 0Z`;
-  return `<path d="${d}" fill="${fill}" stroke="#1d5a28" stroke-opacity=".55" stroke-width=".8"/><path d="${half}" fill="#fff" fill-opacity=".13"/><path d="M0 0V${r1(-h*.9)}" stroke="#16461f" stroke-opacity=".35" stroke-width=".9"/>`;
+function leafMarkup(style, w, h, fill, st, dk) {
+  st = st || "#1d5a28"; dk = dk || "#16461f";
+  let d, half, extra = "";
+  if (style === 4) {          // ใบตองม้วน: หลอดใบตองตั้งขึ้น ปลายม้วนมน
+    d = `M${r1(-w/2)} 0V${r1(-h*.86)}Q${r1(-w/2)} ${-h} 0 ${-h}Q${r1(w/2)} ${-h} ${r1(w/2)} ${r1(-h*.86)}V0Z`;
+    half = `M${r1(w*.12)} 0V${-h}Q${r1(w/2)} ${-h} ${r1(w/2)} ${r1(-h*.86)}V0Z`;
+    extra = `<path d="M${r1(-w*.45)} ${r1(-h*.8)}Q0 ${r1(-h*.66)} ${r1(w*.45)} ${r1(-h*.9)}M${r1(-w*.45)} ${r1(-h*.55)}Q0 ${r1(-h*.42)} ${r1(w*.45)} ${r1(-h*.62)}M${r1(-w*.45)} ${r1(-h*.3)}Q0 ${r1(-h*.18)} ${r1(w*.45)} ${r1(-h*.36)}" stroke="${dk}" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
+  } else if (style === 5) {   // ใบตองพัดจีบ: จีบรัศมีเหมือนพัด
+    d = `M${r1(-w*.28)} 0L${r1(-w*.6)} ${r1(-h*.72)}Q0 ${r1(-h*1.18)} ${r1(w*.6)} ${r1(-h*.72)}L${r1(w*.28)} 0Z`;
+    half = `M0 0L${r1(w*.6)} ${r1(-h*.72)}Q${r1(w*.3)} ${r1(-h*1.02)} 0 ${r1(-h*.98)}Z`;
+    extra = [-.3, -.1, .1, .3].map(k => `<path d="M${r1(k*w*.35)} 0L${r1(k*w*1.9)} ${r1(-h*(.97-Math.abs(k)*.45))}" stroke="${dk}" stroke-opacity=".32" stroke-width=".8"/>`).join("");
+  } else if (style === 2) {
+    d = `M${-w/2} 0C${r1(-w*.8)} ${r1(-h*.65)} ${r1(-w*.32)} ${-h} 0 ${-h}C${r1(w*.32)} ${-h} ${r1(w*.8)} ${r1(-h*.65)} ${w/2} 0Z`;
+    half = `M0 0V${-h}C${r1(w*.32)} ${-h} ${r1(w*.8)} ${r1(-h*.65)} ${w/2} 0Z`;
+  } else {
+    d = `M${-w/2} 0Q${r1(-w*.55)} ${r1(-h*.55)} 0 ${-h}Q${r1(w*.55)} ${r1(-h*.55)} ${w/2} 0Z`;
+    half = `M0 0V${-h}Q${r1(w*.55)} ${r1(-h*.55)} ${w/2} 0Z`;
+  }
+  if (style <= 3) {
+    extra = `<path d="M${r1(-w*.22)} 0L${r1(-w*.09)} ${r1(-h*.76)}M${r1(w*.22)} 0L${r1(w*.09)} ${r1(-h*.76)}" stroke="${dk}" stroke-opacity=".2" stroke-width=".7" fill="none"/>
+    <path d="M${r1(w*.04)} ${r1(-h*.94)}L${r1(w*.16)} ${r1(-h*.7)}" stroke="#eaffc8" stroke-opacity=".55" stroke-width=".9" stroke-linecap="round"/>`;
+  }
+  return `<path d="${d}" fill="${fill}" stroke="${st}" stroke-opacity=".55" stroke-width=".8"/><path d="${half}" fill="#fff" fill-opacity=".13"/><path d="M0 0V${r1(-h*.9)}" stroke="${dk}" stroke-opacity=".35" stroke-width=".9"/>${extra}`;
 }
 
 function krathongSVG(spec, opt) {
@@ -438,6 +547,7 @@ function krathongSVG(spec, opt) {
   const u = "k" + (++svgSeq), A = opt.anim !== false;
   const F = FLAMES[spec.m - 1] || FLAMES[0];
   const B = BASES[spec.b - 1] || BASES[0];
+  const LC = LEAFCOL[(spec.g || 1) - 1] || LEAFCOL[0];
   const cx = 100, cy = 100, ry = 19, rx = B.rt, by = cy + B.h;
   const items = [];
 
@@ -446,12 +556,14 @@ function krathongSVG(spec, opt) {
     for (let i = 0; i < n; i++) {
       const t = Math.PI * 2 * i / n + off, c = Math.cos(t), s = Math.sin(t);
       const px = cx + rx * rf * c, py = cy + ry * rf * s;
-      const hh = h * (1 - .2 * Math.max(0, s)), tilt = c * 26 + (i % 2 ? 3 : -3);
+      const hh = h * (1 - .2 * Math.max(0, s)), tilt = c * (style === 4 ? 16 : 26) + (i % 2 ? 3 : -3);
       const f = (fill === "lf" && s < -.2) ? "lfd" : fill;
-      items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(tilt)})">${leafMarkup(style, w, hh, "url(#" + u + f + ")")}</g>`});
+      items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(tilt)})">${leafMarkup(style, w, hh, "url(#" + u + f + ")", LC.st, LC.dk)}</g>`});
     }
   }
   if (spec.l === 3) { ring(14, 1, 38, 24, 0, "lfd", 1); ring(14, .74, 28, 19, Math.PI / 14, "lfl", 1); }
+  else if (spec.l === 4) { ring(18, 1, 34, 12, 0, "lf", 4); ring(14, .74, 25, 11, Math.PI / 14, "lfl", 4); }
+  else if (spec.l === 5) { ring(12, 1, 30, 26, 0, "lf", 5); ring(12, .72, 22, 20, Math.PI / 12, "lfl", 5); }
   else ring(16, 1, 32, 21, 0, "lf", spec.l);
 
   // --- ดอกไม้ ---
@@ -499,28 +611,44 @@ function krathongSVG(spec, opt) {
   } else if (B.kind === "bread") {
     for (let i = 0; i < 16; i++) { const x = cx - 52 + (i * 37 % 104), y = cy + 6 + (i * 13 % 16); deco += `<circle cx="${x}" cy="${y}" r="1.1" fill="#7d4519" fill-opacity=".45"/>`; }
     topDeco = `<ellipse cx="${cx}" cy="${cy}" rx="${rx-2}" ry="${ry-1}" fill="none" stroke="#a86a2a" stroke-width="2.4" stroke-opacity=".7"/>`;
-  } else {
+  } else if (B.kind === "coconut") {
     for (let i = 0; i < 22; i++) { const x = cx - 46 + (i * 29 % 92), y = cy + 5 + (i * 11 % 13); deco += `<path d="M${x} ${y}l1.5 6" stroke="#1f1008" stroke-opacity=".5" stroke-width="1"/>`; }
     topDeco = `<ellipse cx="${cx}" cy="${cy+1}" rx="${r1(rx*.86)}" ry="${r1(ry*.82)}" fill="#24140a"/><ellipse cx="${cx}" cy="${cy+3}" rx="${r1(rx*.7)}" ry="${r1(ry*.6)}" fill="#3a2212"/>`;
+  } else if (B.kind === "lotusleaf") {   // ใบบัว: จานใบบัวเส้นใบแผ่รอบ
+    for (let i = 0; i < 14; i++) { const t = Math.PI * 2 * i / 14; topDeco += `<path d="M${cx} ${cy}L${r1(cx + Math.cos(t) * rx * .94)} ${r1(cy + Math.sin(t) * ry * .94)}" stroke="#2f6f2f" stroke-opacity=".38" stroke-width=".9"/>`; }
+    topDeco += `<ellipse cx="${cx}" cy="${cy}" rx="6" ry="2.4" fill="#a6dc8a" fill-opacity=".7"/>`;
+  } else {                                // ไม้ไผ่สาน: ลายสานทแยง
+    for (let i = -5; i <= 5; i++) { const x = cx + i * 9; deco += `<path d="M${x} ${cy + 2}L${x + 6} ${by - 1}" stroke="#5a3d12" stroke-opacity=".35" stroke-width="1.2"/><path d="M${x + 6} ${cy + 2}L${x} ${by - 1}" stroke="#f3d79a" stroke-opacity=".22" stroke-width="1"/>`; }
+    for (const k of [1, 2]) { const y = cy + B.h * k / 3; deco += `<path d="M${cx - B.rt} ${y}A${B.rt} ${ry} 0 0 0 ${cx + B.rt} ${y}" stroke="#5a3d12" stroke-opacity=".3" fill="none" stroke-width="1"/>`; }
+    for (const f of [.86, .62, .38]) topDeco += `<ellipse cx="${cx}" cy="${cy}" rx="${r1(rx * f)}" ry="${r1(ry * f)}" fill="none" stroke="#7d5a22" stroke-opacity=".38"/>`;
   }
+  // เงาแสงเทียนสะท้อนผิวน้ำ: ขีดแสงสั้น ๆ ใต้ฐาน (สั่นไหวเบา ๆ)
+  const streaks = [[34, 9, .36], [24, 15, .26], [15, 21, .18]].map(([w, dy, o], i) =>
+    `<rect x="${cx - w}" y="${by + dy}" width="${w * 2}" height="1.9" rx=".95" fill="${F.g}" fill-opacity="${o}"${A ? ` class="streak" style="animation-delay:${-i * .7}s"` : ""}/>`).join("");
 
-  return `<svg class="kr-svg" viewBox="0 34 200 118" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs>
-    <linearGradient id="${u}lf" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2f7d33"/><stop offset="1" stop-color="#9ad465"/></linearGradient>
-    <linearGradient id="${u}lfd" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1f5e27"/><stop offset="1" stop-color="#5ea646"/></linearGradient>
-    <linearGradient id="${u}lfl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#4c9a3c"/><stop offset="1" stop-color="#bde784"/></linearGradient>
+  return `<svg class="kr-svg" viewBox="0 34 200 132" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs>
+    <linearGradient id="${u}lf" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.lf[0]}"/><stop offset="1" stop-color="${LC.lf[1]}"/></linearGradient>
+    <linearGradient id="${u}lfd" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.lfd[0]}"/><stop offset="1" stop-color="${LC.lfd[1]}"/></linearGradient>
+    <linearGradient id="${u}lfl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.lfl[0]}"/><stop offset="1" stop-color="${LC.lfl[1]}"/></linearGradient>
     <linearGradient id="${u}sd" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${B.s1}"/><stop offset=".35" stop-color="${B.s2}"/><stop offset=".7" stop-color="${B.s2}"/><stop offset="1" stop-color="${B.s3}"/></linearGradient>
     <linearGradient id="${u}cd" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e7cd98"/><stop offset=".45" stop-color="#fff6e0"/><stop offset="1" stop-color="#e2c68e"/></linearGradient>
     <linearGradient id="${u}fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${F.b}"/><stop offset="1" stop-color="${F.a}"/></linearGradient>
     <radialGradient id="${u}gl"><stop offset="0" stop-color="${F.g}" stop-opacity=".6"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${u}tp" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
+    <radialGradient id="${u}wl"><stop offset="0" stop-color="${F.g}" stop-opacity=".3"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
     <radialGradient id="${u}wg"><stop offset="0" stop-color="${F.g}" stop-opacity=".42"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
     ${flowerDefs(u)}</defs>
     <ellipse cx="${cx}" cy="${by + 7}" rx="${B.rt + 24}" ry="12" fill="url(#${u}wg)"${A?' class="glow"':''}/>
+    ${streaks}
     <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 4}" ry="8" fill="#000" fill-opacity=".38"/>
     <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 8}" ry="9" fill="none" stroke="#fff" stroke-opacity=".3"${A?' class="ripple"':''}/>
     <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 8}" ry="9" fill="none" stroke="#fff" stroke-opacity=".25"${A?' class="ripple" style="animation-delay:-1.8s"':''}/>
     <path d="${side}" fill="url(#${u}sd)"/>${deco}
-    <ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="${B.top}"/>${topDeco}
-    ${items.map(i => i.m).join("")}</svg>`;
+    <path d="M${cx - B.rt * .62} ${cy + 3}L${cx - B.rb * .6} ${by - 1}" stroke="#fff" stroke-opacity=".22" stroke-width="${B.h < 12 ? 2 : 5}" stroke-linecap="round"/>
+    <ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="${B.top}"/><ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="url(#${u}tp)"/>${topDeco}
+    <path d="M${cx - B.rt + 3} ${cy + 3}A${B.rt - 3} ${ry - 3} 0 0 0 ${cx + B.rt - 3} ${cy + 3}" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1.2"/>
+    ${items.map(i => i.m).join("")}
+    <ellipse cx="${cx}" cy="${cy - 6}" rx="${rx * .8}" ry="${ry * 1.3}" fill="url(#${u}wl)" pointer-events="none"/></svg>`;
 }
 
 /* =========================================================
@@ -534,15 +662,117 @@ function krathongSVG(spec, opt) {
     s += `<span class="star${big ? " big" : ""}" style="left:${r1(Math.random()*100)}%;top:${r1(Math.random()*92)}%;animation-delay:${r1(Math.random()*4)}s;animation-duration:${r1(3+Math.random()*3)}s"></span>`;
   }
   $("stars").innerHTML = s;
+  // แสงจันทร์สะท้อน: เส้นแสงขาดเป็นช่วง ๆ ยิ่งใกล้ตัวยิ่งกว้างและกระเพื่อมมากขึ้น + ประกายแสงวิบ ๆ
   let m = "";
-  for (let i = 0; i < 9; i++) m += `<i style="width:${100 - i * 9}%;animation-delay:${r1(i*.3)}s"></i>`;
+  for (let i = 0; i < 16; i++) {
+    const t = i / 15, w = 26 + t * 96;
+    m += `<i style="top:${r1(2 + t * t * 64 + i * 1.2)}%;width:${r1(w)}%;left:${r1((100 - w) / 2)}%;height:${r1(2 + t * 2.4)}px;animation-delay:${r1(-i * .37)}s;animation-duration:${r1(2.6 + (i % 4) * .5)}s;--j:${r1(3 + t * 11)}px"></i>`;
+  }
+  for (let i = 0; i < 14; i++) {
+    m += `<b class="glint" style="left:${r1(-30 + Math.random() * 160)}%;top:${r1(4 + Math.random() * 70)}%;animation-delay:${r1(-Math.random() * 4)}s;animation-duration:${r1(2.5 + Math.random() * 2.5)}s"></b>`;
+  }
   $("moonReflect").innerHTML = m;
-  let d = "M0 14";
-  for (let x = 200; x <= 2400; x += 200) d += (x === 200 ? "Q100 2 200 14" : "T" + x + " 14");
-  const rows = [{top:6,t:38,o:.5,rev:0},{top:21,t:26,o:.6,rev:1},{top:39,t:33,o:.5,rev:0},{top:58,t:22,o:.55,rev:1},{top:78,t:30,o:.45,rev:0}];
-  $("waves").innerHTML = rows.map(w =>
-    `<div class="wave" style="top:${w.top}%;--t:${w.t}s;opacity:${w.o};${w.rev ? "animation-direction:reverse" : ""}"><svg viewBox="0 0 2400 28" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="#f5c66b" stroke-opacity=".5" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></div>`).join("");
+
+  // คลื่นแบบมีมิติ: แถวไกลเล็ก ถี่ ช้า / แถวใกล้ใหญ่ ห่าง เร็วกว่า + แนวลูกคลื่นกว้างเคลื่อนช้า ๆ
+  const rows = [   // [top%, จำนวนช่วงคลื่น(ต้องหารด้วย 4 ลงตัว), สูง px, วินาที/รอบ, ย้อนทิศ, ความเข้ม, ความหนาเส้น]
+    [3, 16, 10, 70, 0, .35, .8], [8, 12, 12, 60, 1, .38, .9], [15, 12, 16, 52, 0, .42, 1],
+    [25, 8, 20, 44, 1, .46, 1.1], [38, 8, 26, 38, 0, .5, 1.3], [54, 4, 32, 32, 1, .55, 1.5], [74, 4, 40, 28, 0, .5, 1.7]
+  ];
+  const swells = [[10, 24], [38, 30], [66, 26]].map(([top, t]) => `<div class="swell" style="top:${top}%;--t:${t}s"></div>`).join("");
+  $("waves").innerHTML = swells + rows.map(([top, n, hpx, t, rev, o, sw], i) => {
+    const st = 2400 / n;
+    let d = `M0 ${hpx / 2}Q${r1(st / 2)} ${r1(hpx * .1)} ${r1(st)} ${hpx / 2}`;
+    for (let x = 2 * st; x <= 2400.5; x += st) d += `T${r1(x)} ${hpx / 2}`;
+    return `<div class="wave" style="top:${top}%;height:${hpx}px;--t:${t}s;opacity:${o};${rev ? "animation-direction:reverse" : ""}"><svg viewBox="0 0 2400 ${hpx}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${i % 3 === 0 ? "#f5c66b" : "#a9d8ec"}" stroke-opacity=".55" stroke-width="${sw}" vector-effect="non-scaling-stroke"/></svg></div>`;
+  }).join("");
+
+  // เงาของแนวต้นไม้/วัดสะท้อนลงในน้ำ (พลิกกลับ จางลง ไหวเล็กน้อย)
+  const sk = document.querySelector(".skyline");
+  if (sk) { const ref = sk.cloneNode(true); ref.setAttribute("class", "skyline-ref"); $("water").insertBefore(ref, $("water").firstChild); }
+
+  // หิ่งห้อย: จุดแสงเล็ก ๆ ลอยช้า ๆ เหนือแม่น้ำ (ใช้ transform/opacity เท่านั้น เบาต่อเครื่อง)
+  const small = window.innerWidth < 700;
+  let ff = "";
+  for (let i = 0; i < (small ? 8 : 14); i++) {
+    ff += `<i class="firefly" style="left:${r1(Math.random()*100)}%;top:${r1(10+Math.random()*80)}%;--s:${r1(3+Math.random()*2.5)}px;--dx:${Math.round((Math.random()-.5)*160)}px;--dy:${Math.round(-20-Math.random()*90)}px;--dur:${r1(9+Math.random()*8)}s;--delay:-${r1(Math.random()*12)}s"></i>`;
+  }
+  $("fxFireflies").innerHTML = ff;
+  // โคมลอย: ลอยขึ้นจากหลังแนวต้นไม้ช้า ๆ แล้วจางหาย
+  const nL = small ? 3 : 5;
+  let lan = "";
+  for (let i = 0; i < nL; i++) {
+    const dur = 34 + Math.random() * 18;
+    lan += `<i class="lantern" style="left:${r1((i + .5) / nL * 100 + (Math.random() - .5) * 8)}%;--s:${r1((small ? 11 : 14) + Math.random() * (small ? 7 : 11))}px;--sway:${Math.round((Math.random() - .5) * 90)}px;--dur:${r1(dur)}s;--delay:-${r1(Math.random() * dur)}s"></i>`;
+  }
+  $("fxSky").innerHTML = lan;
 })();
+
+/* ดาวตก: ครั้งละดวง ทุก ~12–18 วินาที เส้นบางสีขาวทอง จางหายนุ่ม ๆ อยู่หลังเนื้อหา */
+let heroVisible = true;
+function shootingStar() {
+  const layer = $("fxSky");
+  if (!layer || reduceMotion.matches || document.hidden || !heroVisible || !layer.animate) return;
+  const lw = layer.clientWidth, lh = layer.clientHeight;
+  if (lw < 100 || lh < 80) return;
+  const el = document.createElement("i");
+  el.className = "shoot";
+  layer.appendChild(el);
+  const ang = (18 + Math.random() * 16) * Math.PI / 180;
+  const a = Math.random() < .5 ? ang : Math.PI - ang;           // ไปขวาลง หรือซ้ายลง
+  const dist = Math.min(lw * .45, 340) * (.7 + Math.random() * .3);
+  const sx = lw * (.1 + Math.random() * .8), sy = lh * (.04 + Math.random() * .32);
+  const rot = a * 180 / Math.PI;
+  const anim = el.animate([
+    {transform:`translate(${sx}px,${sy}px) rotate(${rot}deg)`, opacity:0},
+    {opacity:.85, offset:.25},
+    {opacity:.6, offset:.6},
+    {transform:`translate(${sx + Math.cos(a) * dist}px,${sy + Math.sin(a) * dist}px) rotate(${rot}deg)`, opacity:0}
+  ], {duration:1100 + Math.random() * 300, easing:"cubic-bezier(.3,.1,.5,1)"});
+  anim.onfinish = anim.oncancel = () => el.remove();
+}
+(function scheduleShoot(first) {
+  setTimeout(() => { shootingStar(); scheduleShoot(false); }, first ? 5000 + Math.random() * 3000 : 12000 + Math.random() * 6000);
+})(true);
+
+/* ดอกไม้ไฟเล็ก ๆ ตอนปล่อยกระทงสำเร็จ (canvas ชั่วคราว ~3 วินาที ไม่รับการแตะ) */
+let fwRunning = false;
+function fireworks() {
+  if (fwRunning || reduceMotion.matches) return;
+  const cv = $("fwCanvas"), ctx = cv.getContext && cv.getContext("2d");
+  if (!ctx) return;
+  fwRunning = true;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = window.innerWidth, h = window.innerHeight;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const colors = ["#ffd98a", "#ffb84d", "#fff1c9", "#f7a8b8", "#ffe27a"];
+  const bursts = [[.5, .3, 0], [.24, .38, 450], [.76, .34, 850]];
+  const spawned = [false, false, false], parts = [];
+  const t0 = performance.now(); let prev = t0;
+  function spawn(bx, by) {
+    const col = colors[Math.floor(Math.random() * colors.length)];
+    for (let i = 0; i < 52; i++) {
+      const ang = Math.PI * 2 * i / 52 + Math.random() * .1, sp = 90 + Math.random() * 110;
+      parts.push({x:bx, y:by, vx:Math.cos(ang) * sp, vy:Math.sin(ang) * sp, life:1.4 + Math.random() * .5, age:0, c:col});
+    }
+  }
+  function frame(now) {
+    const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+    ctx.clearRect(0, 0, w, h);
+    bursts.forEach((b, i) => { if (!spawned[i] && now - t0 >= b[2]) { spawned[i] = true; spawn(b[0] * w, b[1] * h); } });
+    ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineWidth = 2.2;
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i]; p.age += dt;
+      if (p.age >= p.life) { parts.splice(i, 1); continue; }
+      const ox = p.x, oy = p.y;
+      p.vx *= .985; p.vy = p.vy * .985 + 60 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      ctx.globalAlpha = (1 - p.age / p.life) * .8; ctx.strokeStyle = p.c;
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(p.x, p.y); ctx.stroke();
+    }
+    if (parts.length || spawned.includes(false)) requestAnimationFrame(frame);
+    else { ctx.clearRect(0, 0, w, h); fwRunning = false; }
+  }
+  requestAnimationFrame(frame);
+}
 
 /* =========================================================
    4) ข้อมูล + Supabase (ตรรกะเดิมทั้งหมด)
@@ -567,7 +797,7 @@ function dateLabel(value) {
   return date.toLocaleString("th-TH", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
 }
 function render() {
-  $("count").textContent = totalCount == null ? (hasLoaded ? String(wishes.length) + (wishes.length === 100 ? "+" : "") : "—") : totalCount.toLocaleString("th-TH");
+  if ($("count")) $("count").textContent = totalCount == null ? (hasLoaded ? String(wishes.length) + (wishes.length === 100 ? "+" : "") : "—") : totalCount.toLocaleString("th-TH");
   $("feed").innerHTML = wishes.length ? wishes.slice(0, visibleCount).map(w =>
     `<article class="wish-card"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div><div class="meta"><span>คำอธิษฐาน</span><span>${escapeHTML(dateLabel(w.created_at))}</span></div><p>${escapeHTML(w.wish)}</p><div class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</div></div></article>`).join("")
     : `<p class="empty">${hasLoaded ? "ยังไม่มีกระทงในสายน้ำ มาเป็นคนแรกที่ฝากคำอธิษฐานกันครับ" : "ยังไม่มีข้อมูลให้แสดง"}</p>`;
@@ -647,6 +877,7 @@ function measure() {
   W = river.clientWidth || 320; H = river.clientHeight || 300;
   KW = Math.round(clamp(W * .17, 92, 150));
   river.style.setProperty("--kw", KW + "px");
+  const sky = $("fxSky"); if (sky) sky.style.setProperty("--rise", Math.round(sky.clientHeight * .95) + "px");
   items.forEach(it => { it.w = KW; it.h = it.el.offsetHeight || KW * .6; place(it); });
 }
 function place(it) {
@@ -732,6 +963,7 @@ function tick(t) {
 requestAnimationFrame(tick);
 if ("IntersectionObserver" in window) {
   new IntersectionObserver(([e]) => { riverVisible = e.isIntersecting; }, {threshold:0}).observe($("water"));
+  new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; $("hero").classList.toggle("fx-paused", !heroVisible); }, {threshold:0}).observe($("hero"));
   new IntersectionObserver(([e]) => { $("openFab").classList.toggle("show", !e.isIntersecting); }, {threshold:0}).observe($("open"));
 } else $("openFab").classList.add("show");
 let resizeTimer;
@@ -742,8 +974,23 @@ setTimeout(hideHint, 20000);
    6) หน้าต่าง (Modal): สร้างกระทง + อ่านคำอธิษฐาน
    ========================================================= */
 let activeModal = null;
+// ให้หน้าต่างพอดีกับพื้นที่ที่มองเห็นจริง (รวมตอนคีย์บอร์ดมือถือเด้งขึ้น)
+function fitViewport() {
+  const vv = window.visualViewport;
+  document.documentElement.style.setProperty("--vvh", Math.round(vv ? vv.height : window.innerHeight) + "px");
+  document.documentElement.style.setProperty("--vvt", Math.round(vv ? vv.offsetTop : 0) + "px");
+}
+if (window.visualViewport) { visualViewport.addEventListener("resize", fitViewport); visualViewport.addEventListener("scroll", fitViewport); }
+window.addEventListener("resize", fitViewport);
+fitViewport();
+// ตอนพิมพ์ชื่อ/คำอธิษฐาน ย่อภาพตัวอย่างให้เล็กลงเพื่อเหลือที่ให้พิมพ์
+$("createDialog").addEventListener("focusin", e => { if (e.target.matches("input,textarea")) $("createDialog").classList.add("typing"); });
+$("createDialog").addEventListener("focusout", () => setTimeout(() => {
+  if (!document.activeElement || !document.activeElement.matches("input,textarea")) $("createDialog").classList.remove("typing");
+}, 50));
 function openModal(modal, focusEl) {
   previousFocus = document.activeElement;
+  fitViewport();
   activeModal = modal;
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
@@ -771,22 +1018,37 @@ document.addEventListener("keydown", event => {
 });
 
 // --- ตัวเลือกชิ้นส่วน ---
+const CARD_KEYS = {b:1, l:1, c:1};   // ชิ้นส่วนที่แสดงเป็นการ์ดพร้อมรูปตัวอย่าง
 function renderOptions() {
-  $("opts").innerHTML = GROUPS.map(g => {
+  $("opts").innerHTML = GROUPS.map((g, gi) => {
+    const card = !!CARD_KEYS[g.key];
     const btns = g.list.map(p => {
-      const lead = g.key === "f" ? flowerIcon(p.id) : `<span class="dot" style="--c:${SWATCH[g.key][p.id - 1]}"></span>`;
-      return `<button type="button" class="opt" data-key="${g.key}" data-id="${p.id}" aria-pressed="false">${lead}<span>${p.name}</span></button>`;
+      let lead;
+      if (card) lead = `<span class="thumb" data-key="${g.key}" data-id="${p.id}"></span>`;
+      else if (g.key === "f") lead = flowerIcon(p.id);
+      else lead = `<span class="dot" style="--c:${SWATCH[g.key][p.id - 1]}"></span>`;
+      return `<button type="button" class="opt${card ? " card" : ""}" data-key="${g.key}" data-id="${p.id}" aria-pressed="false">${lead}<span>${p.name}</span></button>`;
     }).join("");
-    return `<div class="lbl" id="g_${g.key}">${g.label}${g.hint ? ` <small>(${g.hint})</small>` : ""}</div><div class="opts" role="group" aria-labelledby="g_${g.key}">${btns}</div>`;
+    return `<div class="lbl" id="g_${g.key}"><span class="num" aria-hidden="true">${gi + 1}</span>${g.label}${g.hint ? ` <small>(${g.hint})</small>` : ""}</div><div class="opts${card ? " cards" : ""}" role="group" aria-labelledby="g_${g.key}">${btns}</div>`;
   }).join("");
   syncOptions();
+}
+function designCaption() {
+  return [PARTS.base[design.b - 1].name, PARTS.leaf[design.l - 1].name + " (" + PARTS.leafColor[design.g - 1].name + ")", design.f.map(id => PARTS.bloom[id - 1].name).join(" + "),
+    PARTS.center[design.c - 1].name, PARTS.flame[design.m - 1].name].join(" · ");
 }
 function syncOptions() {
   document.querySelectorAll("#opts .opt").forEach(b => {
     const k = b.dataset.key, id = Number(b.dataset.id);
     b.setAttribute("aria-pressed", String(k === "f" ? design.f.includes(id) : design[k] === id));
   });
+  // รูปตัวอย่างบนการ์ด = กระทงปัจจุบัน โดยเปลี่ยนเฉพาะชิ้นส่วนนั้น
+  document.querySelectorAll("#opts .thumb").forEach(t => {
+    const spec = cloneSpec(design); spec[t.dataset.key] = Number(t.dataset.id);
+    t.innerHTML = krathongSVG(spec, {anim:false});
+  });
   $("preview").innerHTML = krathongSVG(design, {anim:true});
+  $("previewCap").textContent = designCaption();
 }
 $("opts").addEventListener("click", e => {
   const b = e.target.closest(".opt");
@@ -801,8 +1063,8 @@ $("opts").addEventListener("click", e => {
 $("dice").onclick = () => {
   if (saving) return;
   const pick = n => 1 + Math.floor(Math.random() * n);
-  const pool = [1, 2, 3, 4].sort(() => Math.random() - .5);
-  design = {b:pick(3), l:pick(3), f:pool.slice(0, pick(3)).sort(), c:pick(3), m:pick(3)};
+  const pool = [1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - .5);
+  design = {b:pick(5), l:pick(5), g:pick(5), f:pool.slice(0, pick(3)).sort(), c:pick(3), m:pick(3)};
   syncOptions();
 };
 $("wish").addEventListener("input", () => { $("wishCount").textContent = $("wish").value.length + "/180"; });
@@ -983,6 +1245,7 @@ $("launch").onclick = async () => {
   if (saved) {
     playLaunchSound();
     closeModal();
+    fireworks();
     setStatus("บันทึกกระทงสำเร็จแล้ว กำลังโหลดข้อมูลล่าสุด…");
     // Avoid racing a background refresh that started before the insert.
     while (loading) await new Promise(resolve => setTimeout(resolve, 100));
