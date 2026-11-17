@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#040b17">
-<title>ลอยกระทง</title>
+<title>ลอยกระทงนะจ๊ะ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
@@ -231,7 +231,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   <header class="top">
     <div class="logo"><span class="mark" id="logoMark" aria-hidden="true"></span><span><b>ลอยกระทง</b> ออนไลน์</span></div>
     <div class="top-actions">
-      <button class="sound-btn nudge" id="soundBtn" type="button" aria-pressed="false" aria-label="เปิดเพลงและเสียง"><span class="ico" aria-hidden="true">🔇</span><span class="txt">เปิดเสียง</span></button>
+      <button class="sound-btn" id="soundBtn" type="button" aria-pressed="false" aria-label="เปิดเพลงและเสียง"><span class="ico" aria-hidden="true">🔇</span><span class="txt">เปิดเสียง</span></button>
       <a class="top-link" href="#feedSection">คำอธิษฐาน</a>
     </div>
   </header>
@@ -826,8 +826,9 @@ function openWish(w) {
    ========================================================= */
 const bgm = $("bgm"), soundBtn = $("soundBtn");
 const MUSIC_VOL = .5;
-let soundOn = false, actx = null, musicGain = null, viaGain = false, bgmStarted = false;
-try { soundOn = localStorage.getItem("loy:sound") === "1"; } catch (_) {}
+// ค่าเริ่มต้น = เปิด (เริ่มเล่นเมื่อแตะจอครั้งแรก) ยกเว้นคนที่เคยกดปิดเสียงไว้
+let soundOn = true, actx = null, musicGain = null, viaGain = false, bgmStarted = false;
+try { if (localStorage.getItem("loy:sound") === "0") soundOn = false; } catch (_) {}
 
 function reflectSound() {
   soundBtn.setAttribute("aria-pressed", String(soundOn));
@@ -867,6 +868,7 @@ function stopMusic() {
 }
 soundBtn.addEventListener("click", () => {
   soundBtn.classList.remove("nudge");
+  GESTURES.forEach(g => document.removeEventListener(g, resumeOnGesture, true));
   soundOn = !soundOn;
   try { localStorage.setItem("loy:sound", soundOn ? "1" : "0"); } catch (_) {}
   reflectSound();
@@ -875,13 +877,14 @@ soundBtn.addEventListener("click", () => {
 bgm.addEventListener("error", () => {
   if (soundOn) { soundOn = false; reflectSound(); setStatus("โหลดไฟล์เพลงไม่สำเร็จ (loy-krathong.mp3)", true); }
 });
-// คนที่เคยเปิดเสียงไว้: เริ่มเพลงให้เมื่อแตะจอครั้งแรก (ตามกติกาของเบราว์เซอร์)
+// เริ่มเพลงเมื่อแตะ/คลิก/กดแป้นครั้งแรกที่ไหนก็ได้ (เบราว์เซอร์ห้ามเล่นเองก่อนมีการแตะ)
+const GESTURES = ["click", "touchend", "keydown"];
 function resumeOnGesture(e) {
   if (e.target.closest && e.target.closest("#soundBtn")) return;
-  document.removeEventListener("pointerdown", resumeOnGesture);
+  GESTURES.forEach(g => document.removeEventListener(g, resumeOnGesture, true));
   if (soundOn && !bgmStarted) startMusic();
 }
-if (soundOn) { soundBtn.classList.remove("nudge"); document.addEventListener("pointerdown", resumeOnGesture); }
+if (soundOn) { soundBtn.classList.remove("nudge"); GESTURES.forEach(g => document.addEventListener(g, resumeOnGesture, true)); }
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) { if (bgmStarted) bgm.pause(); }
   else if (soundOn && bgmStarted) bgm.play().catch(() => {});
