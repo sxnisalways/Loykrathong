@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#040b17">
-<title>ลอยกระทง</title>
+<title>ลอยคนเก่าไปพร้อมกระทง</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
@@ -56,7 +56,11 @@ button:disabled{opacity:.6;cursor:wait}
 .logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
 .logo b{color:var(--gold);font-family:var(--serif)}
 .logo .mark{width:34px;height:30px;display:block}
-.top-link{font-size:13px;color:var(--cream);text-decoration:none;border:1px solid #ffffff33;padding:9px 14px;border-radius:99px;background:#ffffff0f;white-space:nowrap}
+.top-actions{display:flex;align-items:center;gap:8px}
+.top-link{display:inline-flex;align-items:center;min-height:40px;font-size:13px;color:var(--cream);text-decoration:none;border:1px solid #ffffff33;padding:0 14px;border-radius:99px;background:#ffffff0f;white-space:nowrap}
+.sound-btn{position:relative;min-height:40px;padding:0 14px;border-radius:99px;background:#ffffff0f;border:1px solid #ffffff33;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.sound-btn[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);background:#f5c66b1a}
+.sound-btn.nudge:after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:2px solid #f5c66b99;animation:ring 2.6s ease-out infinite;pointer-events:none}
 .hero-inner{position:relative;z-index:3;width:min(100% - 32px,780px);margin:0 auto;text-align:center;padding:clamp(18px,5vw,48px) 0 0}
 .eyebrow{color:var(--gold);font-size:12px;letter-spacing:3px;font-weight:700}
 .hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,6.6vw,70px);margin:10px 0 10px;line-height:1.28;text-wrap:balance;
@@ -113,6 +117,7 @@ button:disabled{opacity:.6;cursor:wait}
 /* ---------- MAIN / FEED ---------- */
 main{width:min(100% - 32px,var(--page));margin:auto;padding:22px 0 80px}
 .connection-status{color:var(--muted);font-size:13px;line-height:1.7;text-align:center;overflow-wrap:anywhere;margin:0 0 8px}
+.connection-status:empty{display:none}
 .connection-status.error,.form-status.error{color:#ffc4be}
 .section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:30px 0 16px}
 .section-head h2{margin:0;font-family:var(--serif);font-size:clamp(21px,3vw,28px);color:var(--gold)}
@@ -189,7 +194,9 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   .section-head{flex-direction:column;align-items:flex-start;gap:4px}
 }
 @media(max-width:420px){
-  .top-link{font-size:12px;padding:8px 12px}
+  .top-link{font-size:12px;padding:0 12px}
+  .sound-btn .txt{display:none}
+  .sound-btn{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;font-size:16px}
   .logo{font-size:15px}
   .stat{min-width:0;flex:1;padding:8px}
   .cta{width:100%}
@@ -223,8 +230,12 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 
   <header class="top">
     <div class="logo"><span class="mark" id="logoMark" aria-hidden="true"></span><span><b>ลอยกระทง</b> ออนไลน์</span></div>
-    <a class="top-link" href="#feedSection">คำอธิษฐาน</a>
+    <div class="top-actions">
+      <button class="sound-btn nudge" id="soundBtn" type="button" aria-pressed="false" aria-label="เปิดเพลงและเสียง"><span class="ico" aria-hidden="true">🔇</span><span class="txt">เปิดเสียง</span></button>
+      <a class="top-link" href="#feedSection">คำอธิษฐาน</a>
+    </div>
   </header>
+  <audio id="bgm" src="loy-krathong.mp3" loop preload="none"></audio>
 
   <div class="hero-inner">
     <div class="eyebrow">LOY KRATHONG FESTIVAL</div>
@@ -251,7 +262,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 <main>
   <p id="connectionStatus" class="connection-status" role="status" aria-live="polite">กำลังโหลดกระทงจากสายน้ำ…</p>
   <section id="feedSection">
-    <div class="section-head"><h2>คำอธิษฐานจากทุกคน</h2><span>100 รายการล่าสุด · อัปเดตทุก 20 วินาที</span></div>
+    <div class="section-head"><h2>คำอธิษฐานจากทุกคน</h2></div>
     <div class="feed" id="feed" aria-busy="true"></div>
     <div class="feed-tools"><button class="secondary" id="showMore" type="button" hidden>ดูเพิ่มเติม</button> <button class="secondary" id="refresh" type="button">โหลดข้อมูลใหม่</button></div>
   </section>
@@ -607,7 +618,7 @@ async function loadKrathongs(quiet = false) {
     totalCount = count && count !== "*" && Number.isFinite(Number(count)) ? Number(count) : null;
     hasLoaded = true;
     render();
-    setStatus("เชื่อมต่อแล้ว · แสดงคำอธิษฐานจริง " + wishes.length + " รายการล่าสุด · อัปเดตอัตโนมัติทุก 20 วินาที");
+    setStatus("");
     return true;
   } catch (error) {
     setStatus(readableError(error) + (hasLoaded ? " · ยังคงแสดงข้อมูลที่โหลดครั้งล่าสุด" : " · กด ‘โหลดข้อมูลใหม่’ เพื่อลองอีกครั้ง"), true);
@@ -809,6 +820,98 @@ function openWish(w) {
   hideHint();
   openModal($("wishModal"), $("wishDialog"));
 }
+/* =========================================================
+   7) เสียง: เพลงพื้นหลัง (loy-krathong.mp3) + เสียงตอนปล่อยกระทง
+   เบราว์เซอร์ห้ามเล่นเสียงเองก่อนผู้ใช้แตะจอ จึงเริ่มจากปุ่ม 🔊 เท่านั้น
+   ========================================================= */
+const bgm = $("bgm"), soundBtn = $("soundBtn");
+const MUSIC_VOL = .5;
+let soundOn = false, actx = null, musicGain = null, viaGain = false, bgmStarted = false;
+try { soundOn = localStorage.getItem("loy:sound") === "1"; } catch (_) {}
+
+function reflectSound() {
+  soundBtn.setAttribute("aria-pressed", String(soundOn));
+  soundBtn.setAttribute("aria-label", soundOn ? "ปิดเพลงและเสียง" : "เปิดเพลงและเสียง");
+  soundBtn.querySelector(".ico").textContent = soundOn ? "🔊" : "🔇";
+  soundBtn.querySelector(".txt").textContent = soundOn ? "ปิดเสียง" : "เปิดเสียง";
+}
+function ensureAudio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) { try { actx = new AC(); } catch (_) { actx = null; } }
+  }
+  if (actx && actx.state === "suspended") actx.resume().catch(() => {});
+  // ใช้ Web Audio คุมความดัง (iPhone ไม่ยอมให้ปรับ audio.volume)
+  if (actx && !viaGain && location.protocol !== "file:") {
+    try {
+      const src = actx.createMediaElementSource(bgm);
+      musicGain = actx.createGain(); musicGain.gain.value = 0;
+      src.connect(musicGain); musicGain.connect(actx.destination);
+      viaGain = true;
+    } catch (_) { musicGain = null; }
+  }
+  return actx;
+}
+function setMusicLevel(v) {
+  if (viaGain && musicGain) musicGain.gain.setTargetAtTime(v, actx.currentTime, .6);
+  else bgm.volume = v;
+}
+async function startMusic() {
+  ensureAudio();
+  try { await bgm.play(); bgmStarted = true; setMusicLevel(MUSIC_VOL); }
+  catch (_) { soundOn = false; reflectSound(); setStatus("เล่นเพลงไม่ได้ กรุณาลองกดปุ่มเสียงอีกครั้ง", true); }
+}
+function stopMusic() {
+  setMusicLevel(0);
+  setTimeout(() => { if (!soundOn) bgm.pause(); }, 1800);
+}
+soundBtn.addEventListener("click", () => {
+  soundBtn.classList.remove("nudge");
+  soundOn = !soundOn;
+  try { localStorage.setItem("loy:sound", soundOn ? "1" : "0"); } catch (_) {}
+  reflectSound();
+  if (soundOn) startMusic(); else stopMusic();
+});
+bgm.addEventListener("error", () => {
+  if (soundOn) { soundOn = false; reflectSound(); setStatus("โหลดไฟล์เพลงไม่สำเร็จ (loy-krathong.mp3)", true); }
+});
+// คนที่เคยเปิดเสียงไว้: เริ่มเพลงให้เมื่อแตะจอครั้งแรก (ตามกติกาของเบราว์เซอร์)
+function resumeOnGesture(e) {
+  if (e.target.closest && e.target.closest("#soundBtn")) return;
+  document.removeEventListener("pointerdown", resumeOnGesture);
+  if (soundOn && !bgmStarted) startMusic();
+}
+if (soundOn) { soundBtn.classList.remove("nudge"); document.addEventListener("pointerdown", resumeOnGesture); }
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { if (bgmStarted) bgm.pause(); }
+  else if (soundOn && bgmStarted) bgm.play().catch(() => {});
+});
+reflectSound();
+
+// เสียงปล่อยกระทง: ระฆังเบา ๆ + เสียงน้ำกระเพื่อม (สร้างด้วยโค้ด ไม่ต้องมีไฟล์)
+function playLaunchSound() {
+  if (!soundOn) return;
+  const c = ensureAudio(); if (!c) return;
+  const t = c.currentTime, out = c.createGain();
+  out.gain.value = .5; out.connect(c.destination);
+  [[880, .5, 2.6, 0], [1318.5, .26, 2, 0], [2430, .1, 1.1, 0], [1174.7, .3, 2.2, .22], [1760, .14, 1.6, .22]].forEach(([f, a, d, delay]) => {
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t + delay);
+    g.gain.linearRampToValueAtTime(a, t + delay + .015);
+    g.gain.exponentialRampToValueAtTime(.0008, t + delay + d);
+    o.connect(g); g.connect(out); o.start(t + delay); o.stop(t + delay + d + .05);
+  });
+  const len = Math.floor(c.sampleRate * 1.3), buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const n = c.createBufferSource(); n.buffer = buf;
+  const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.2;
+  bp.frequency.setValueAtTime(1500, t + .1); bp.frequency.exponentialRampToValueAtTime(350, t + 1.2);
+  const ng = c.createGain();
+  ng.gain.setValueAtTime(0, t + .1); ng.gain.linearRampToValueAtTime(.4, t + .22); ng.gain.exponentialRampToValueAtTime(.001, t + 1.3);
+  n.connect(bp); bp.connect(ng); ng.connect(out); n.start(t + .1); n.stop(t + 1.4);
+}
+
 $("open").onclick = openCreate;
 $("openFab").onclick = openCreate;
 $("cancel").onclick = closeModal;
@@ -875,6 +978,7 @@ $("launch").onclick = async () => {
     $("launch").textContent = "ปล่อยกระทง ✨";
   }
   if (saved) {
+    playLaunchSound();
     closeModal();
     setStatus("บันทึกกระทงสำเร็จแล้ว กำลังโหลดข้อมูลล่าสุด…");
     // Avoid racing a background refresh that started before the insert.
