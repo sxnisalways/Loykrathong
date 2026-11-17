@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#040b17">
-<title>ลอยกระทงนะจ๊ะ</title>
+<title>THE MOON IS SHINING — Loy Krathong Festival</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
@@ -17,10 +17,14 @@
   --page:1120px;
   --serif:"Noto Serif Thai","Sarabun","Thonburi",Georgia,serif;
   --water-h:clamp(300px,50vh,470px);
+  --sans:"Anuphan","Noto Sans Thai","Sarabun","Sukhumvit Set","Thonburi",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --fs-h1:clamp(32px,9vw,36px);--fs-sub:14px;--fs-btn:17px;--fs-nav:13px;--fs-wish:15px;--fs-wishv:16px;
   --tl:50%;--tw:clamp(340px,44vw,440px);--moon-size:clamp(54px,9vw,92px);--moon-right:11%;
 }
+@media(min-width:600px){:root{--fs-h1:clamp(54px,7vw,64px);--fs-sub:17px;--fs-btn:18px;--fs-nav:15px;--fs-wish:16px;--fs-wishv:18px}}
+@media(min-width:1024px){:root{--fs-h1:clamp(64px,5.2vw,76px);--fs-sub:19px;--fs-btn:19px;--fs-nav:16px;--fs-wish:17px}}
 @media(min-width:900px){:root{--tl:18%;--tw:clamp(380px,31vw,460px)}}
-@media(max-width:899px){#hero.hero{min-height:calc(var(--water-h) + 410px)}}
+@media(max-width:899px){.hero .hero-inner{padding-bottom:calc(var(--tw)*.625 - 92px)}}
 @supports(height:1svh){:root{--water-h:clamp(300px,50svh,470px)}}
 *{box-sizing:border-box}
 html{min-width:320px;scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -28,7 +32,7 @@ body{
   margin:0;min-height:100vh;overflow-x:hidden;
   background:linear-gradient(180deg,#040b17 0,#071a30 60%,#050f1e 100%);
   color:var(--cream);
-  font-family:system-ui,-apple-system,"Segoe UI","Thonburi",sans-serif;
+  font-family:var(--sans);line-height:1.6;
   -webkit-tap-highlight-color:transparent;
 }
 button,input,textarea{font:inherit}
@@ -58,22 +62,26 @@ button:disabled{opacity:.6;cursor:wait}
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
 .temple .tw{animation:twinkle 3s ease-in-out infinite}
 .top{position:relative;z-index:3;width:min(100% - 32px,var(--page));margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 0 0;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.2px;white-space:nowrap;font-size:clamp(15px,1.4vw,17px)}
 .logo b{color:var(--gold);font-family:var(--serif)}
 .logo .mark{width:34px;height:30px;display:block}
 .top-actions{display:flex;align-items:center;gap:8px}
-.top-link{display:inline-flex;align-items:center;min-height:40px;font-size:13px;color:var(--cream);text-decoration:none;border:1px solid #ffffff33;padding:0 14px;border-radius:99px;background:#ffffff0f;white-space:nowrap}
-.sound-btn{position:relative;min-height:40px;padding:0 14px;border-radius:99px;background:#ffffff0f;border:1px solid #ffffff33;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.top-link{display:inline-flex;align-items:center;min-height:42px;font-size:var(--fs-nav);font-weight:500;color:var(--cream);text-decoration:none;border:1px solid #ffffff33;padding:0 14px;border-radius:99px;background:#ffffff0f;white-space:nowrap}
+.sound-btn{position:relative;min-height:42px;padding:0 14px;border-radius:99px;background:#ffffff0f;border:1px solid #ffffff33;font-size:var(--fs-nav);font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .sound-btn[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);background:#f5c66b1a}
 .sound-btn.nudge:after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:2px solid #f5c66b99;animation:ring 2.6s ease-out infinite;pointer-events:none}
-.hero-inner{position:relative;z-index:3;width:min(100% - 32px,780px);margin:0 auto;text-align:center;padding:clamp(18px,5vw,48px) 0 0}
-.eyebrow{color:var(--gold);font-size:12px;letter-spacing:3px;font-weight:700}
-.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,6.6vw,70px);margin:10px 0 10px;line-height:1.28;text-wrap:balance;
+.hero-inner{position:relative;z-index:3;width:min(100% - 32px,860px);margin:0 auto;text-align:center;padding:clamp(18px,5vw,48px) 0 0}
+.eyebrow{color:var(--gold);font-size:clamp(11px,1.2vw,13px);letter-spacing:.32em;font-weight:600;text-indent:.32em}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:var(--fs-h1);letter-spacing:.05em;margin:12px 0 14px;line-height:1.14;text-wrap:balance;
   background:linear-gradient(180deg,#fff7de 10%,#f5c66b 95%);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 4px 24px #f5c66b30)}
 .hero p{color:#cfdde3;margin:0 auto;max-width:560px;line-height:1.85;font-size:clamp(14px,1.6vw,17px)}
-.cta-row{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:30px 0 34px}
-.cta{position:relative;min-height:58px;padding:15px 38px;font-size:clamp(17px,2vw,19px);border-radius:99px;
+.hero h1 span{display:block}
+.hero .sub{font-size:var(--fs-sub);line-height:1.75;max-width:30em;color:#dbe7ec;text-wrap:balance}
+.hero .tag{display:none;margin-top:8px;font-size:calc(var(--fs-sub) - 2px);letter-spacing:.06em;color:#f5c66bcc;font-style:italic}
+@media(min-width:600px){.hero .tag{display:block}}
+.cta-row{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:26px 0 30px}
+.cta{position:relative;min-height:58px;padding:15px 38px;font-size:var(--fs-btn);letter-spacing:.01em;border-radius:99px;
   background:linear-gradient(110deg,#ffdc91 0%,#e9ad4e 38%,#fff6cf 50%,#e9ad4e 62%,#ffdc91 100%);background-size:240% 100%;
   animation:ctaShine 3.6s ease-in-out infinite,ctaFloat 4.2s ease-in-out infinite;
   box-shadow:0 8px 26px #e9ad4e55,0 0 0 1px #fff3c455 inset;transition:transform .2s,box-shadow .2s}
@@ -122,7 +130,7 @@ button:disabled{opacity:.6;cursor:wait}
 .glitter{position:absolute;inset:0;opacity:.1;pointer-events:none;
   background-image:radial-gradient(circle,#fff 0 1px,transparent 1.6px);background-size:44px 20px;animation:glit 18s linear infinite}
 @keyframes glit{to{background-position:-440px 0}}
-.river-label{position:absolute;z-index:3;left:clamp(14px,2vw,22px);top:12px;color:#e2eee9b0;font-size:12px;letter-spacing:1px;pointer-events:none}
+.river-label{position:absolute;z-index:3;left:clamp(14px,2vw,22px);top:12px;color:#e2eee9b0;font-size:13px;letter-spacing:1px;pointer-events:none}
 .hint{position:absolute;z-index:3;left:0;right:0;bottom:8px;text-align:center;color:#d6e6e8c0;font-size:12px;pointer-events:none;transition:opacity .6s}
 .hint.hide{opacity:0}
 .river-empty[hidden]{display:none}
@@ -134,7 +142,7 @@ button:disabled{opacity:.6;cursor:wait}
 .kr.is-drag .kr-bob{animation-play-state:paused;transform:translateY(-6px) scale(1.06)}
 .kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
-.kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:12px;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
+.kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:13px;font-weight:500;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
 .kr.mine .kr-name{background:var(--gold);color:#1b2a30;border-color:transparent;font-weight:700}
 @keyframes krIn{from{opacity:0}to{opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.8deg)}25%{transform:translateY(-3px) rotate(.6deg)}50%{transform:translateY(-5px) rotate(2deg)}75%{transform:translateY(-2px) rotate(-.4deg)}}
@@ -180,8 +188,8 @@ main{width:min(100% - 32px,var(--page));margin:auto;padding:22px 0 80px}
 .wish-card .thumb{width:76px;padding-top:4px}
 .wish-card .thumb svg{width:100%;height:auto;display:block}
 .wish-card .meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px}
-.wish-card p{margin:6px 0;line-height:1.75;font-size:15px;overflow-wrap:anywhere}
-.wish-card .by{color:var(--gold);font-size:13px;overflow-wrap:anywhere}
+.wish-card p{margin:6px 0;line-height:1.75;font-size:var(--fs-wish);overflow-wrap:anywhere}
+.wish-card .by{color:var(--gold);font-size:14px;font-weight:600;overflow-wrap:anywhere}
 .empty{grid-column:1/-1;color:var(--muted);text-align:center;padding:24px 12px;line-height:1.8}
 .feed-tools{text-align:center;margin-top:18px}
 footer{text-align:center;color:#91aab2;font-size:12px;margin-top:40px;line-height:1.8}
@@ -235,7 +243,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 .view-scene{height:190px;overflow:hidden;background:radial-gradient(ellipse 60% 70% at 50% 100%,#1d5d7e,#0a2740 65%,#06182c);display:grid;place-items:center}
 .view-scene svg{height:100%;width:100%}
 .view-body{padding:16px 22px 8px;overflow-y:auto}
-.view-wish{font-size:18px;line-height:1.85;margin:4px 0 12px;overflow-wrap:anywhere;white-space:pre-wrap}
+.view-wish{font-size:var(--fs-wishv);line-height:1.85;margin:4px 0 12px;overflow-wrap:anywhere;white-space:pre-wrap}
 .view-by{color:var(--gold);font-weight:700;overflow-wrap:anywhere}
 .view-date{color:var(--muted);font-size:12px;margin-top:2px}
 
@@ -265,7 +273,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 @keyframes ringSm{0%{transform:scale(.99);opacity:.8}100%{transform:scale(1.035);opacity:0}}
 @media(max-width:420px){
   .cta:after{inset:-4px;animation-name:ringSm}
-  .top-link{font-size:12px;padding:0 12px}
+  .top-link{padding:0 12px}
   .sound-btn .txt{display:none}
   .sound-btn{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;font-size:16px}
   .logo{font-size:15px}
@@ -279,7 +287,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   #hero.hero{min-height:calc(var(--water-h) + 250px)}
   .hero-inner{padding-top:6px}
   .hero h1{font-size:clamp(26px,5vw,38px);margin:4px 0}
-  .hero p,.stats{display:none}
+  .hero p,.stats,.hero .tag{display:none}
   .cta-row{margin-top:10px}
   .moon{top:60px}
   .preview{height:120px}
@@ -314,7 +322,9 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 
   <div class="hero-inner">
     <div class="eyebrow">LOY KRATHONG FESTIVAL</div>
-    <h1>The Moon Is Sinning</h1>
+    <h1><span>THE MOON</span> <span>IS SHINING</span></h1>
+    <p class="sub">ในค่ำคืนที่แสงจันทร์ส่องประกาย ฝากความปรารถนาไว้กับสายน้ำ</p>
+    <p class="tag">Under the moonlight, let your wishes flow.</p>
     <div class="cta-row">
       <span class="spark s1" aria-hidden="true">✦</span><span class="spark s2" aria-hidden="true">✧</span><span class="spark s3" aria-hidden="true">✦</span><span class="spark s4" aria-hidden="true">✧</span>
       <button class="primary cta" id="open" type="button"><span class="cta-ico" aria-hidden="true">✦</span> สร้างกระทงของฉัน</button>
@@ -341,7 +351,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
     <div class="feed" id="feed" aria-busy="true"></div>
     <div class="feed-tools"><button class="secondary" id="showMore" type="button" hidden>ดูเพิ่มเติม</button> <button class="secondary" id="refresh" type="button">โหลดข้อมูลใหม่</button></div>
   </section>
-  <footer>สร้างพื้นที่เล็ก ๆ สำหรับแบ่งปันสิ่งดีๆ<br>โปรดไม่ใส่ข้อมูลส่วนตัวหรือข้อความที่ระบุตัวตนได้</footer>
+  <footer>สร้างพื้นที่เล็ก ๆ สำหรับแบ่งปันความหวัง<br>โปรดไม่ใส่ข้อมูลส่วนตัวหรือข้อความที่ระบุตัวตนได้</footer>
 </main>
 
 <canvas id="fwCanvas" aria-hidden="true"></canvas>
