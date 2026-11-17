@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#040b17">
-<title>ลอยกระทะ เห้ย กระทง</title>
+<title>ลอยคนเก่าไปพร้อมกระทง</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
@@ -17,8 +17,10 @@
   --page:1120px;
   --serif:"Noto Serif Thai","Sarabun","Thonburi",Georgia,serif;
   --water-h:clamp(300px,50vh,470px);
-  --moon-size:clamp(54px,9vw,92px);--moon-right:11%;
+  --tl:50%;--tw:clamp(340px,44vw,440px);--moon-size:clamp(54px,9vw,92px);--moon-right:11%;
 }
+@media(min-width:900px){:root{--tl:18%;--tw:clamp(380px,31vw,460px)}}
+@media(max-width:899px){#hero.hero{min-height:calc(var(--water-h) + 410px)}}
 @supports(height:1svh){:root{--water-h:clamp(300px,50svh,470px)}}
 *{box-sizing:border-box}
 html{min-width:320px;scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -33,7 +35,7 @@ button,input,textarea{font:inherit}
 button{touch-action:manipulation;min-height:48px;border:0;border-radius:14px;padding:12px 20px;font-weight:700;cursor:pointer;color:inherit}
 button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,.kr:focus-visible{outline:3px solid #ffe2a0;outline-offset:3px}
 button:disabled{opacity:.6;cursor:wait}
-.primary{background:linear-gradient(135deg,#ffdc91,#e9ad4e);color:#1b2a30;box-shadow:0 8px 24px #e9ad4e40}
+.primary{background-color:#e9ad4e;color:#1b2a30;box-shadow:0 8px 24px #e9ad4e40}
 .secondary{background:#ffffff14;color:var(--cream);border:1px solid #ffffff2e}
 
 /* ---------- HERO ---------- */
@@ -51,7 +53,10 @@ button:disabled{opacity:.6;cursor:wait}
   box-shadow:0 0 0 10px #ffe9ae14,0 0 40px 12px #ffdf8b55,0 0 140px 50px #ffdf8b26}
 .moon:after{content:"";position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle at 62% 58%,#d9b36a44 0 9%,transparent 10%),radial-gradient(circle at 34% 66%,#d9b36a33 0 6%,transparent 7%),radial-gradient(circle at 55% 28%,#d9b36a2a 0 5%,transparent 6%)}
-.skyline{position:absolute;z-index:-3;left:0;width:100%;bottom:var(--water-h);height:clamp(48px,9vw,100px);display:block;pointer-events:none}
+.skyline{position:absolute;z-index:-3;left:0;width:100%;bottom:var(--water-h);height:clamp(40px,7vw,80px);display:block;pointer-events:none}
+.temple{position:absolute;z-index:-3;left:var(--tl);bottom:var(--water-h);width:var(--tw);aspect-ratio:480/300;height:auto;translate:-50% 0;display:block;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.temple .tw{animation:twinkle 3s ease-in-out infinite}
 .top{position:relative;z-index:3;width:min(100% - 32px,var(--page));margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 0 0;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
 .logo b{color:var(--gold);font-family:var(--serif)}
@@ -67,8 +72,23 @@ button:disabled{opacity:.6;cursor:wait}
   background:linear-gradient(180deg,#fff7de 10%,#f5c66b 95%);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 4px 24px #f5c66b30)}
 .hero p{color:#cfdde3;margin:0 auto;max-width:560px;line-height:1.85;font-size:clamp(14px,1.6vw,17px)}
-.cta-row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:30px 0 34px}
-.cta{position:relative;min-height:58px;padding:15px 34px;font-size:clamp(17px,2vw,19px);border-radius:99px}
+.cta-row{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:30px 0 34px}
+.cta{position:relative;min-height:58px;padding:15px 38px;font-size:clamp(17px,2vw,19px);border-radius:99px;
+  background:linear-gradient(110deg,#ffdc91 0%,#e9ad4e 38%,#fff6cf 50%,#e9ad4e 62%,#ffdc91 100%);background-size:240% 100%;
+  animation:ctaShine 3.6s ease-in-out infinite,ctaFloat 4.2s ease-in-out infinite;
+  box-shadow:0 8px 26px #e9ad4e55,0 0 0 1px #fff3c455 inset;transition:transform .2s,box-shadow .2s}
+.cta:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 12px 34px #f5c66b88,0 0 0 1px #fff3c488 inset}
+.cta:active{transform:scale(.97)}
+.cta-ico{display:inline-block;animation:ctaSpin 6s linear infinite}
+@keyframes ctaShine{0%{background-position:100% 0}60%,100%{background-position:0 0}}
+@keyframes ctaFloat{0%,100%{translate:0 0}50%{translate:0 -3px}}
+@keyframes ctaSpin{to{transform:rotate(360deg)}}
+.spark{position:absolute;z-index:1;color:#ffe9a8;pointer-events:none;text-shadow:0 0 8px #ffd96a;animation:spark 3s ease-in-out infinite}
+.spark.s1{left:calc(50% - 150px);top:-10px;font-size:15px}
+.spark.s2{left:calc(50% + 138px);top:-6px;font-size:12px;animation-delay:-.8s}
+.spark.s3{left:calc(50% + 118px);bottom:-8px;font-size:14px;animation-delay:-1.6s}
+.spark.s4{left:calc(50% - 128px);bottom:-6px;font-size:11px;animation-delay:-2.3s}
+@keyframes spark{0%,100%{opacity:0;transform:translateY(4px) scale(.5)}50%{opacity:1;transform:translateY(-6px) scale(1.1) rotate(20deg)}}
 .cta:after{content:"";position:absolute;inset:-6px;border-radius:inherit;border:2px solid #f5c66b99;animation:ring 2.6s ease-out infinite;pointer-events:none}
 @keyframes ring{0%{transform:scale(.96);opacity:.9}100%{transform:scale(1.14);opacity:0}}
 .ghost{min-height:48px;background:transparent;color:var(--cream);border:1px solid #ffffff3a;border-radius:99px;padding:12px 22px}
@@ -91,8 +111,10 @@ button:disabled{opacity:.6;cursor:wait}
 @keyframes glint{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.95;transform:scale(1)}}
 .swell{position:absolute;left:-50%;width:200%;height:22%;pointer-events:none;background:linear-gradient(90deg,transparent 5%,#8fd0e81c 30%,#8fd0e80c 55%,transparent 85%);animation:swell var(--t,24s) ease-in-out infinite alternate;will-change:transform;-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%,#000 60%,transparent);mask-image:linear-gradient(180deg,transparent,#000 40%,#000 60%,transparent)}
 @keyframes swell{from{transform:translateX(-9%)}to{transform:translateX(9%)}}
-.skyline-ref{position:absolute;left:0;top:0;width:100%;height:clamp(48px,9vw,100px);display:block;transform:scaleY(-1);opacity:.3;filter:blur(1.2px);pointer-events:none;
+.skyline-ref{position:absolute;left:0;top:0;width:100%;height:clamp(40px,7vw,80px);display:block;transform:scaleY(-1);opacity:.3;filter:blur(1.2px);pointer-events:none;
   -webkit-mask-image:linear-gradient(0deg,#000 0,transparent 100%);mask-image:linear-gradient(0deg,#000 0,transparent 100%);animation:refwob 7s ease-in-out infinite alternate}
+.temple-ref{position:absolute;left:var(--tl);top:0;width:var(--tw);aspect-ratio:480/300;height:auto;display:block;translate:-50% 0;transform:scaleY(-1);opacity:.34;filter:blur(1.6px);pointer-events:none;
+  -webkit-mask-image:linear-gradient(0deg,#000 0,transparent 78%),linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(0deg,#000 0,transparent 78%),linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-composite:intersect;animation:refwob 7s ease-in-out infinite alternate}
 @keyframes refwob{from{transform:scaleY(-1) translateX(-3px)}to{transform:scaleY(-1) translateX(3px)}}
 .wave{position:absolute;left:0;width:200%;height:26px;will-change:transform;animation:wavedrift var(--t,30s) linear infinite;pointer-events:none}
 .wave svg{display:block;width:100%;height:100%}
@@ -249,12 +271,12 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   .logo{font-size:15px}
   .stat{min-width:0;flex:1;padding:8px}
   .cta{width:100%}
-  .ghost{width:100%}
+  .spark.s1{left:10px}.spark.s2{left:auto;right:12px}.spark.s3{left:auto;right:30px}.spark.s4{left:28px}
   .cta-row{flex-direction:column;gap:10px;align-items:stretch;padding:0 4px}
 }
 @media(orientation:landscape) and (max-height:520px){
   :root{--water-h:230px}
-  .hero{min-height:calc(var(--water-h) + 250px)}
+  #hero.hero{min-height:calc(var(--water-h) + 250px)}
   .hero-inner{padding-top:6px}
   .hero h1{font-size:clamp(26px,5vw,38px);margin:4px 0}
   .hero p,.stats{display:none}
@@ -274,10 +296,12 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   <div class="sky" aria-hidden="true"><div class="stars" id="stars"></div></div>
   <div class="moon" aria-hidden="true"></div>
   <div class="fx fx-sky" id="fxSky" aria-hidden="true"></div>
-  <svg class="skyline" viewBox="0 0 1200 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-    <path fill="#040d1b" d="M0 100V82C50 70 90 86 140 78S230 68 280 78V72h12l4-18 4-22 4-24 2-8 2 8 4 24 4 22 4 18h12v6C400 70 450 86 520 80S640 70 720 80 840 84 880 76V72h10l3-14 3-18 3-22 2-6 2 6 3 22 3 18 3 14h10v6c60-10 110 4 170 0s100-10 150-2V100Z"/>
-    <g fill="#f5c66b"><circle cx="300" cy="82" r="1.6"/><circle cx="284" cy="86" r="1.2"/><circle cx="318" cy="86" r="1.2"/><circle cx="900" cy="82" r="1.6"/><circle cx="884" cy="86" r="1.2"/><circle cx="918" cy="86" r="1.2"/><circle cx="520" cy="88" r="1.2"/><circle cx="640" cy="87" r="1.2"/><circle cx="1090" cy="84" r="1.2"/><circle cx="130" cy="86" r="1.2"/></g>
-  </svg>
+  <svg class="skyline" viewBox="0 0 1200 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path fill="#040d1b" d="M0 100V86C70 76 120 90 190 82S290 76 360 84 520 90 600 88 800 84 880 84 1010 76 1090 84 1160 80 1200 86V100Z"/></svg>
+  <svg class="temple" viewBox="0 0 480 300" aria-hidden="true"><defs>
+<linearGradient id="tg" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="300"><stop offset="0" stop-color="#fff0b8"/><stop offset=".3" stop-color="#f8c864"/><stop offset=".65" stop-color="#d98d34"/><stop offset="1" stop-color="#7a4418"/></linearGradient>
+<radialGradient id="tglow" cx=".5" cy=".62" r=".5"><stop offset="0" stop-color="#ffb347" stop-opacity=".55"/><stop offset=".55" stop-color="#ff8a3c" stop-opacity=".18"/><stop offset="1" stop-color="#ff8a3c" stop-opacity="0"/></radialGradient>
+<linearGradient id="twall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c98532"/><stop offset="1" stop-color="#3a2210"/></linearGradient>
+</defs><ellipse cx="240" cy="190" rx="230" ry="170" fill="url(#tglow)"/><g fill="#07131c"><ellipse cx="24" cy="262" rx="46" ry="38"/><ellipse cx="72" cy="276" rx="40" ry="28"/><ellipse cx="2" cy="288" rx="30" ry="22"/><ellipse cx="456" cy="262" rx="46" ry="38"/><ellipse cx="408" cy="276" rx="40" ry="28"/><ellipse cx="478" cy="288" rx="30" ry="22"/></g><path d="M222.5 300L222.5 292L215.7 292L215.7 282L208.2 282L208.2 279L206.4 279L203.3 262L204.1 262L204.1 260.7L199.6 260.5L197.4 249L198.2 249L198.2 247.7L194.6 247.5L192.7 238L193.5 238L193.5 236.7L190.3 236.5L188.7 229L189.5 229L189.5 227.7L186.5 227.5L185.3 221L186.1 221L186.1 219.7L184.5 220L183.7 217.1L184.1 217.1L184.1 216.3L182.8 214.1L182.1 211.2L182.6 211.2L182.6 210.4L181.3 208.3L180.7 205.4L181.1 205.4L181.1 204.6L180 202.4L179.4 199.5L179.9 199.5L179.9 198.7L178.8 196.6L178.3 193.6L178.8 193.6L178.8 192.8L177.9 190.7L177.5 187.8L178 187.8L178 187L177.1 184.9L176.9 181.9L177.4 181.9L177.4 181.1L176.7 179L176.6 176L176.5 173L177.3 171L176.4 169L176.4 165L176 161L176 161L175.6 165L175.6 169L174.7 171L175.5 173L175.4 176L175.3 179L174.6 181.1L174.6 181.9L175.1 181.9L174.9 184.9L174 187L174 187.8L174.5 187.8L174.1 190.7L173.2 192.8L173.2 193.6L173.7 193.6L173.2 196.6L172.1 198.7L172.1 199.5L172.6 199.5L172 202.4L170.9 204.6L170.9 205.4L171.3 205.4L170.7 208.3L169.4 210.4L169.4 211.2L169.9 211.2L169.2 214.1L167.9 216.3L167.9 217.1L168.3 217.1L167.5 220L165.9 219.7L165.9 221L166.7 221L165.5 227.5L162.5 227.7L162.5 229L163.3 229L161.7 236.5L158.5 236.7L158.5 238L159.3 238L157.4 247.5L153.8 247.7L153.8 249L154.6 249L152.4 260.5L147.9 260.7L147.9 262L148.7 262L145.6 279L143.8 279L143.8 282L136.3 282L136.3 292L129.5 292L129.5 300Z" fill="url(#tg)" opacity=".92"/><path d="M176 300L222.5 300L222.5 292L215.7 292L215.7 282L208.2 282L208.2 279L206.4 279L203.3 262L204.1 262L204.1 260.7L199.6 260.5L197.4 249L198.2 249L198.2 247.7L194.6 247.5L192.7 238L193.5 238L193.5 236.7L190.3 236.5L188.7 229L189.5 229L189.5 227.7L186.5 227.5L185.3 221L186.1 221L186.1 219.7L184.5 220L183.7 217.1L184.1 217.1L184.1 216.3L182.8 214.1L182.1 211.2L182.6 211.2L182.6 210.4L181.3 208.3L180.7 205.4L181.1 205.4L181.1 204.6L180 202.4L179.4 199.5L179.9 199.5L179.9 198.7L178.8 196.6L178.3 193.6L178.8 193.6L178.8 192.8L177.9 190.7L177.5 187.8L178 187.8L178 187L177.1 184.9L176.9 181.9L177.4 181.9L177.4 181.1L176.7 179L176.6 176L176.5 173L177.3 171L176.4 169L176.4 165L176 161L176 161Z" fill="#3a1a00" opacity=".22"/><path d="M350.5 300L350.5 292L343.7 292L343.7 282L336.2 282L336.2 279L334.4 279L331.3 262L332.1 262L332.1 260.7L327.6 260.5L325.4 249L326.2 249L326.2 247.7L322.6 247.5L320.7 238L321.5 238L321.5 236.7L318.3 236.5L316.7 229L317.5 229L317.5 227.7L314.5 227.5L313.3 221L314.1 221L314.1 219.7L312.5 220L311.7 217.1L312.1 217.1L312.1 216.3L310.8 214.1L310.1 211.2L310.6 211.2L310.6 210.4L309.3 208.3L308.7 205.4L309.1 205.4L309.1 204.6L308 202.4L307.4 199.5L307.9 199.5L307.9 198.7L306.8 196.6L306.3 193.6L306.8 193.6L306.8 192.8L305.9 190.7L305.5 187.8L306 187.8L306 187L305.1 184.9L304.9 181.9L305.4 181.9L305.4 181.1L304.7 179L304.6 176L304.5 173L305.3 171L304.4 169L304.4 165L304 161L304 161L303.6 165L303.6 169L302.7 171L303.5 173L303.4 176L303.3 179L302.6 181.1L302.6 181.9L303.1 181.9L302.9 184.9L302 187L302 187.8L302.5 187.8L302.1 190.7L301.2 192.8L301.2 193.6L301.7 193.6L301.2 196.6L300.1 198.7L300.1 199.5L300.6 199.5L300 202.4L298.9 204.6L298.9 205.4L299.3 205.4L298.7 208.3L297.4 210.4L297.4 211.2L297.9 211.2L297.2 214.1L295.9 216.3L295.9 217.1L296.3 217.1L295.5 220L293.9 219.7L293.9 221L294.7 221L293.5 227.5L290.5 227.7L290.5 229L291.3 229L289.7 236.5L286.5 236.7L286.5 238L287.3 238L285.4 247.5L281.8 247.7L281.8 249L282.6 249L280.4 260.5L275.9 260.7L275.9 262L276.7 262L273.6 279L271.8 279L271.8 282L264.3 282L264.3 292L257.5 292L257.5 300Z" fill="url(#tg)" opacity=".92"/><path d="M304 300L350.5 300L350.5 292L343.7 292L343.7 282L336.2 282L336.2 279L334.4 279L331.3 262L332.1 262L332.1 260.7L327.6 260.5L325.4 249L326.2 249L326.2 247.7L322.6 247.5L320.7 238L321.5 238L321.5 236.7L318.3 236.5L316.7 229L317.5 229L317.5 227.7L314.5 227.5L313.3 221L314.1 221L314.1 219.7L312.5 220L311.7 217.1L312.1 217.1L312.1 216.3L310.8 214.1L310.1 211.2L310.6 211.2L310.6 210.4L309.3 208.3L308.7 205.4L309.1 205.4L309.1 204.6L308 202.4L307.4 199.5L307.9 199.5L307.9 198.7L306.8 196.6L306.3 193.6L306.8 193.6L306.8 192.8L305.9 190.7L305.5 187.8L306 187.8L306 187L305.1 184.9L304.9 181.9L305.4 181.9L305.4 181.1L304.7 179L304.6 176L304.5 173L305.3 171L304.4 169L304.4 165L304 161L304 161Z" fill="#3a1a00" opacity=".22"/><path d="M333 300L333 284L319.4 284L319.4 264L304.5 264L304.5 258L300.8 258L294.6 224L296.2 224L296.2 221.4L287.1 221L282.8 198L284.4 198L284.4 195.4L277.2 195L273.5 176L275.1 176L275.1 173.4L268.5 173L265.4 158L267 158L267 155.4L261.1 155L258.6 142L260.2 142L260.2 139.4L257 140L255.3 134.1L256.3 134.1L256.3 132.5L253.7 128.3L252.2 122.4L253.1 122.4L253.1 120.8L250.7 116.6L249.3 110.7L250.3 110.7L250.3 109.1L248 104.9L246.8 99L247.8 99L247.8 97.4L245.7 93.1L244.6 87.3L245.6 87.3L245.6 85.7L243.7 81.4L242.9 75.6L243.9 75.6L243.9 74L242.2 69.7L241.7 63.9L242.7 63.9L242.7 62.3L241.5 58L241.2 52L241 46L242.6 42L240.9 38L240.9 30L240 22L240 22L239.1 30L239.1 38L237.4 42L239 46L238.8 52L238.5 58L237.3 62.3L237.3 63.9L238.3 63.9L237.8 69.7L236.1 74L236.1 75.6L237.1 75.6L236.3 81.4L234.4 85.7L234.4 87.3L235.4 87.3L234.3 93.1L232.2 97.4L232.2 99L233.2 99L232 104.9L229.7 109.1L229.7 110.7L230.7 110.7L229.3 116.6L226.9 120.8L226.9 122.4L227.8 122.4L226.3 128.3L223.7 132.5L223.7 134.1L224.7 134.1L223 140L219.8 139.4L219.8 142L221.4 142L218.9 155L213 155.4L213 158L214.6 158L211.5 173L204.9 173.4L204.9 176L206.5 176L202.8 195L195.6 195.4L195.6 198L197.2 198L192.9 221L183.8 221.4L183.8 224L185.4 224L179.2 258L175.5 258L175.5 264L160.6 264L160.6 284L147 284L147 300Z" fill="url(#tg)"/><path d="M240 300L333 300L333 284L319.4 284L319.4 264L304.5 264L304.5 258L300.8 258L294.6 224L296.2 224L296.2 221.4L287.1 221L282.8 198L284.4 198L284.4 195.4L277.2 195L273.5 176L275.1 176L275.1 173.4L268.5 173L265.4 158L267 158L267 155.4L261.1 155L258.6 142L260.2 142L260.2 139.4L257 140L255.3 134.1L256.3 134.1L256.3 132.5L253.7 128.3L252.2 122.4L253.1 122.4L253.1 120.8L250.7 116.6L249.3 110.7L250.3 110.7L250.3 109.1L248 104.9L246.8 99L247.8 99L247.8 97.4L245.7 93.1L244.6 87.3L245.6 87.3L245.6 85.7L243.7 81.4L242.9 75.6L243.9 75.6L243.9 74L242.2 69.7L241.7 63.9L242.7 63.9L242.7 62.3L241.5 58L241.2 52L241 46L242.6 42L240.9 38L240.9 30L240 22L240 22Z" fill="#3a1a00" opacity=".22"/><path d="M195.4 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM205.9 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM216.4 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM227 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM237.5 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM248.1 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM258.6 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM269.1 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM279.7 254v-14.3a2.5 2.5 0 0 1 5 0v14.3ZM204.7 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM215.8 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM227 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM238.1 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM249.3 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM260.5 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM271.6 220v-9.9a1.9 1.9 0 0 1 3.7 0v9.9ZM218.6 192v-6.6a1.6 1.6 0 0 1 3.1 0v6.6ZM228.5 192v-6.6a1.6 1.6 0 0 1 3.1 0v6.6ZM238.4 192v-6.6a1.6 1.6 0 0 1 3.1 0v6.6ZM248.4 192v-6.6a1.6 1.6 0 0 1 3.1 0v6.6ZM258.3 192v-6.6a1.6 1.6 0 0 1 3.1 0v6.6ZM225.7 170v-5a1.2 1.2 0 0 1 2.5 0v5ZM234.4 170v-5a1.2 1.2 0 0 1 2.5 0v5ZM243.1 170v-5a1.2 1.2 0 0 1 2.5 0v5ZM251.8 170v-5a1.2 1.2 0 0 1 2.5 0v5Z" fill="#6b3a10" fill-opacity=".55"/><path d="M191.8 300L191.8 290.4L183.6 290.4L183.6 278.4L174.7 278.4L174.7 274.8L172.5 274.8L168.7 254.4L169.7 254.4L169.7 252.8L164.3 252.6L161.7 238.8L162.6 238.8L162.6 237.2L158.3 237L156.1 225.6L157.1 225.6L157.1 224L153.1 223.8L151.3 214.8L152.2 214.8L152.2 213.2L148.6 213L147.2 205.2L148.1 205.2L148.1 203.6L146.2 204L145.2 200.5L145.8 200.5L145.8 199.5L144.2 197L143.3 193.5L143.9 193.5L143.9 192.5L142.4 189.9L141.6 186.4L142.2 186.4L142.2 185.5L140.8 182.9L140.1 179.4L140.7 179.4L140.7 178.4L139.4 175.9L138.8 172.4L139.4 172.4L139.4 171.4L138.2 168.9L137.7 165.3L138.3 165.3L138.3 164.4L137.3 161.8L137 158.3L137.6 158.3L137.6 157.4L136.9 154.8L136.7 151.2L136.6 147.6L137.6 145.2L136.5 142.8L136.5 138L136 133.2L136 133.2L135.5 138L135.5 142.8L134.4 145.2L135.4 147.6L135.3 151.2L135.1 154.8L134.4 157.4L134.4 158.3L135 158.3L134.7 161.8L133.7 164.4L133.7 165.3L134.3 165.3L133.8 168.9L132.6 171.4L132.6 172.4L133.2 172.4L132.6 175.9L131.3 178.4L131.3 179.4L131.9 179.4L131.2 182.9L129.8 185.5L129.8 186.4L130.4 186.4L129.6 189.9L128.1 192.5L128.1 193.5L128.7 193.5L127.8 197L126.2 199.5L126.2 200.5L126.8 200.5L125.8 204L123.9 203.6L123.9 205.2L124.8 205.2L123.4 213L119.8 213.2L119.8 214.8L120.7 214.8L118.9 223.8L114.9 224L114.9 225.6L115.9 225.6L113.7 237L109.4 237.2L109.4 238.8L110.3 238.8L107.7 252.6L102.3 252.8L102.3 254.4L103.3 254.4L99.5 274.8L97.3 274.8L97.3 278.4L88.4 278.4L88.4 290.4L80.2 290.4L80.2 300Z" fill="url(#tg)"/><path d="M136 300L191.8 300L191.8 290.4L183.6 290.4L183.6 278.4L174.7 278.4L174.7 274.8L172.5 274.8L168.7 254.4L169.7 254.4L169.7 252.8L164.3 252.6L161.7 238.8L162.6 238.8L162.6 237.2L158.3 237L156.1 225.6L157.1 225.6L157.1 224L153.1 223.8L151.3 214.8L152.2 214.8L152.2 213.2L148.6 213L147.2 205.2L148.1 205.2L148.1 203.6L146.2 204L145.2 200.5L145.8 200.5L145.8 199.5L144.2 197L143.3 193.5L143.9 193.5L143.9 192.5L142.4 189.9L141.6 186.4L142.2 186.4L142.2 185.5L140.8 182.9L140.1 179.4L140.7 179.4L140.7 178.4L139.4 175.9L138.8 172.4L139.4 172.4L139.4 171.4L138.2 168.9L137.7 165.3L138.3 165.3L138.3 164.4L137.3 161.8L137 158.3L137.6 158.3L137.6 157.4L136.9 154.8L136.7 151.2L136.6 147.6L137.6 145.2L136.5 142.8L136.5 138L136 133.2L136 133.2Z" fill="#3a1a00" opacity=".22"/><path d="M109.2 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM115.5 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM121.9 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM128.2 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM134.5 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM140.8 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM147.2 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM153.5 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM159.8 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM114.8 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM121.5 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM128.2 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM134.9 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM141.6 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM148.3 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM155 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM123.2 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM129.1 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM135.1 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM141 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM147 235.2v-4a0.9 0.9 0 0 1 1.9 0v4Z" fill="#6b3a10" fill-opacity=".5"/><path d="M399.8 300L399.8 290.4L391.6 290.4L391.6 278.4L382.7 278.4L382.7 274.8L380.5 274.8L376.7 254.4L377.7 254.4L377.7 252.8L372.3 252.6L369.7 238.8L370.6 238.8L370.6 237.2L366.3 237L364.1 225.6L365.1 225.6L365.1 224L361.1 223.8L359.3 214.8L360.2 214.8L360.2 213.2L356.6 213L355.2 205.2L356.1 205.2L356.1 203.6L354.2 204L353.2 200.5L353.8 200.5L353.8 199.5L352.2 197L351.3 193.5L351.9 193.5L351.9 192.5L350.4 189.9L349.6 186.4L350.2 186.4L350.2 185.5L348.8 182.9L348.1 179.4L348.7 179.4L348.7 178.4L347.4 175.9L346.8 172.4L347.4 172.4L347.4 171.4L346.2 168.9L345.7 165.3L346.3 165.3L346.3 164.4L345.3 161.8L345 158.3L345.6 158.3L345.6 157.4L344.9 154.8L344.7 151.2L344.6 147.6L345.6 145.2L344.5 142.8L344.5 138L344 133.2L344 133.2L343.5 138L343.5 142.8L342.4 145.2L343.4 147.6L343.3 151.2L343.1 154.8L342.4 157.4L342.4 158.3L343 158.3L342.7 161.8L341.7 164.4L341.7 165.3L342.3 165.3L341.8 168.9L340.6 171.4L340.6 172.4L341.2 172.4L340.6 175.9L339.3 178.4L339.3 179.4L339.9 179.4L339.2 182.9L337.8 185.5L337.8 186.4L338.4 186.4L337.6 189.9L336.1 192.5L336.1 193.5L336.7 193.5L335.8 197L334.2 199.5L334.2 200.5L334.8 200.5L333.8 204L331.9 203.6L331.9 205.2L332.8 205.2L331.4 213L327.8 213.2L327.8 214.8L328.7 214.8L326.9 223.8L322.9 224L322.9 225.6L323.9 225.6L321.7 237L317.4 237.2L317.4 238.8L318.3 238.8L315.7 252.6L310.3 252.8L310.3 254.4L311.3 254.4L307.5 274.8L305.3 274.8L305.3 278.4L296.4 278.4L296.4 290.4L288.2 290.4L288.2 300Z" fill="url(#tg)"/><path d="M344 300L399.8 300L399.8 290.4L391.6 290.4L391.6 278.4L382.7 278.4L382.7 274.8L380.5 274.8L376.7 254.4L377.7 254.4L377.7 252.8L372.3 252.6L369.7 238.8L370.6 238.8L370.6 237.2L366.3 237L364.1 225.6L365.1 225.6L365.1 224L361.1 223.8L359.3 214.8L360.2 214.8L360.2 213.2L356.6 213L355.2 205.2L356.1 205.2L356.1 203.6L354.2 204L353.2 200.5L353.8 200.5L353.8 199.5L352.2 197L351.3 193.5L351.9 193.5L351.9 192.5L350.4 189.9L349.6 186.4L350.2 186.4L350.2 185.5L348.8 182.9L348.1 179.4L348.7 179.4L348.7 178.4L347.4 175.9L346.8 172.4L347.4 172.4L347.4 171.4L346.2 168.9L345.7 165.3L346.3 165.3L346.3 164.4L345.3 161.8L345 158.3L345.6 158.3L345.6 157.4L344.9 154.8L344.7 151.2L344.6 147.6L345.6 145.2L344.5 142.8L344.5 138L344 133.2L344 133.2Z" fill="#3a1a00" opacity=".22"/><path d="M317.2 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM323.5 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM329.9 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM336.2 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM342.5 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM348.8 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM355.2 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM361.5 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM367.8 272.4v-8.6a1.5 1.5 0 0 1 3 0v8.6ZM322.8 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM329.5 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM336.2 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM342.9 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM349.6 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM356.3 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM363 252v-5.9a1.1 1.1 0 0 1 2.2 0v5.9ZM331.2 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM337.1 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM343.1 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM349 235.2v-4a0.9 0.9 0 0 1 1.9 0v4ZM355 235.2v-4a0.9 0.9 0 0 1 1.9 0v4Z" fill="#6b3a10" fill-opacity=".5"/><path d="M22 288L28.96 278.0L51.0 268L73.03999999999999 278.0L80 288Z" fill="#8a5420"/><path d="M27.8 288V298H74.2V288Z" fill="#4a2c14"/><path d="M400 288L406.96 278.0L429.0 268L451.04 278.0L458 288Z" fill="#8a5420"/><path d="M405.8 288V298H452.2V288Z" fill="#4a2c14"/><rect x="0" y="288" width="480" height="12" fill="url(#twall)"/><rect x="0" y="287" width="640" height="2" fill="#ffd98a" fill-opacity=".45"/><g fill="#ffe3a0" fill-opacity=".85"><circle cx="10" cy="294" r="1.5"/><circle cx="34" cy="294" r="1.5"/><circle cx="58" cy="294" r="1.5"/><circle cx="82" cy="294" r="1.5"/><circle cx="106" cy="294" r="1.5"/><circle cx="130" cy="294" r="1.5"/><circle cx="154" cy="294" r="1.5"/><circle cx="178" cy="294" r="1.5"/><circle cx="202" cy="294" r="1.5"/><circle cx="226" cy="294" r="1.5"/><circle cx="250" cy="294" r="1.5"/><circle cx="274" cy="294" r="1.5"/><circle cx="298" cy="294" r="1.5"/><circle cx="322" cy="294" r="1.5"/><circle cx="346" cy="294" r="1.5"/><circle cx="370" cy="294" r="1.5"/><circle cx="394" cy="294" r="1.5"/><circle cx="418" cy="294" r="1.5"/><circle cx="442" cy="294" r="1.5"/><circle cx="466" cy="294" r="1.5"/></g><circle class="tw" style="animation-delay:0.0s" cx="240" cy="22" r="2.6" fill="#fff6d0"/><circle class="tw" style="animation-delay:-1.1s" cx="136" cy="133.2" r="2.6" fill="#fff6d0"/><circle class="tw" style="animation-delay:-2.2s" cx="344" cy="133.2" r="2.6" fill="#fff6d0"/></svg>
 
   <header class="top">
     <div class="logo"><span class="mark" id="logoMark" aria-hidden="true"></span><span><b>ลอยกระทง</b> ออนไลน์</span></div>
@@ -292,8 +316,8 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
     <div class="eyebrow">LOY KRATHONG FESTIVAL</div>
     <h1>ลอยคนเก่าไปกับสายน้ำ</h1>
     <div class="cta-row">
-      <button class="primary cta" id="open" type="button"><span aria-hidden="true">✦</span> สร้างกระทงของฉัน</button>
-      <button class="ghost" id="scrollFeed" type="button">อ่านคำอธิษฐานของทุกคน ↓</button>
+      <span class="spark s1" aria-hidden="true">✦</span><span class="spark s2" aria-hidden="true">✧</span><span class="spark s3" aria-hidden="true">✦</span><span class="spark s4" aria-hidden="true">✧</span>
+      <button class="primary cta" id="open" type="button"><span class="cta-ico" aria-hidden="true">✦</span> สร้างกระทงของฉัน</button>
     </div>
   </div>
 
@@ -381,13 +405,13 @@ const reduceMotion = window.matchMedia ? window.matchMedia("(prefers-reduced-mot
 const PARTS = {
   base:   [{id:1,name:"หยวกกล้วย"},{id:2,name:"ขนมปัง"},{id:3,name:"กะลามะพร้าว"},{id:4,name:"ใบบัว"},{id:5,name:"ไม้ไผ่สาน"}],
   leaf:   [{id:1,name:"ใบตองแหลม"},{id:2,name:"ใบตองกลีบมน"},{id:3,name:"ใบตองสองชั้น"},{id:4,name:"ใบตองม้วน"},{id:5,name:"ใบตองพัดจีบ"}],
-  leafColor: [{id:1,name:"เขียวสด"},{id:2,name:"เขียวเข้ม"},{id:3,name:"เขียวอ่อน"},{id:4,name:"เขียวทอง"},{id:5,name:"น้ำตาลทอง"}],
+  leafColor: [{id:1,name:"เขียวสด"},{id:2,name:"เขียวเข้ม"},{id:3,name:"เขียวอ่อน"},{id:4,name:"เขียวทอง"},{id:5,name:"น้ำตาลทอง"},{id:6,name:"ม่วง"},{id:7,name:"ชมพู"}],
   bloom:  [{id:1,name:"ดอกบัว"},{id:2,name:"ดาวเรือง"},{id:3,name:"กล้วยไม้"},{id:4,name:"กุหลาบ"},{id:5,name:"มะลิ"},{id:6,name:"อัญชัน"},{id:7,name:"เบญจมาศ"},{id:8,name:"ชบา"}],
   center: [{id:1,name:"เทียน + ธูป"},{id:2,name:"เทียนใหญ่"},{id:3,name:"โคมเล็ก"}],
   flame:  [{id:1,name:"แสงทอง"},{id:2,name:"แสงส้ม"},{id:3,name:"แสงขาว"}]
 };
 const SWATCH = {
-  g:["#8fcf5f","#2f7a3a","#cdeb94","#c9c45a","#d2ad66"],
+  g:["#8fcf5f","#2f7a3a","#cdeb94","#c9c45a","#d2ad66","#a07ad8","#f080ae"],
   c:["#fff1cf","#ffe7a8","#f2a65a"],
   m:["#ffd35a","#ff8a2a","#ffffff"]
 };
@@ -399,7 +423,7 @@ const GROUPS = [
   {key:"c", label:"กลางกระทง", list:PARTS.center},
   {key:"m", label:"สีแสงเทียน", list:PARTS.flame}
 ];
-const MAXID = {b:5, l:5, c:3, m:3, g:5};
+const MAXID = {b:5, l:5, c:3, m:3, g:7};
 const CODE_RE = /^k1:[a-z0-9.-]{3,40}$/;
 // ข้อมูลเก่าที่เป็น emoji ยังแสดงผลได้ โดยจับคู่เป็นกระทงหน้าตาใกล้เคียง
 const LEGACY = {
@@ -443,7 +467,9 @@ const LEAFCOL = [
   {lf:["#1c5a2a","#5faa55"], lfd:["#123f1d","#3f8139"], lfl:["#2f7a3a","#7fc46f"], st:"#0f3a1a", dk:"#0c2e14"},
   {lf:["#6fae52","#d6f1a0"], lfd:["#4f8f43","#a6d07a"], lfl:["#8cc467","#ecfbc0"], st:"#3e7a32", dk:"#356a2a"},
   {lf:["#6b7f2a","#d8d36a"], lfd:["#4f6320","#a6ad50"], lfl:["#8a9a3a","#efe58a"], st:"#4a5a18", dk:"#3c4912"},
-  {lf:["#8a6a2e","#e0c07a"], lfd:["#6a4f20","#b9955a"], lfl:["#a98342","#f2d896"], st:"#5a4318", dk:"#483512"}
+  {lf:["#8a6a2e","#e0c07a"], lfd:["#6a4f20","#b9955a"], lfl:["#a98342","#f2d896"], st:"#5a4318", dk:"#483512"},
+  {lf:["#5a3a96","#cba8f4"], lfd:["#3f2870","#9c78d2"], lfl:["#7b56b4","#e6ccfc"], st:"#34205e", dk:"#281850"},
+  {lf:["#d4528a","#ffc3dc"], lfd:["#a63a6c","#ee88b4"], lfl:["#ec7eac","#ffe3ef"], st:"#8c2a56", dk:"#6e1f46"}
 ];
 const FLAMES = [
   {a:"#fff4c2", b:"#ffd35a", g:"#ffcf5a"},
@@ -537,7 +563,7 @@ function leafMarkup(style, w, h, fill, st, dk) {
   }
   if (style <= 3) {
     extra = `<path d="M${r1(-w*.22)} 0L${r1(-w*.09)} ${r1(-h*.76)}M${r1(w*.22)} 0L${r1(w*.09)} ${r1(-h*.76)}" stroke="${dk}" stroke-opacity=".2" stroke-width=".7" fill="none"/>
-    <path d="M${r1(w*.04)} ${r1(-h*.94)}L${r1(w*.16)} ${r1(-h*.7)}" stroke="#eaffc8" stroke-opacity=".55" stroke-width=".9" stroke-linecap="round"/>`;
+    <path d="M${r1(w*.04)} ${r1(-h*.94)}L${r1(w*.16)} ${r1(-h*.7)}" stroke="#fff" stroke-opacity=".5" stroke-width=".9" stroke-linecap="round"/>`;
   }
   return `<path d="${d}" fill="${fill}" stroke="${st}" stroke-opacity=".55" stroke-width=".8"/><path d="${half}" fill="#fff" fill-opacity=".13"/><path d="M0 0V${r1(-h*.9)}" stroke="${dk}" stroke-opacity=".35" stroke-width=".9"/>${extra}`;
 }
@@ -555,16 +581,16 @@ function krathongSVG(spec, opt) {
   function ring(n, rf, h, w, off, fill, style) {
     for (let i = 0; i < n; i++) {
       const t = Math.PI * 2 * i / n + off, c = Math.cos(t), s = Math.sin(t);
-      const px = cx + rx * rf * c, py = cy + ry * rf * s;
+      const px = cx + rx * rf * c, py = cy + ry * rf * s + 1.5;
       const hh = h * (1 - .2 * Math.max(0, s)), tilt = c * (style === 4 ? 16 : 26) + (i % 2 ? 3 : -3);
       const f = (fill === "lf" && s < -.2) ? "lfd" : fill;
       items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(tilt)})">${leafMarkup(style, w, hh, "url(#" + u + f + ")", LC.st, LC.dk)}</g>`});
     }
   }
-  if (spec.l === 3) { ring(14, 1, 38, 24, 0, "lfd", 1); ring(14, .74, 28, 19, Math.PI / 14, "lfl", 1); }
-  else if (spec.l === 4) { ring(18, 1, 34, 12, 0, "lf", 4); ring(14, .74, 25, 11, Math.PI / 14, "lfl", 4); }
-  else if (spec.l === 5) { ring(12, 1, 30, 26, 0, "lf", 5); ring(12, .72, 22, 20, Math.PI / 12, "lfl", 5); }
-  else ring(16, 1, 32, 21, 0, "lf", spec.l);
+  if (spec.l === 3) { ring(16, 1, 38, 27, 0, "lfd", 1); ring(16, .74, 28, 21, Math.PI / 16, "lfl", 1); }
+  else if (spec.l === 4) { ring(22, 1, 34, 14, 0, "lf", 4); ring(16, .74, 25, 13, Math.PI / 16, "lfl", 4); }
+  else if (spec.l === 5) { ring(14, 1, 30, 30, 0, "lf", 5); ring(14, .72, 22, 23, Math.PI / 14, "lfl", 5); }
+  else ring(20, 1, 32, 25, 0, "lf", spec.l);
 
   // --- ดอกไม้ ---
   const N = 7;
@@ -622,6 +648,14 @@ function krathongSVG(spec, opt) {
     for (const k of [1, 2]) { const y = cy + B.h * k / 3; deco += `<path d="M${cx - B.rt} ${y}A${B.rt} ${ry} 0 0 0 ${cx + B.rt} ${y}" stroke="#5a3d12" stroke-opacity=".3" fill="none" stroke-width="1"/>`; }
     for (const f of [.86, .62, .38]) topDeco += `<ellipse cx="${cx}" cy="${cy}" rx="${r1(rx * f)}" ry="${r1(ry * f)}" fill="none" stroke="#7d5a22" stroke-opacity=".38"/>`;
   }
+  // ใบตองห่อรอบฐาน: วงแหวนใบตองต่อเนื่อง + ชายใบพับลงด้านหน้า (ทำให้ใบดูต่อกับฐาน ไม่ลอย)
+  const ro = r1(rx * 1.03), ri = r1(rx * .62), sd = r1(Math.min(11, B.h * .55 + 3));
+  let pleats = "";
+  for (let i = 1; i < 26; i++) { const t = Math.PI * i / 26, x = r1(cx - Math.cos(t) * ro), y = r1(cy + Math.sin(t) * (ry + 1)); pleats += `M${x} ${y}l${r1(-Math.cos(t) * 1.2)} ${sd - 1}`; }
+  const wrap = `<path fill-rule="evenodd" fill="url(#${u}lfd)" d="M${r1(cx - ro)} ${cy}A${ro} ${r1(ry + 1)} 0 1 0 ${r1(cx + ro)} ${cy}A${ro} ${r1(ry + 1)} 0 1 0 ${r1(cx - ro)} ${cy}ZM${r1(cx - rx * .6)} ${cy}A${ri} ${r1(ry * .6)} 0 1 1 ${r1(cx + rx * .6)} ${cy}A${ri} ${r1(ry * .6)} 0 1 1 ${r1(cx - rx * .6)} ${cy}Z"/>
+    <path d="M${r1(cx - ro)} ${cy}A${ro} ${r1(ry + 1)} 0 0 0 ${r1(cx + ro)} ${cy}L${r1(cx + ro + 1)} ${cy + sd}A${r1(ro + 1)} ${r1(ry + 2)} 0 0 1 ${r1(cx - ro - 1)} ${cy + sd}Z" fill="url(#${u}lf)" stroke="${LC.st}" stroke-opacity=".5" stroke-width=".8"/>
+    <path d="${pleats}" stroke="${LC.dk}" stroke-opacity=".3" stroke-width=".8" fill="none"/>
+    <path d="M${r1(cx - ro + 2)} ${cy + 2}A${r1(ro - 2)} ${r1(ry - 1)} 0 0 0 ${r1(cx + ro - 2)} ${cy + 2}" stroke="#fff" stroke-opacity=".3" stroke-width="1.1" fill="none"/>`;
   // เงาแสงเทียนสะท้อนผิวน้ำ: ขีดแสงสั้น ๆ ใต้ฐาน (สั่นไหวเบา ๆ)
   const streaks = [[34, 9, .36], [24, 15, .26], [15, 21, .18]].map(([w, dy, o], i) =>
     `<rect x="${cx - w}" y="${by + dy}" width="${w * 2}" height="1.9" rx=".95" fill="${F.g}" fill-opacity="${o}"${A ? ` class="streak" style="animation-delay:${-i * .7}s"` : ""}/>`).join("");
@@ -647,6 +681,7 @@ function krathongSVG(spec, opt) {
     <path d="M${cx - B.rt * .62} ${cy + 3}L${cx - B.rb * .6} ${by - 1}" stroke="#fff" stroke-opacity=".22" stroke-width="${B.h < 12 ? 2 : 5}" stroke-linecap="round"/>
     <ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="${B.top}"/><ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="url(#${u}tp)"/>${topDeco}
     <path d="M${cx - B.rt + 3} ${cy + 3}A${B.rt - 3} ${ry - 3} 0 0 0 ${cx + B.rt - 3} ${cy + 3}" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1.2"/>
+    ${wrap}
     ${items.map(i => i.m).join("")}
     <ellipse cx="${cx}" cy="${cy - 6}" rx="${rx * .8}" ry="${ry * 1.3}" fill="url(#${u}wl)" pointer-events="none"/></svg>`;
 }
@@ -689,6 +724,8 @@ function krathongSVG(spec, opt) {
   // เงาของแนวต้นไม้/วัดสะท้อนลงในน้ำ (พลิกกลับ จางลง ไหวเล็กน้อย)
   const sk = document.querySelector(".skyline");
   if (sk) { const ref = sk.cloneNode(true); ref.setAttribute("class", "skyline-ref"); $("water").insertBefore(ref, $("water").firstChild); }
+  const tp = document.querySelector(".temple");
+  if (tp) { const ref = tp.cloneNode(true); ref.setAttribute("class", "temple-ref"); $("water").insertBefore(ref, $("water").firstChild); }
 
   // หิ่งห้อย: จุดแสงเล็ก ๆ ลอยช้า ๆ เหนือแม่น้ำ (ใช้ transform/opacity เท่านั้น เบาต่อเครื่อง)
   const small = window.innerWidth < 700;
@@ -1064,7 +1101,7 @@ $("dice").onclick = () => {
   if (saving) return;
   const pick = n => 1 + Math.floor(Math.random() * n);
   const pool = [1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - .5);
-  design = {b:pick(5), l:pick(5), g:pick(5), f:pool.slice(0, pick(3)).sort(), c:pick(3), m:pick(3)};
+  design = {b:pick(5), l:pick(5), g:pick(7), f:pool.slice(0, pick(3)).sort(), c:pick(3), m:pick(3)};
   syncOptions();
 };
 $("wish").addEventListener("input", () => { $("wishCount").textContent = $("wish").value.length + "/180"; });
@@ -1182,7 +1219,7 @@ $("openFab").onclick = openCreate;
 $("cancel").onclick = closeModal;
 $("viewClose").onclick = closeModal;
 $("viewMake").onclick = () => { closeModal(); openCreate(); };
-$("scrollFeed").onclick = () => $("feedSection").scrollIntoView({behavior:"smooth", block:"start"});
+if ($("scrollFeed")) $("scrollFeed").onclick = () => $("feedSection").scrollIntoView({behavior:"smooth", block:"start"});
 $("refresh").onclick = () => loadKrathongs();
 $("showMore").onclick = () => { visibleCount += 12; render(); };
 
