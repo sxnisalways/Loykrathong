@@ -55,6 +55,8 @@ button:disabled{opacity:.6;cursor:wait}
 .moon{position:absolute;z-index:-4;right:var(--moon-right);top:74px;width:var(--moon-size);aspect-ratio:1;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#fffbe8 0,#ffe9ae 55%,#f7d083 100%);
   box-shadow:0 0 0 10px #ffe9ae14,0 0 40px 12px #ffdf8b55,0 0 140px 50px #ffdf8b26}
+.moon.pulse{animation:moonPulse 2.4s ease-out}
+@keyframes moonPulse{0%,100%{box-shadow:0 0 0 10px #ffe9ae14,0 0 40px 12px #ffdf8b55,0 0 140px 50px #ffdf8b26}30%{box-shadow:0 0 0 14px #ffe9ae26,0 0 62px 22px #ffdf8b88,0 0 190px 70px #ffdf8b3d}}
 .moon:after{content:"";position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle at 62% 58%,#d9b36a44 0 9%,transparent 10%),radial-gradient(circle at 34% 66%,#d9b36a33 0 6%,transparent 7%),radial-gradient(circle at 55% 28%,#d9b36a2a 0 5%,transparent 6%)}
 .skyline{position:absolute;z-index:-3;left:0;width:100%;bottom:var(--water-h);height:clamp(40px,7vw,80px);display:block;pointer-events:none}
@@ -801,44 +803,92 @@ function shootingStar() {
   setTimeout(() => { shootingStar(); scheduleShoot(false); }, first ? 5000 + Math.random() * 3000 : 12000 + Math.random() * 6000);
 })(true);
 
-/* ดอกไม้ไฟเล็ก ๆ ตอนปล่อยกระทงสำเร็จ (canvas ชั่วคราว ~3 วินาที ไม่รับการแตะ) */
-let fwRunning = false;
-function fireworks() {
-  if (fwRunning || reduceMotion.matches) return;
-  const cv = $("fwCanvas"), ctx = cv.getContext && cv.getContext("2d");
-  if (!ctx) return;
-  fwRunning = true;
-  const dpr = Math.min(2, window.devicePixelRatio || 1), w = window.innerWidth, h = window.innerHeight;
-  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const colors = ["#ffd98a", "#ffb84d", "#fff1c9", "#f7a8b8", "#ffe27a"];
-  const bursts = [[.5, .3, 0], [.24, .38, 450], [.76, .34, 850]];
-  const spawned = [false, false, false], parts = [];
-  const t0 = performance.now(); let prev = t0;
-  function spawn(bx, by) {
-    const col = colors[Math.floor(Math.random() * colors.length)];
-    for (let i = 0; i < 52; i++) {
-      const ang = Math.PI * 2 * i / 52 + Math.random() * .1, sp = 90 + Math.random() * 110;
-      parts.push({x:bx, y:by, vx:Math.cos(ang) * sp, vy:Math.sin(ang) * sp, life:1.4 + Math.random() * .5, age:0, c:col});
+/* แสงอธิษฐานตอนปล่อยกระทงสำเร็จ: อนุภาคแสงลอยจากกระทงขึ้นไปหาดวงจันทร์ แล้วจางหาย
+   เกิดประกายรอบดวงจันทร์ จากนั้นกลับสู่ฉากปกติ (canvas ชั่วคราว ไม่รับการแตะ) */
+let wishRunning = false;
+function wishLight() {
+  if (wishRunning || reduceMotion.matches) return;
+  const cv = $("fwCanvas"), ctx = cv.getContext && cv.getContext("2d"), moonEl = document.querySelector(".moon");
+  if (!ctx || !moonEl) return;
+  wishRunning = true;
+  const waitFrom = performance.now();
+  (function waitForKrathong() {
+    const it = items.get(justLaunchedId), mine = wishes.find(w => w.id === justLaunchedId);
+    if (mine && mine.blocked) { wishRunning = false; return; }          // กระทงที่ถูกบล็อกจะโดนฟ้าผ่าแทน ไม่ส่งแสงอธิษฐาน
+    if (it) return run(it);
+    if (performance.now() - waitFrom > 6000) { wishRunning = false; return; }
+    setTimeout(waitForKrathong, 120);
+  })();
+  function run(it) {
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = window.innerWidth, h = window.innerHeight;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const TOTAL = w < 700 ? 26 : 38, EMIT = 1700, colors = ["#fff4cf", "#ffe49a", "#ffd36b", "#ffffff", "#ffc98a"];
+    const parts = [], sparks = [];
+    let emitted = 0, prev = performance.now(), t0 = prev, arrivals = 0, cancelled = false, scrolledAway = false;
+    const startY = window.scrollY;
+    const stop = () => { cancelled = true; };
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach(ev => window.addEventListener(ev, stop, {passive:true, once:true}));
+    const moonC = () => { const r = moonEl.getBoundingClientRect(); return {x:r.left + r.width / 2 + window.scrollX, y:r.top + r.height / 2 + window.scrollY, r:r.width / 2}; };
+    const krC = () => { const r = it.el.getBoundingClientRect(); return {x:r.left + r.width / 2 + window.scrollX, y:r.top + r.height * .45 + window.scrollY}; };
+    const ease = u => .5 - .5 * Math.cos(Math.PI * u);
+    function frame(now) {
+      const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+      const el = now - t0, sx = window.scrollX, sy = window.scrollY, M = moonC();
+      ctx.clearRect(0, 0, w, h);
+      while (emitted < TOTAL && el >= emitted * (EMIT / TOTAL)) {
+        const k = krC();
+        parts.push({sx:k.x + (Math.random() - .5) * 26, sy:k.y + (Math.random() - .5) * 10, ox:(Math.random() - .5) * 1.1, oy:(Math.random() - .5) * 1.1,
+          dur:2.3 + Math.random() * .7, age:0, amp:(14 + Math.random() * 38) * (Math.random() < .5 ? -1 : 1), ph:Math.random() * 6.28,
+          sz:1.3 + Math.random() * 1.9, c:colors[Math.floor(Math.random() * colors.length)], px:null, py:null});
+        emitted++;
+      }
+      // ถ้าดวงจันทร์อยู่นอกจอ ค่อย ๆ เลื่อนหน้าขึ้นไปให้เห็น แล้วกลับที่เดิมตอนจบ (ยกเลิกทันทีถ้าผู้ใช้เลื่อนเอง)
+      if (!scrolledAway && !cancelled && el > 1400) {
+        const mr = moonEl.getBoundingClientRect();
+        if (mr.bottom < 30 || mr.top > h - 30) { scrolledAway = true; window.scrollTo({top:Math.max(0, M.y - h * .32), behavior:"smooth"}); }
+      }
+      ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const q = parts[i]; q.age += dt;
+        const u = q.age / q.dur;
+        if (u >= 1) {
+          parts.splice(i, 1); arrivals++;
+          if (arrivals === 1) { moonEl.classList.remove("pulse"); void moonEl.offsetWidth; moonEl.classList.add("pulse"); setTimeout(() => moonEl.classList.remove("pulse"), 2600); }
+          const n = arrivals === 1 ? 4 : (Math.random() < .5 ? 1 : 0);
+          for (let j = 0; j < n; j++) sparks.push({a:Math.random() * 6.28, d:1.05 + Math.random() * .75, age:0, life:.9 + Math.random() * .6, sz:3 + Math.random() * 4, c:colors[Math.floor(Math.random() * 4)]});
+          continue;
+        }
+        const e = ease(u), tx = M.x + q.ox * M.r, ty = M.y + q.oy * M.r;
+        const dx = tx - q.sx, dy = ty - q.sy, len = Math.hypot(dx, dy) || 1;
+        const sway = Math.sin(u * 6.28 * 1.1 + q.ph) * q.amp * Math.sin(Math.PI * u);
+        const x = q.sx + dx * e + (-dy / len) * sway - sx, y = q.sy + dy * e + (dx / len) * sway - sy;
+        const alpha = Math.min(1, u / .12) * (u > .82 ? (1 - u) / .18 : 1);
+        ctx.fillStyle = "#ffd98a";
+        ctx.globalAlpha = alpha * .1; ctx.beginPath(); ctx.arc(x, y, q.sz * 3.2, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = q.c;
+        ctx.globalAlpha = alpha * .9;  ctx.beginPath(); ctx.arc(x, y, q.sz, 0, 6.2832); ctx.fill();
+        if (q.px !== null) { ctx.strokeStyle = q.c; ctx.lineWidth = q.sz * .8; ctx.globalAlpha = alpha * .3; ctx.beginPath(); ctx.moveTo(q.px, q.py); ctx.lineTo(x, y); ctx.stroke(); }
+        q.px = x; q.py = y;
+      }
+      // ประกายเล็ก ๆ รอบดวงจันทร์ (รูปดาวสี่แฉกจาง ๆ)
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const k = sparks[i]; k.age += dt;
+        if (k.age >= k.life) { sparks.splice(i, 1); continue; }
+        const x = M.x + Math.cos(k.a) * M.r * k.d - sx, y = M.y + Math.sin(k.a) * M.r * k.d - sy, t = Math.sin(Math.PI * k.age / k.life), r = k.sz * (.6 + .6 * t);
+        ctx.globalAlpha = t * .9; ctx.strokeStyle = k.c; ctx.fillStyle = k.c; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, 1.3, 0, 6.2832); ctx.fill();
+      }
+      if (parts.length || sparks.length || emitted < TOTAL) requestAnimationFrame(frame);
+      else {
+        ctx.clearRect(0, 0, w, h); ctx.globalAlpha = 1; wishRunning = false;
+        ["wheel", "touchstart", "keydown", "pointerdown"].forEach(ev => window.removeEventListener(ev, stop));
+        if (scrolledAway && !cancelled) window.scrollTo({top:startY, behavior:"smooth"});
+      }
     }
+    requestAnimationFrame(frame);
   }
-  function frame(now) {
-    const dt = Math.min(.05, (now - prev) / 1000); prev = now;
-    ctx.clearRect(0, 0, w, h);
-    bursts.forEach((b, i) => { if (!spawned[i] && now - t0 >= b[2]) { spawned[i] = true; spawn(b[0] * w, b[1] * h); } });
-    ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineWidth = 2.2;
-    for (let i = parts.length - 1; i >= 0; i--) {
-      const p = parts[i]; p.age += dt;
-      if (p.age >= p.life) { parts.splice(i, 1); continue; }
-      const ox = p.x, oy = p.y;
-      p.vx *= .985; p.vy = p.vy * .985 + 60 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
-      ctx.globalAlpha = (1 - p.age / p.life) * .8; ctx.strokeStyle = p.c;
-      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(p.x, p.y); ctx.stroke();
-    }
-    if (parts.length || spawned.includes(false)) requestAnimationFrame(frame);
-    else { ctx.clearRect(0, 0, w, h); fwRunning = false; }
-  }
-  requestAnimationFrame(frame);
 }
 
 /* =========================================================
@@ -1416,14 +1466,18 @@ $("launch").onclick = async () => {
   if (saved) {
     playLaunchSound();
     closeModal();
-    fireworks();
+    wishLight();
     setStatus("บันทึกกระทงสำเร็จแล้ว กำลังโหลดข้อมูลล่าสุด…");
     // Avoid racing a background refresh that started before the insert.
     while (loading) await new Promise(resolve => setTimeout(resolve, 100));
     const refreshed = await loadKrathongs(true);
     if (refreshed) setStatus("บันทึกกระทงสำเร็จแล้ว · อัปเดตข้อมูลล่าสุดจาก Supabase แล้ว");
     else setStatus("บันทึกกระทงสำเร็จแล้ว แต่โหลดรายการล่าสุดไม่สำเร็จ กรุณากด ‘โหลดข้อมูลใหม่’ โดยไม่ต้องส่งกระทงซ้ำ", true);
-    $("water").scrollIntoView({behavior:"smooth", block:"center"});
+    const moonRect = document.querySelector(".moon").getBoundingClientRect(), mineItem = items.get(justLaunchedId), vh = window.innerHeight;
+    const moonY = moonRect.top + moonRect.height / 2 + window.scrollY;
+    const krY = mineItem ? mineItem.el.getBoundingClientRect().bottom + window.scrollY : 0;
+    if (mineItem && krY - moonY < vh - 120) window.scrollTo({top:Math.max(0, (moonY + krY) / 2 - vh / 2), behavior:"smooth"});
+    else $("water").scrollIntoView({behavior:"smooth", block:"center"});
   } else $("wish").focus({preventScroll:true});
 };
 loadKrathongs();
