@@ -139,6 +139,11 @@ button:disabled{opacity:.6;cursor:wait}
 
 .kr{position:absolute;left:0;top:0;width:var(--kw);touch-action:none;cursor:grab;will-change:transform;-webkit-user-select:none;user-select:none;animation:krIn .9s ease both;border-radius:12px}
 .kr.is-drag{cursor:grabbing}
+.kr.struck{pointer-events:none}
+.bolt{position:absolute;left:0;top:0;z-index:8;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 7px #8fc3ff)}
+.bolt-flash{position:absolute;inset:0;z-index:7;pointer-events:none;mix-blend-mode:screen;opacity:0}
+.bolt-spark{position:absolute;z-index:200;width:5px;height:5px;margin:-2px 0 0 -2px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #9fc9ffcc;pointer-events:none}
+.bolt-ring{position:absolute;z-index:150;width:70px;height:26px;border:1.5px solid #cfe5ffcc;border-radius:50%;pointer-events:none}
 .kr.is-drag .kr-bob{animation-play-state:paused;transform:translateY(-6px) scale(1.06)}
 .kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
@@ -414,7 +419,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 const SUPABASE_URL = "https://zhhgrxxinjsrdtbdfjql.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_-T2D3SA7nzlEk8l9h8jefA_8fELcPbZ";
 const ENDPOINT = SUPABASE_URL + "/rest/v1/krathongs";
-const COLUMNS = "id,display_name,flower,wish,created_at";
+let COLUMNS = "id,display_name,flower,wish,created_at,blocked";
 const COOLDOWN_MS = 30000;
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -860,11 +865,12 @@ function dateLabel(value) {
 }
 function render() {
   if ($("count")) $("count").textContent = totalCount == null ? (hasLoaded ? String(wishes.length) + (wishes.length === 100 ? "+" : "") : "—") : totalCount.toLocaleString("th-TH");
-  $("feed").innerHTML = wishes.length ? wishes.slice(0, visibleCount).map(w =>
+  const list = wishes.filter(w => !w.blocked);
+  $("feed").innerHTML = list.length ? list.slice(0, visibleCount).map(w =>
     `<article class="wish-card"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`).join("")
     : `<p class="empty">${hasLoaded ? "ยังไม่มีกระทงในสายน้ำ มาเป็นคนแรกที่ฝากคำอธิษฐานกันครับ" : "ยังไม่มีข้อมูลให้แสดง"}</p>`;
   syncRiver();
-  $("showMore").hidden = visibleCount >= wishes.length;
+  $("showMore").hidden = visibleCount >= list.length;
 }
 async function api(query, options = {}) {
   const controller = new AbortController();
@@ -902,14 +908,30 @@ async function loadKrathongs(quiet = false) {
   $("feed").setAttribute("aria-busy", "true");
   if (!quiet) setStatus("กำลังโหลดกระทงจากสายน้ำ…");
   try {
-    const response = await api("?select=" + COLUMNS + "&order=created_at.desc.nullslast,id.desc&limit=100", {headers:{Prefer:"count=exact"}});
+    const listQuery = () => "?select=" + COLUMNS + "&order=created_at.desc.nullslast,id.desc&limit=100";
+    let response;
+    try { response = await api(listQuery(), {headers:{Prefer:"count=exact"}}); }
+    catch (error) {
+      // ยังไม่ได้รัน SQL คอลัมน์ blocked -> ถอยกลับไปใช้คอลัมน์เดิม เว็บยังทำงานปกติ
+      if (error.status === 400 && COLUMNS.includes(",blocked")) { COLUMNS = COLUMNS.replace(",blocked", ""); response = await api(listQuery(), {headers:{Prefer:"count=exact"}}); }
+      else throw error;
+    }
     const rows = await response.json();
     if (!Array.isArray(rows)) throw new Error("Unexpected response");
-    wishes = rows;
+    // กระทงที่ถูกบล็อก: แสดงเฉพาะที่เพิ่งลอย (ภายใน 2.5 นาที) เพื่อให้ฟ้าผ่าให้เห็น นอกนั้นซ่อน
+    const recent = Date.now() - 150000, doomed = [];
+    wishes = rows.filter(r => {
+      if (!r.blocked) return true;
+      if (struck.has(r.id)) return false;
+      const t = Date.parse(r.created_at);
+      if (items.has(r.id) || r.id === justLaunchedId || (Number.isFinite(t) && t > recent)) { doomed.push(r); return true; }
+      return false;
+    });
     const count = (response.headers.get("content-range") || "").split("/")[1];
     totalCount = count && count !== "*" && Number.isFinite(Number(count)) ? Number(count) : null;
     hasLoaded = true;
     render();
+    doomed.forEach((r, i) => scheduleStrike(r.id, r.id === justLaunchedId ? 2800 : 1600 + i * 1800));
     setStatus("");
     return true;
   } catch (error) {
@@ -999,12 +1021,98 @@ function syncRiver() {
   const compact = window.innerWidth < 700 || window.innerHeight < 520;
   const list = wishes.slice(0, compact ? 6 : 12);
   const ids = new Set(list.map(w => w.id));
-  items.forEach((it, id) => { if (!ids.has(id)) { it.el.remove(); items.delete(id); } });
+  items.forEach((it, id) => { if (!ids.has(id) && !it.striking) { it.el.remove(); items.delete(id); } });
   const first = !riverReady;
   list.forEach((w, i) => { if (!items.has(w.id)) addItem(w, i, !first && hasLoaded, w.id === justLaunchedId); });
   if (hasLoaded) riverReady = true;
   $("riverEmpty").hidden = !(hasLoaded && !wishes.length);
   measure();
+}
+
+/* =========================================================
+   ฟ้าผ่ากระทงที่มีคำต้องห้าม (เซิร์ฟเวอร์ตั้ง blocked ให้ หน้าเว็บแค่แสดงเอฟเฟกต์แล้วเอาออก)
+   ========================================================= */
+const struck = new Set();
+try { JSON.parse(localStorage.getItem("loy:struck") || "[]").slice(-300).forEach(id => struck.add(id)); } catch (_) {}
+const striking = new Set();
+function markStruck(id) {
+  struck.add(id);
+  try { localStorage.setItem("loy:struck", JSON.stringify([...struck].slice(-300))); } catch (_) {}
+}
+function scheduleStrike(id, delay) {
+  if (striking.has(id) || struck.has(id)) return;
+  striking.add(id);
+  setTimeout(() => strikeKrathong(id), delay);
+}
+function removeStruck(id) {
+  const it = items.get(id);
+  if (it) { it.el.remove(); items.delete(id); }
+  wishes = wishes.filter(w => w.id !== id);
+  striking.delete(id);
+  render();
+}
+function strikeKrathong(id) {
+  const it = items.get(id), hero = $("hero");
+  markStruck(id);
+  if (!it) { removeStruck(id); return; }
+  it.striking = true; it.drag = true;           // หยุดลอยระหว่างโดนผ่า
+  if (reduceMotion.matches || !it.el.animate) {  // ลดการเคลื่อนไหว: แค่จางหาย
+    it.el.style.transition = "opacity .6s"; it.el.style.opacity = "0";
+    setTimeout(() => removeStruck(id), 700); return;
+  }
+  const hr = hero.getBoundingClientRect(), er = it.el.getBoundingClientRect();
+  const tx = er.left + er.width / 2 - hr.left, ty = er.top + er.height * .6 - hr.top;
+  // เส้นฟ้าผ่าซิกแซกจากฟ้าลงมาที่กระทง
+  const NS = "http://www.w3.org/2000/svg", pts = [[tx + (Math.random() - .5) * 60, -10]];
+  const steps = 9;
+  for (let i = 1; i < steps; i++) {
+    const k = i / steps, spread = 34 * (1 - k * .8);
+    pts.push([tx + (Math.random() - .5) * 2 * spread * (1 - k * .5), (ty + 10) * k]);
+  }
+  pts.push([tx, ty]);
+  const d = "M" + pts.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L");
+  const mid = pts[4], br = "M" + mid[0].toFixed(1) + " " + mid[1].toFixed(1) + "l" + ((Math.random() < .5 ? -1 : 1) * (26 + Math.random() * 18)).toFixed(1) + " " + (30 + Math.random() * 20).toFixed(1);
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("class", "bolt"); svg.setAttribute("width", hr.width); svg.setAttribute("height", hr.height);
+  svg.setAttribute("viewBox", "0 0 " + hr.width.toFixed(0) + " " + hr.height.toFixed(0)); svg.setAttribute("aria-hidden", "true");
+  svg.innerHTML = `<path d="${d} ${br}" fill="none" stroke="#9fc9ff" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/><path d="${d} ${br}" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  hero.appendChild(svg);
+  const paths = svg.querySelectorAll("path");
+  paths.forEach(pa => { const L = pa.getTotalLength ? pa.getTotalLength() + 40 : 900; pa.style.strokeDasharray = L; pa.animate([{strokeDashoffset:L},{strokeDashoffset:0}], {duration:150, easing:"ease-out", fill:"forwards"}); });
+  svg.animate([{opacity:1},{opacity:1,offset:.5},{opacity:0}], {duration:520, delay:150, fill:"forwards"});
+  // แสงแฟลชบนฟ้า (ครั้งเดียว ไม่กระพริบรัว)
+  const flash = document.createElement("div");
+  flash.className = "bolt-flash";
+  flash.style.background = "radial-gradient(ellipse 80% 70% at " + (tx / hr.width * 100).toFixed(0) + "% 30%,#e3f0ffcc,#9fc4ff55 45%,transparent 75%)";
+  hero.appendChild(flash);
+  flash.animate([{opacity:0},{opacity:.7,offset:.12},{opacity:0}], {duration:560, easing:"ease-out", fill:"forwards"});
+  // กระทงโดนผ่า: สว่างวาบ สั่น ไหม้ดำ แล้วจมหาย
+  setTimeout(() => {
+    const bob = it.el.querySelector(".kr-bob");
+    it.el.classList.add("struck");
+    bob.animate([
+      {filter:"brightness(1)", transform:"translateX(0)"},
+      {filter:"brightness(4.5) saturate(.2)", transform:"translateX(-4px)", offset:.1},
+      {filter:"brightness(2.6) saturate(.3)", transform:"translateX(5px)", offset:.2},
+      {filter:"brightness(1.4) saturate(.3)", transform:"translateX(-4px)", offset:.3},
+      {filter:"brightness(.45) sepia(1) saturate(.6)", transform:"translateX(3px)", offset:.5},
+      {filter:"brightness(.2) sepia(1)", transform:"translateY(8px) scale(.9)", opacity:.7, offset:.78},
+      {filter:"brightness(.1)", transform:"translateY(22px) scale(.7)", opacity:0}
+    ], {duration:1150, easing:"ease-in", fill:"forwards"});
+    // ประกายแตกกระจาย + ระลอกน้ำ
+    const rr = river.getBoundingClientRect(), cx = er.left + er.width / 2 - rr.left, cy = er.top + er.height * .6 - rr.top;
+    for (let i = 0; i < 9; i++) {
+      const sp = document.createElement("i"); sp.className = "bolt-spark";
+      sp.style.left = cx + "px"; sp.style.top = cy + "px"; river.appendChild(sp);
+      const a = Math.PI * 2 * i / 9 + Math.random() * .5, dist = 30 + Math.random() * 40;
+      sp.animate([{transform:"translate(0,0) scale(1)", opacity:1},{transform:"translate(" + (Math.cos(a) * dist).toFixed(0) + "px," + (Math.sin(a) * dist * .6 - 12).toFixed(0) + "px) scale(.2)", opacity:0}], {duration:650 + Math.random() * 250, easing:"ease-out", fill:"forwards"}).onfinish = () => sp.remove();
+    }
+    const ring = document.createElement("i"); ring.className = "bolt-ring";
+    ring.style.left = cx + "px"; ring.style.top = (er.bottom - rr.top - er.height * .15) + "px"; river.appendChild(ring);
+    ring.animate([{transform:"translate(-50%,-50%) scale(.2)", opacity:.8},{transform:"translate(-50%,-50%) scale(3.2)", opacity:0}], {duration:1000, easing:"ease-out", fill:"forwards"}).onfinish = () => ring.remove();
+  }, 140);
+  setTimeout(() => { svg.remove(); flash.remove(); }, 800);
+  setTimeout(() => removeStruck(id), 1500);
 }
 let hintHidden = false;
 function hideHint() { if (!hintHidden) { hintHidden = true; $("hint").classList.add("hide"); } }
@@ -1137,6 +1245,7 @@ function openCreate() {
   openModal($("createModal"), $("createDialog"));
 }
 function openWish(w) {
+  if (w && w.blocked) return;
   $("viewScene").innerHTML = krathongSVG(decode(w.flower), {anim:true});
   $("viewWish").textContent = w.wish || "";
   $("viewBy").textContent = "— " + (w.display_name || "ไม่ระบุชื่อ");
@@ -1287,7 +1396,7 @@ $("launch").onclick = async () => {
       // A previous request may have committed even when its response was lost.
       const check = await api("?select=" + COLUMNS + "&id=eq." + encodeURIComponent(pendingSubmission.row.id));
       const rows = await check.json();
-      if (!rows.length || rows[0].wish !== wish || rows[0].display_name !== name || rows[0].flower !== code) throw error;
+      if (!rows.length || (!rows[0].blocked && (rows[0].wish !== wish || rows[0].display_name !== name)) || rows[0].flower !== code) throw error;
     }
     saved = true;
     justLaunchedId = pendingSubmission.row.id;
