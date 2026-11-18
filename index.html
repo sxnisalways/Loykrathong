@@ -180,18 +180,27 @@ main{width:min(100% - 32px,var(--page));margin:auto;padding:22px 0 80px}
 .connection-status{color:var(--muted);font-size:13px;line-height:1.7;text-align:center;overflow-wrap:anywhere;margin:0 0 8px}
 .connection-status:empty{display:none}
 .connection-status.error,.form-status.error{color:#ffc4be}
-.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:30px 0 16px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:30px 0 22px}
 .section-head h2{margin:0;font-family:var(--serif);font-size:clamp(21px,3vw,28px);color:var(--gold)}
 .section-head span{font-size:12px;color:var(--muted)}
-.feed{display:grid;grid-template-columns:1fr;gap:12px}
-.wish-card{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:start;background:linear-gradient(180deg,#ffffff0e,#ffffff06);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
-.wish-card .thumb{width:76px;padding-top:4px}
-.wish-card .thumb svg{width:100%;height:auto;display:block}
-.wish-card .meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px}
-.wish-card p{margin:6px 0;line-height:1.75;font-size:var(--fs-wish);overflow-wrap:anywhere}
-.wish-card .by{color:var(--gold);font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.feed{display:grid;grid-template-columns:1fr;gap:16px}
+.wish-card{display:grid;grid-template-columns:clamp(72px,20vw,92px) minmax(0,1fr);gap:clamp(14px,3vw,20px);align-items:center;min-width:0;
+  padding:clamp(16px,3.4vw,22px) clamp(16px,3.4vw,22px) clamp(16px,3.4vw,22px) clamp(12px,2.6vw,18px);
+  background:linear-gradient(155deg,#12365a52 0%,#0a223c70 55%,#07182c8c 100%);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  border:1px solid #b9cde026;border-radius:22px;
+  box-shadow:0 12px 30px #00000042,inset 0 1px 0 #ffffff14}
+.wish-card .thumb{width:100%;padding:0;align-self:center}
+.wish-card .thumb svg{width:100%;height:auto;display:block;filter:drop-shadow(0 5px 8px #00000040)}
+.wish-card .wbody{min-width:0}
+.wish-card .wlabel{font-size:11px;letter-spacing:.16em;color:#8fa7ba;opacity:.8;margin-bottom:6px}
+.wish-card p{margin:0;line-height:1.85;font-size:var(--fs-wish);color:#f6f2e6;white-space:pre-line;overflow-wrap:anywhere}
+.wish-card .foot{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 14px;margin-top:12px;padding-top:10px;border-top:1px solid #ffffff12}
+.wish-card .by{color:#f1dca6;font-size:14px;font-weight:600;overflow-wrap:anywhere;min-width:0}
+.wish-card .when{color:#8ea5b8;font-size:12px;white-space:nowrap}
+.river-fade{height:64px;margin-bottom:-22px;background:linear-gradient(180deg,#030e1c,#06152800);pointer-events:none}
 .empty{grid-column:1/-1;color:var(--muted);text-align:center;padding:24px 12px;line-height:1.8}
-.feed-tools{text-align:center;margin-top:18px}
+.feed-tools{text-align:center;margin-top:28px}
 footer{text-align:center;color:#91aab2;font-size:12px;margin-top:40px;line-height:1.8}
 .fab{position:fixed;z-index:6;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));min-height:54px;border-radius:99px;padding:14px 22px;
   transform:translateY(90px);opacity:0;pointer-events:none;transition:transform .35s,opacity .35s}
@@ -250,7 +259,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 @media(min-width:640px){
   .feed{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(min-width:960px){
+@media(min-width:1100px){
   .feed{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(min-width:760px),(orientation:landscape) and (max-height:520px) and (min-width:560px){
@@ -344,6 +353,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 
 </div>
 
+<div class="river-fade" aria-hidden="true"></div>
 <main>
   <p id="connectionStatus" class="connection-status" role="status" aria-live="polite">กำลังโหลดกระทงจากสายน้ำ…</p>
   <section id="feedSection">
@@ -846,7 +856,7 @@ function dateLabel(value) {
 function render() {
   if ($("count")) $("count").textContent = totalCount == null ? (hasLoaded ? String(wishes.length) + (wishes.length === 100 ? "+" : "") : "—") : totalCount.toLocaleString("th-TH");
   $("feed").innerHTML = wishes.length ? wishes.slice(0, visibleCount).map(w =>
-    `<article class="wish-card"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div><div class="meta"><span>คำอธิษฐาน</span><span>${escapeHTML(dateLabel(w.created_at))}</span></div><p>${escapeHTML(w.wish)}</p><div class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</div></div></article>`).join("")
+    `<article class="wish-card"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`).join("")
     : `<p class="empty">${hasLoaded ? "ยังไม่มีกระทงในสายน้ำ มาเป็นคนแรกที่ฝากคำอธิษฐานกันครับ" : "ยังไม่มีข้อมูลให้แสดง"}</p>`;
   syncRiver();
   $("showMore").hidden = visibleCount >= wishes.length;
