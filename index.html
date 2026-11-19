@@ -313,6 +313,28 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   .moon{top:60px}
   .preview{height:120px}
 }
+
+/* ---------- NATURAL WATER (subtle) ---------- */
+.moon-reflect i{animation-name:shimmer2}
+@keyframes shimmer2{0%,100%{transform:translateX(calc(var(--j,5px)*-1)) scaleX(.9);opacity:.18}50%{transform:translateX(var(--j,5px)) scaleX(1.05);opacity:.85}}
+.wave svg{animation:wbreath var(--b,11s) ease-in-out infinite alternate}
+@keyframes wbreath{from{opacity:.45}to{opacity:1}}
+.flow{position:absolute;left:-50%;width:200%;pointer-events:none;will-change:transform;opacity:.5;
+  background:repeating-linear-gradient(90deg,transparent 0,#b5e3f51c 60px,transparent 130px,transparent 220px,#b5e3f512 290px,transparent 360px,transparent 470px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 50%,transparent);mask-image:linear-gradient(180deg,transparent,#000 50%,transparent);
+  animation:flowdrift var(--t,40s) linear infinite}
+@keyframes flowdrift{from{transform:translateX(0)}to{transform:translateX(25%)}}
+.mist{position:absolute;left:0;right:0;top:0;height:30%;pointer-events:none;background:radial-gradient(ellipse 70% 100% at 30% 0,#9fd0e626,transparent 70%),radial-gradient(ellipse 60% 100% at 78% 0,#c9e4ee1a,transparent 70%);animation:mistb 16s ease-in-out infinite alternate}
+@keyframes mistb{from{opacity:.55;transform:translateX(-2%)}to{opacity:1;transform:translateX(2%)}}
+.depth{position:absolute;left:0;right:0;bottom:0;height:62%;pointer-events:none;background:linear-gradient(180deg,transparent,#02101f66 55%,#010a1480)}
+.kr-rip{position:absolute;left:50%;top:calc(var(--kw)*.44);width:0;height:0;pointer-events:none}
+.kr-rip i{position:absolute;left:calc(var(--kw)*-.5);top:calc(var(--kw)*-.12);width:var(--kw);height:calc(var(--kw)*.24);border:1px solid #d9f1fa;border-radius:50%;opacity:0;animation:krrip 5.4s ease-out infinite}
+.kr-rip i:nth-child(2){animation-delay:-1.8s}.kr-rip i:nth-child(3){animation-delay:-3.6s}
+@keyframes krrip{0%{transform:scale(.62);opacity:.34}70%{opacity:.08}100%{transform:scale(1.5);opacity:0}}
+.kr-rip:before{content:"";position:absolute;right:calc(var(--kw)*.18);top:calc(var(--kw)*-.025);width:calc(var(--kw)*.95);height:calc(var(--kw)*.05);border-radius:50%;background:linear-gradient(270deg,#d9f1fa40,transparent);filter:blur(1.5px);opacity:.7;animation:wake 4.2s ease-in-out infinite alternate}
+@keyframes wake{from{transform:scaleX(.8);opacity:.45}to{transform:scaleX(1.05);opacity:.8}}
+.kr.is-drag .kr-rip i,.kr:hover .kr-rip i,.kr.is-drag .kr-rip:before,.kr:hover .kr-rip:before{animation-play-state:paused}
+@media(max-width:600px){.flow.f2,.mist{display:none}}
 @media(prefers-reduced-motion:reduce){
   .fx,#fwCanvas{display:none!important}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -355,7 +377,9 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
   <section class="water" id="water" aria-label="แม่น้ำออนไลน์">
     <div class="moon-reflect" id="moonReflect" aria-hidden="true"></div>
     <div id="waves" aria-hidden="true"></div>
+    <div class="mist" aria-hidden="true"></div>
     <div class="glitter" aria-hidden="true"></div>
+    <div class="depth" aria-hidden="true"></div>
     <div class="river-label" aria-hidden="true">✦ สายน้ำแห่งคำอธิษฐาน ✦</div>
     <div class="krathongs" id="river"></div>
     <div class="river-empty" id="riverEmpty" hidden>ยังไม่มีกระทงในสายน้ำ<br>มาเป็นคนแรกที่ปล่อยกระทงกันครับ</div>
@@ -707,8 +731,6 @@ function krathongSVG(spec, opt) {
     <ellipse cx="${cx}" cy="${by + 7}" rx="${B.rt + 24}" ry="12" fill="url(#${u}wg)"${A?' class="glow"':''}/>
     ${streaks}
     <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 4}" ry="8" fill="#000" fill-opacity=".38"/>
-    <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 8}" ry="9" fill="none" stroke="#fff" stroke-opacity=".3"${A?' class="ripple"':''}/>
-    <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 8}" ry="9" fill="none" stroke="#fff" stroke-opacity=".25"${A?' class="ripple" style="animation-delay:-1.8s"':''}/>
     <path d="${side}" fill="url(#${u}sd)"/>${deco}
     <path d="M${cx - B.rt * .62} ${cy + 3}L${cx - B.rb * .6} ${by - 1}" stroke="#fff" stroke-opacity=".22" stroke-width="${B.h < 12 ? 2 : 5}" stroke-linecap="round"/>
     <ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="${B.top}"/><ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="url(#${u}tp)"/>${topDeco}
@@ -731,9 +753,14 @@ function krathongSVG(spec, opt) {
   $("stars").innerHTML = s;
   // แสงจันทร์สะท้อน: เส้นแสงขาดเป็นช่วง ๆ ยิ่งใกล้ตัวยิ่งกว้างและกระเพื่อมมากขึ้น + ประกายแสงวิบ ๆ
   let m = "";
+  const segMax = window.innerWidth < 600 ? 2 : 3;
   for (let i = 0; i < 16; i++) {
-    const t = i / 15, w = 26 + t * 96;
-    m += `<i style="top:${r1(2 + t * t * 64 + i * 1.2)}%;width:${r1(w)}%;left:${r1((100 - w) / 2)}%;height:${r1(2 + t * 2.4)}px;animation-delay:${r1(-i * .37)}s;animation-duration:${r1(2.6 + (i % 4) * .5)}s;--j:${r1(3 + t * 11)}px"></i>`;
+    const t = i / 15, w = 26 + t * 96, left0 = (100 - w) / 2, k = 1 + Math.floor(Math.random() * segMax), gap = 3 + t * 5;
+    const part = (w - gap * (k - 1)) / k;
+    for (let j = 0; j < k; j++) {
+      const wj = part * (.55 + Math.random() * .45), lj = left0 + j * (part + gap) + Math.random() * (part - wj);
+      m += `<i style="top:${r1(2 + t * t * 64 + i * 1.2 + (Math.random() - .5) * 1.6)}%;width:${r1(wj)}%;left:${r1(lj)}%;height:${r1(1.6 + t * 2.2)}px;animation-delay:${r1(-Math.random() * 4)}s;animation-duration:${r1(2.8 + Math.random() * 2.6)}s;--j:${r1(2 + t * 9)}px"></i>`;
+    }
   }
   for (let i = 0; i < 14; i++) {
     m += `<b class="glint" style="left:${r1(-30 + Math.random() * 160)}%;top:${r1(4 + Math.random() * 70)}%;animation-delay:${r1(-Math.random() * 4)}s;animation-duration:${r1(2.5 + Math.random() * 2.5)}s"></b>`;
@@ -745,12 +772,13 @@ function krathongSVG(spec, opt) {
     [3, 16, 10, 70, 0, .35, .8], [8, 12, 12, 60, 1, .38, .9], [15, 12, 16, 52, 0, .42, 1],
     [25, 8, 20, 44, 1, .46, 1.1], [38, 8, 26, 38, 0, .5, 1.3], [54, 4, 32, 32, 1, .55, 1.5], [74, 4, 40, 28, 0, .5, 1.7]
   ];
-  const swells = [[10, 24], [38, 30], [66, 26]].map(([top, t]) => `<div class="swell" style="top:${top}%;--t:${t}s"></div>`).join("");
+  const swells = [[10, 24], [38, 30], [66, 26]].map(([top, t]) => `<div class="swell" style="top:${top}%;--t:${t}s"></div>`).join("") +
+    `<div class="flow" style="top:18%;height:16%;--t:46s"></div><div class="flow f2" style="top:52%;height:20%;--t:38s;animation-direction:reverse;opacity:.4"></div>`;
   $("waves").innerHTML = swells + rows.map(([top, n, hpx, t, rev, o, sw], i) => {
     const st = 2400 / n;
     let d = `M0 ${hpx / 2}Q${r1(st / 2)} ${r1(hpx * .1)} ${r1(st)} ${hpx / 2}`;
     for (let x = 2 * st; x <= 2400.5; x += st) d += `T${r1(x)} ${hpx / 2}`;
-    return `<div class="wave" style="top:${top}%;height:${hpx}px;--t:${t}s;opacity:${o};${rev ? "animation-direction:reverse" : ""}"><svg viewBox="0 0 2400 ${hpx}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${i % 3 === 0 ? "#f5c66b" : "#a9d8ec"}" stroke-opacity=".55" stroke-width="${sw}" vector-effect="non-scaling-stroke"/></svg></div>`;
+    return `<div class="wave" style="top:${top}%;height:${hpx}px;--t:${t}s;--b:${(8 + (i * 37) % 9)}s;opacity:${o};${rev ? "animation-direction:reverse" : ""}"><svg viewBox="0 0 2400 ${hpx}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${i % 3 === 0 ? "#f5c66b" : "#a9d8ec"}" stroke-opacity=".55" stroke-width="${sw}" vector-effect="non-scaling-stroke"/></svg></div>`;
   }).join("");
 
   // เงาของแนวต้นไม้/วัดสะท้อนลงในน้ำ (พลิกกลับ จางลง ไหวเล็กน้อย)
@@ -807,8 +835,9 @@ function shootingStar() {
    ขึ้นไปหาดวงจันทร์ใช้เวลาราว 3 วินาที เปลี่ยนเป็นสีทองนวลเมื่อใกล้ถึง แล้วจางหาย เกิดประกายรอบดวงจันทร์
    จากนั้นกลับสู่ฉากปกติ (canvas ชั่วคราว ไม่รับการแตะ) */
 let wishRunning = false;
+const WISH_LIGHT = false;   // ปิดละอองแสงตอนปล่อยกระทงไว้ก่อน (เปลี่ยนเป็น true เพื่อเปิดกลับ)
 function wishLight() {
-  if (wishRunning || reduceMotion.matches) return;
+  if (!WISH_LIGHT || wishRunning || reduceMotion.matches) return;
   const cv = $("fwCanvas"), ctx = cv.getContext && cv.getContext("2d"), moonEl = document.querySelector(".moon");
   if (!ctx || !moonEl) return;
   wishRunning = true;
@@ -1033,7 +1062,7 @@ function addItem(w, index, fresh, mine) {
   el.setAttribute("role", "button");
   el.tabIndex = 0;
   el.setAttribute("aria-label", "อ่านคำอธิษฐานของ " + name);
-  el.innerHTML = `<div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
+  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
   river.appendChild(el);
   let x, y;
   if (mine) { x = .2; y = .62; }
