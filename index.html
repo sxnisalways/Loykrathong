@@ -152,7 +152,7 @@ button:disabled{opacity:.6;cursor:wait}
 .kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:13px;font-weight:500;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
 .kr.mine .kr-name{background:var(--gold);color:#1b2a30;border-color:transparent;font-weight:700}
 @keyframes krIn{from{opacity:0}to{opacity:1}}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.8deg)}25%{transform:translateY(-3px) rotate(.6deg)}50%{transform:translateY(-5px) rotate(2deg)}75%{transform:translateY(-2px) rotate(-.4deg)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(calc(-1.8deg*var(--sw,1)))}25%{transform:translateY(calc(-3px*var(--sw,1))) rotate(calc(.6deg*var(--sw,1)))}50%{transform:translateY(calc(-5px*var(--sw,1))) rotate(calc(2deg*var(--sw,1)))}75%{transform:translateY(calc(-2px*var(--sw,1))) rotate(calc(-.4deg*var(--sw,1)))}}
 .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker 1.7s ease-in-out infinite}
 @keyframes flicker{0%,100%{transform:scale(1,1) skewX(0)}20%{transform:scale(.94,1.07) skewX(-2.5deg)}45%{transform:scale(1.05,.93) skewX(2deg)}70%{transform:scale(.97,1.05) skewX(-1deg)}}
 .glow{transform-box:fill-box;transform-origin:50% 50%;animation:glowp 2.6s ease-in-out infinite}
@@ -318,6 +318,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 #waterGL{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 .water.gl:before{z-index:1}
 .water.gl .kr-rip{display:none}
+.water.gl.tx .temple-ref{display:none}
 .water.gl #waves,.water.gl .glitter,.water.gl .mist,.water.gl .depth,.water.gl #moonReflect{display:none}
 /* ---------- NATURAL WATER (subtle) ---------- */
 .moon-reflect i{animation-name:shimmer2}
@@ -1065,6 +1066,8 @@ function place(it) {
   const s = .72 + .5 * it.y;
   it.el.style.transform = "translate3d(" + (it.x * W - it.w / 2).toFixed(1) + "px," + (it.y * H - it.h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
   it.el.style.zIndex = Math.round(it.y * 100);
+  const sw = (.55 + .7 * Math.min(1, it.y)).toFixed(1);   // ไกลโยกน้อย ใกล้โยกมาก
+  if (it.sw !== sw) { it.sw = sw; it.el.style.setProperty("--sw", sw); }
 }
 function addItem(w, index, fresh, mine) {
   const spec = decode(w.flower), name = w.display_name || "ไม่ระบุชื่อ";
@@ -1077,16 +1080,18 @@ function addItem(w, index, fresh, mine) {
   el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
   river.appendChild(el);
   let x, y;
-  if (mine) { x = .2; y = .62; }
+  if (mine) { x = .2; y = .62; }   // กระทงของฉันลอยเข้ามาจากขอบน้ำด้านล่าง (ดู it.enter)
   else if (fresh) { x = -.12; y = .1 + .62 * frac(h1 * 7.3); }
   else { x = .08 + .84 * frac(index * .618034 + .13); y = .1 + .62 * frac(index * .381966 + .31); }
   const it = {id:w.id, wish:w, el, x, y, v:.010 + .012 * h2, w:KW, h:0, drag:false, hover:false, moved:false};
   it.h = el.offsetHeight || KW * .6;
+  if (mine && !reduceMotion.matches) { it.enter = {t0:performance.now(), y0:1.04, y1:y, x1:x, dur:2100}; it.y = it.enter.y0; it.x = x - .05; }
   items.set(w.id, it);
   place(it);
 
   el.addEventListener("pointerdown", e => {
     if (e.button > 0) return;
+    it.enter = null;
     const rc = river.getBoundingClientRect();
     it.drag = true; it.moved = false; it.px = e.clientX; it.py = e.clientY;
     it.gx = (e.clientX - rc.left) / W - it.x; it.gy = (e.clientY - rc.top) / H - it.y;
@@ -1218,6 +1223,12 @@ function tick(t) {
   const dt = Math.min(.1, (t - last) / 1000 || 0); last = t;
   if (riverVisible && !document.hidden && !reduceMotion.matches) {
     items.forEach(it => {
+      if (it.enter) {
+        const p = Math.min(1, (performance.now() - it.enter.t0) / it.enter.dur), e = 1 - Math.pow(1 - p, 3);
+        it.y = it.enter.y0 + (it.enter.y1 - it.enter.y0) * e; it.x = it.enter.x1 - .05 * (1 - e);
+        if (p >= 1) it.enter = null;
+        place(it); return;
+      }
       if (it.drag || it.hover) return;
       it.x += it.v * dt;
       const half = (it.w * .6) / W;
@@ -1522,7 +1533,7 @@ $("launch").onclick = async () => {
     else setStatus("บันทึกกระทงสำเร็จแล้ว แต่โหลดรายการล่าสุดไม่สำเร็จ กรุณากด ‘โหลดข้อมูลใหม่’ โดยไม่ต้องส่งกระทงซ้ำ", true);
     const moonRect = document.querySelector(".moon").getBoundingClientRect(), mineItem = items.get(justLaunchedId), vh = window.innerHeight;
     const moonY = moonRect.top + moonRect.height / 2 + window.scrollY;
-    const krY = mineItem ? mineItem.el.getBoundingClientRect().bottom + window.scrollY : 0;
+    const krY = mineItem ? mineItem.el.getBoundingClientRect().bottom + window.scrollY - (mineItem.enter ? (mineItem.y - mineItem.enter.y1) * H : 0) : 0;
     if (mineItem && krY - moonY < vh - 120) window.scrollTo({top:Math.max(0, (moonY + krY) / 2 - vh / 2), behavior:"smooth"});
     else $("water").scrollIntoView({behavior:"smooth", block:"center"});
   } else $("wish").focus({preventScroll:true});
@@ -1545,7 +1556,7 @@ window.addEventListener("online", () => { if (!saving) loadKrathongs(); });
   if (!gl) return;
   const VS = "attribute vec2 p;varying vec2 vUv;void main(){vUv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}";
   const FS = `precision highp float;
-varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; uniform vec4 uK[16]; uniform float uG[16];
+varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; uniform vec4 uK[16]; uniform float uG[16]; uniform sampler2D uTex; uniform vec4 uTemple;
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*noise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return s;}
@@ -1605,6 +1616,18 @@ void main(){
   float mist=exp(-d*8.)*(.35+.65*fbm(vec2(vUv.x*asp*1.4+uT*.012,d*3.+uT*.008)));
   col+=vec3(.42,.56,.66)*mist*.2;
   col*=.75;   // ลดความสว่างน้ำ 25%
+  // เงาพระปรางค์สะท้อนน้ำ: ภาพวัดกลับด้าน ระริกตามคลื่น เบลอเล็กน้อย จางลงตามระยะ
+  if(uTemple.w>.5){
+    float r=d/uTemple.z, ux=(vUv.x-uTemple.x)/uTemple.y+.5;
+    if(r>0. && r<1. && ux>0. && ux<1.){
+      float wob=(n.x*.9+(noise(vec2(d*38.,uT*.5))-.5)*1.4)*.007*(.3+r*1.3);
+      float bl=.004*(.6+r);
+      vec4 t=vec4(0.);
+      for(int j=-2;j<=2;j++){ vec2 tc=vec2(ux+wob+float(j)*bl,1.-r); t+=texture2D(uTex,tc)*(j==0?.3:(abs(float(j))==1.?.22:.13)); }
+      float m=(1.-smoothstep(0.,.78,r))*smoothstep(0.,.14,ux)*(1.-smoothstep(.86,1.,ux))*.36;
+      col=col*(1.-t.a*m*.35)+t.rgb*m;
+    }
+  }
   gl_FragColor=vec4(col,1.);
 }`;
   function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; }
@@ -1616,11 +1639,12 @@ void main(){
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon"), uK = gl.getUniformLocation(pr, "uK[0]"), uG = gl.getUniformLocation(pr, "uG[0]"), kArr = new Float32Array(64), gArr = new Float32Array(16);
+  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon"), uK = gl.getUniformLocation(pr, "uK[0]"), uG = gl.getUniformLocation(pr, "uG[0]"), uTemple = gl.getUniformLocation(pr, "uTemple"), kArr = new Float32Array(64), gArr = new Float32Array(16);
   let quality = 0;   // 0 ปกติ, 1 ลดความละเอียด, 2 ปิดระลอก, 3 กลับไปใช้น้ำ CSS (ตัวคุมประสิทธิภาพอัตโนมัติ)
   try { quality = Math.min(2, Number(localStorage.getItem("loy:wq")) || 0); } catch (_) {}
   water.dataset.q = quality;
   let alive = true, last = 0, t0 = performance.now();
+  let texReady = false;
   function size() {
     const r = water.getBoundingClientRect(); if (!r.width || !r.height) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1), sc = (r.width < 700 ? .5 : .7) * (quality >= 1 ? .7 : 1);
@@ -1628,6 +1652,9 @@ void main(){
     gl.viewport(0, 0, cv.width, cv.height);
     const mr = document.querySelector(".moon").getBoundingClientRect();
     gl.uniform2f(uRes, cv.width, cv.height);
+    const tpl = document.querySelector(".temple");
+    if (tpl) { const tr = tpl.getBoundingClientRect(); gl.uniform4f(uTemple, (tr.left + tr.width / 2 - r.left) / r.width, tr.width / r.width, tr.width * .625 / r.height, texReady ? 1 : 0); }
+    else gl.uniform4f(uTemple, 0, 1, 1, 0);
     gl.uniform2f(uMoon, (mr.left + mr.width / 2 - r.left) / r.width, mr.width / r.width * .5);
   }
   function ripples() {
@@ -1673,6 +1700,29 @@ void main(){
   cv.addEventListener("webglcontextlost", e => { e.preventDefault(); alive = false; water.classList.remove("gl"); cv.remove(); });
   water.insertBefore(cv, water.firstChild);
   water.classList.add("gl");
+  // แปลงภาพพระปรางค์ (SVG) เป็น texture สำหรับเงาสะท้อน — ถ้าไม่สำเร็จจะใช้เงา CSS เดิม
+  try {
+    const tpl = document.querySelector(".temple");
+    if (tpl) {
+      const c = tpl.cloneNode(true); c.removeAttribute("class");
+      c.setAttribute("xmlns", "http://www.w3.org/2000/svg"); c.setAttribute("width", "480"); c.setAttribute("height", "300");
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const cn = document.createElement("canvas"); cn.width = 480; cn.height = 300;
+          cn.getContext("2d").drawImage(img, 0, 0, 480, 300);
+          const tx = gl.createTexture(); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tx);
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cn);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          if (gl.getError() !== gl.NO_ERROR) return;
+          texReady = true; water.classList.add("tx"); size(); draw(performance.now());
+        } catch (_) {}
+      };
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(c));
+    }
+  } catch (_) {}
   size(); draw(performance.now());
   if (window.ResizeObserver) new ResizeObserver(() => { size(); draw(performance.now()); }).observe(water);
   else window.addEventListener("resize", () => { size(); draw(performance.now()); });
