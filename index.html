@@ -1398,13 +1398,54 @@ function setMusicLevel(v) {
   if (viaGain && musicGain) musicGain.gain.setTargetAtTime(v, actx.currentTime, .6);
   else bgm.volume = v;
 }
+
+// เสียงน้ำเบา ๆ ใต้เพลง: สร้างด้วยโค้ดทั้งหมด (ไม่ต้องมีไฟล์) เปิด/ปิดพร้อมเพลงด้วยปุ่มเสียงเดียวกัน
+const WATER_VOL = .12;   // ความดังของเสียงน้ำ (เพลง = MUSIC_VOL .5) แก้ตัวเลขนี้ได้
+let waterGain = null, waterBuf = null, lapTimer = null;
+function buildWater(c) {
+  const sr = c.sampleRate, len = Math.floor(sr * 6), xf = Math.floor(sr * .4);
+  const buf = c.createBuffer(1, len, sr), d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < len; i++) { last = (last + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }   // brown noise
+  for (let i = 0; i < xf; i++) { const k = i / xf; d[i] = d[i] * k + d[len - xf + i] * (1 - k); }               // ต่อหัวท้ายให้วนไม่สะดุด
+  waterBuf = buf;
+  waterGain = c.createGain(); waterGain.gain.value = 0; waterGain.connect(c.destination);
+  const layer = (offset, hp, lp, base, lfoHz, lfoAmt) => {
+    const src = c.createBufferSource(); src.buffer = buf; src.loop = true; src.loopEnd = (len - xf) / sr;
+    const f1 = c.createBiquadFilter(); f1.type = "highpass"; f1.frequency.value = hp;
+    const f2 = c.createBiquadFilter(); f2.type = "lowpass"; f2.frequency.value = lp; f2.Q.value = .4;
+    const g = c.createGain(); g.gain.value = base;
+    const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = lfoHz; lg.gain.value = lfoAmt;
+    lfo.connect(lg); lg.connect(g.gain);
+    src.connect(f1); f1.connect(f2); f2.connect(g); g.connect(waterGain);
+    src.start(0, offset); lfo.start();
+  };
+  layer(0, 60, 520, .7, .09, .3);        // เสียงน้ำพื้นนุ่ม ๆ หายใจช้า
+  layer(2.7, 400, 1500, .22, .13, .16);  // ชั้นเสียงกระเพื่อมบาง ๆ
+}
+function waterLap() {   // เสียงน้ำกระทบเบา ๆ เป็นครั้งคราว
+  lapTimer = setTimeout(waterLap, 4000 + Math.random() * 5000);
+  if (!soundOn || document.hidden || !actx || !waterGain || actx.state !== "running") return;
+  const c = actx, t = c.currentTime, src = c.createBufferSource();
+  src.buffer = waterBuf;
+  const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 500 + Math.random() * 700; bp.Q.value = 2.5;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.55, t + .3); g.gain.exponentialRampToValueAtTime(.001, t + 1.4);
+  src.connect(bp); bp.connect(g); g.connect(waterGain);
+  src.start(t, Math.random() * 4); src.stop(t + 1.5);
+}
+function setWaterLevel(v) { if (waterGain && actx) waterGain.gain.setTargetAtTime(v, actx.currentTime, .9); }
+function startWater() {
+  if (!actx) return;
+  try { if (!waterGain) { buildWater(actx); waterLap(); } setWaterLevel(WATER_VOL); } catch (_) { waterGain = null; }
+}
 async function startMusic() {
   ensureAudio();
-  try { await bgm.play(); bgmStarted = true; setMusicLevel(MUSIC_VOL); }
+  try { await bgm.play(); bgmStarted = true; setMusicLevel(MUSIC_VOL); startWater(); }
   catch (_) { soundOn = false; reflectSound(); setStatus("เล่นเพลงไม่ได้ กรุณาลองกดปุ่มเสียงอีกครั้ง", true); }
 }
 function stopMusic() {
-  setMusicLevel(0);
+  setMusicLevel(0); setWaterLevel(0);
   setTimeout(() => { if (!soundOn) bgm.pause(); }, 1800);
 }
 soundBtn.addEventListener("click", () => {
@@ -1427,8 +1468,8 @@ function resumeOnGesture(e) {
 }
 if (soundOn) { soundBtn.classList.remove("nudge"); GESTURES.forEach(g => document.addEventListener(g, resumeOnGesture, true)); }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) { if (bgmStarted) bgm.pause(); }
-  else if (soundOn && bgmStarted) bgm.play().catch(() => {});
+  if (document.hidden) { if (bgmStarted) bgm.pause(); setWaterLevel(0); }
+  else if (soundOn && bgmStarted) { bgm.play().catch(() => {}); setWaterLevel(WATER_VOL); }
 });
 reflectSound();
 
