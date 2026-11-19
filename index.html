@@ -317,6 +317,7 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 /* น้ำ WebGL: เมื่อใช้ shader ซ่อนชั้นน้ำ CSS เดิมที่ shader แทนที่ */
 #waterGL{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 .water.gl:before{z-index:1}
+.water.gl .kr-rip{display:none}
 .water.gl #waves,.water.gl .glitter,.water.gl .mist,.water.gl .depth,.water.gl #moonReflect{display:none}
 /* ---------- NATURAL WATER (subtle) ---------- */
 .moon-reflect i{animation-name:shimmer2}
@@ -603,7 +604,7 @@ function flowerIcon(type) {
   const u = "i" + (++svgSeq);
   return `<svg viewBox="-22 -36 44 42" aria-hidden="true"><defs>${flowerDefs(u)}</defs><g transform="scale(${type===1?1:.9}) translate(0 ${type===1?2:0})">${flowerMarkup(type, u)}</g></svg>`;
 }
-function leafMarkup(style, w, h, fill, st, dk) {
+function leafMarkup(style, w, h, fill, st, dk, u, v) {
   st = st || "#1d5a28"; dk = dk || "#16461f";
   let d, half, extra = "";
   if (style === 4) {          // ใบตองม้วน: หลอดใบตองตั้งขึ้น ปลายม้วนมน
@@ -625,7 +626,10 @@ function leafMarkup(style, w, h, fill, st, dk) {
     extra = `<path d="M${r1(-w*.22)} 0L${r1(-w*.09)} ${r1(-h*.76)}M${r1(w*.22)} 0L${r1(w*.09)} ${r1(-h*.76)}" stroke="${dk}" stroke-opacity=".2" stroke-width=".7" fill="none"/>
     <path d="M${r1(w*.04)} ${r1(-h*.94)}L${r1(w*.16)} ${r1(-h*.7)}" stroke="#fff" stroke-opacity=".5" stroke-width=".9" stroke-linecap="round"/>`;
   }
-  return `<path d="${d}" fill="${fill}" stroke="${st}" stroke-opacity=".55" stroke-width=".8"/><path d="${half}" fill="#fff" fill-opacity=".13"/><path d="M0 0V${r1(-h*.9)}" stroke="${dk}" stroke-opacity=".35" stroke-width=".9"/>${extra}`;
+  // ความนุ่มของใบ: สีเหลือบแต่ละใบไม่เท่ากัน + เงาทึบที่โคนใบ + แสงสะท้อนไล่จางที่ครึ่งใบ
+  const vv = v == null ? .5 : v, tint = `<path d="${d}" fill="${vv < .5 ? "#f2ea84" : dk}" fill-opacity="${r1(.04 + .2 * Math.abs(vv - .5) * 2) }"/>`;
+  const soft = u ? `<path d="${d}" fill="url(#${u}ao)"/>` : "";
+  return `<path d="${d}" fill="${fill}" stroke="${st}" stroke-opacity=".5" stroke-width=".8"/>${tint}${soft}<path d="${half}" fill="${u ? "url(#" + u + "hl)" : "#fff"}" fill-opacity="${u ? 1 : .13}"/><path d="M0 0V${r1(-h*.9)}" stroke="${dk}" stroke-opacity=".3" stroke-width=".9"/>${extra}`;
 }
 
 function krathongSVG(spec, opt) {
@@ -644,7 +648,7 @@ function krathongSVG(spec, opt) {
       const px = cx + rx * rf * c, py = cy + ry * rf * s + 1.5;
       const hh = h * (1 - .2 * Math.max(0, s)), tilt = c * (style === 4 ? 16 : 26) + (i % 2 ? 3 : -3);
       const f = (fill === "lf" && s < -.2) ? "lfd" : fill;
-      items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(tilt)})">${leafMarkup(style, w, hh, "url(#" + u + f + ")", LC.st, LC.dk)}</g>`});
+      items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(tilt)})">${leafMarkup(style, w, hh, "url(#" + u + f + ")", LC.st, LC.dk, u, ((i * 7 + n * 3) % 11) / 10)}</g>`});
     }
   }
   if (spec.l === 3) { ring(16, 1, 38, 27, 0, "lfd", 1); ring(16, .74, 28, 21, Math.PI / 16, "lfl", 1); }
@@ -659,7 +663,7 @@ function krathongSVG(spec, opt) {
     const type = spec.f[j % spec.f.length];
     const px = cx + rx * .5 * c, py = cy - 4 + ry * .6 * s;
     const sc = FLOWER_SCALE[type] * (.92 + .16 * ((j * 5) % 3) / 2);
-    items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(c*10)}) scale(${r1(sc*100)/100})">${flowerMarkup(type, u)}</g>`});
+    items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(c*10)}) scale(${r1(sc*100)/100})"><ellipse cx="2" cy="-2" rx="14" ry="6.5" fill="#031208" fill-opacity=".3"/>${flowerMarkup(type, u)}<ellipse cx="-2" cy="-13" rx="13" ry="12" fill="url(#${u}fsh)"/></g>`});
   }
 
   // --- กลางกระทง + เปลวไฟ ---
@@ -731,10 +735,14 @@ function krathongSVG(spec, opt) {
     <radialGradient id="${u}tp" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
     <radialGradient id="${u}wl"><stop offset="0" stop-color="${F.g}" stop-opacity=".3"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
     <radialGradient id="${u}wg"><stop offset="0" stop-color="${F.g}" stop-opacity=".42"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="${u}ao" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.dk}" stop-opacity=".5"/><stop offset=".5" stop-color="${LC.dk}" stop-opacity=".14"/><stop offset="1" stop-color="${LC.dk}" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${u}hl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fffbe0" stop-opacity=".3"/></linearGradient>
+    <radialGradient id="${u}fsh" cx=".4" cy=".3" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#2a0a10" stop-opacity=".26"/></radialGradient>
+    <radialGradient id="${u}cs"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".6" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
     ${flowerDefs(u)}</defs>
     <ellipse cx="${cx}" cy="${by + 7}" rx="${B.rt + 24}" ry="12" fill="url(#${u}wg)"${A?' class="glow"':''}/>
     ${streaks}
-    <ellipse cx="${cx}" cy="${by + 2}" rx="${B.rb + 4}" ry="8" fill="#000" fill-opacity=".38"/>
+    <ellipse cx="${cx}" cy="${by + 3}" rx="${B.rb + 16}" ry="13" fill="url(#${u}cs)"/>
     <path d="${side}" fill="url(#${u}sd)"/>${deco}
     <path d="M${cx - B.rt * .62} ${cy + 3}L${cx - B.rb * .6} ${by - 1}" stroke="#fff" stroke-opacity=".22" stroke-width="${B.h < 12 ? 2 : 5}" stroke-linecap="round"/>
     <ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="${B.top}"/><ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="url(#${u}tp)"/>${topDeco}
@@ -1537,7 +1545,7 @@ window.addEventListener("online", () => { if (!saving) loadKrathongs(); });
   if (!gl) return;
   const VS = "attribute vec2 p;varying vec2 vUv;void main(){vUv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}";
   const FS = `precision highp float;
-varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon;
+varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; uniform vec4 uK[16];
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*noise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return s;}
@@ -1569,6 +1577,22 @@ void main(){
   col+=vec3(1.,.78,.46)*exp(-hx*hx)*fall*.13;
   float sp=pow(noise(q*vec2(8.,20.)+vec2(uT*.3,uT*.5)),10.);
   col+=vec3(1.,.95,.8)*sp*g*fall*2.2;
+  // ระลอกน้ำรอบกระทง + แสงเทียนสะท้อนน้ำ (ตำแหน่งกระทงส่งมาจาก JS ทุกเฟรม)
+  for(int i=0;i<16;i++){
+    vec4 k=uK[i]; if(k.w<.01) continue;
+    vec2 dv=vec2((vUv.x-k.x)*asp,(vUv.y-k.y)/.42);
+    float rr=length(dv)/k.z;
+    float env=smoothstep(.9,1.25,rr)*exp(-(rr-1.)*.9)*(1.-smoothstep(3.,3.8,rr));
+    float ring=sin(rr*8.5-uT*1.15)*.5+.5;
+    col+=vec3(.55,.76,.86)*pow(ring,2.)*env*.17*k.w;
+    col-=vec3(.03,.05,.05)*(1.-ring)*env*k.w;
+    float below=(vUv.y-k.y)/k.z;
+    float dxs=(vUv.x-k.x)*asp/k.z;
+    float flick=.7+.3*noise(vec2(dxs*5.,vUv.y*60.-uT*.9));
+    float cg=exp(-dxs*dxs*5.)*smoothstep(.05,.25,below)*exp(-below*1.7)*flick;
+    col+=vec3(1.,.72,.38)*cg*.16*k.w;
+  }
+  col*=.75;   // ลดความสว่างน้ำ 25%
   gl_FragColor=vec4(col,1.);
 }`;
   function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; }
@@ -1580,7 +1604,7 @@ void main(){
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon");
+  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon"), uK = gl.getUniformLocation(pr, "uK[0]"), kArr = new Float32Array(64);
   let alive = true, last = 0, t0 = performance.now();
   function size() {
     const r = water.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -1591,7 +1615,22 @@ void main(){
     gl.uniform2f(uRes, cv.width, cv.height);
     gl.uniform2f(uMoon, (mr.left + mr.width / 2 - r.left) / r.width, mr.width / r.width * .5);
   }
+  function ripples() {
+    kArr.fill(0);
+    const wr = water.getBoundingClientRect(); if (!wr.height) return;
+    let n = 0;
+    items.forEach(it => {
+      if (n >= 16 || it.el.classList.contains("struck")) return;
+      const sv = it.svgEl || (it.svgEl = it.el.querySelector(".kr-svg")); if (!sv) return;
+      const r = sv.getBoundingClientRect();
+      const x = (r.left + r.width / 2 - wr.left) / wr.width, y = (r.top + r.height * .68 - wr.top) / wr.height;
+      if (x < -.2 || x > 1.2 || y < -.1 || y > 1.1) return;
+      kArr[n * 4] = x; kArr[n * 4 + 1] = y; kArr[n * 4 + 2] = r.width * .36 / wr.height; kArr[n * 4 + 3] = it.drag ? .5 : 1;
+      n++;
+    });
+  }
   function draw(now) {
+    ripples(); gl.uniform4fv(uK, kArr);
     gl.uniform1f(uT, reduceMotion.matches ? 30 : (now - t0) / 1000 + 20);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
