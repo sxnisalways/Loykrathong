@@ -1545,7 +1545,7 @@ window.addEventListener("online", () => { if (!saving) loadKrathongs(); });
   if (!gl) return;
   const VS = "attribute vec2 p;varying vec2 vUv;void main(){vUv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}";
   const FS = `precision highp float;
-varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; uniform vec4 uK[16];
+varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; uniform vec4 uK[16]; uniform float uG[16];
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*noise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return s;}
@@ -1563,35 +1563,47 @@ void main(){
   col+=vec3(.09,.13,.16)*sky*(.55+.9*h0);
   col*=1.+.5*(h0-.55)*(.35+.65*d);
   col+=vec3(.02,.05,.07)*clamp(n.x*.5+n.y*.35,0.,1.)*(.4+d);
+  // ระลอกน้ำรอบกระทง + แสงเทียนสะท้อนน้ำ + แสงวงรอบกระทงของฉัน (ตำแหน่งส่งมาจาก JS ทุกเฟรม)
+  float rdx=0., rbr=0.;
+  for(int i=0;i<16;i++){
+    vec4 k=uK[i]; if(k.w<.01) continue;
+    vec2 dv=vec2((vUv.x-k.x)*asp,(vUv.y-k.y)/.42);
+    float len=length(dv), rr=len/k.z;
+    float env=smoothstep(.9,1.25,rr)*exp(-(rr-1.)*.9)*(1.-smoothstep(3.,3.8,rr));
+    float ph=rr*8.5-uT*1.15, ring=sin(ph)*.5+.5;
+    col+=vec3(.55,.76,.86)*pow(ring,2.)*env*.17*k.w;
+    col-=vec3(.03,.05,.05)*(1.-ring)*env*k.w;
+    rdx+=cos(ph)*env*(dv.x/max(len,.0001))*k.w*.022;   // ระลอกบิดเงาแสงจันทร์
+    rbr+=(ring-.5)*2.*env*k.w;
+    float below=(vUv.y-k.y)/k.z;
+    float dxs=(vUv.x-k.x)*asp/k.z;
+    float flick=.7+.3*noise(vec2(dxs*5.,vUv.y*60.-uT*.9));
+    float cg=exp(-dxs*dxs*5.)*smoothstep(.05,.25,below)*exp(-below*1.7)*flick;
+    col+=vec3(1.,.72,.38)*cg*.16*k.w;
+    float gl=uG[i];
+    if(gl>.01){
+      col+=vec3(1.,.78,.45)*exp(-rr*rr*.5)*gl*.2;
+      float pr=fract(uT*.22+float(i)*.37), pw=exp(-pow((rr-(1.2+pr*2.6))*2.2,2.))*(1.-pr);
+      col+=vec3(1.,.84,.55)*pw*gl*.22;
+    }
+  }
   // เงาพระจันทร์: ถูกบิดตามคลื่นและขาดเป็นช่วง ๆ
   float dx=(vUv.x-uMoon.x)*asp;
   float w=uMoon.y*asp*(.40+.80*d);
-  float warp=n.x*.03*(.4+d)+(fbm(q*vec2(.7,1.8)+uT*.09)-.5)*.11*(.3+d);
+  float warp=n.x*.03*(.4+d)+(fbm(q*vec2(.7,1.8)+uT*.09)-.5)*.11*(.3+d)+rdx;
   float xx=(dx+warp)/w;
   float g=exp(-xx*xx);
   float br=noise(vec2(q.x*2.8+uT*.10,q.y*6.5-uT*.22));
-  br=smoothstep(.40,.78,br+(h0-.55)*.55);
+  br=smoothstep(.40,.78,br+(h0-.55)*.55+rbr*.3);
   float fall=smoothstep(.0,.05,d)*(1.-smoothstep(.42,.80,d));
   col+=vec3(1.,.84,.52)*g*br*fall*.85;
   float hx=dx/(w*2.4);
   col+=vec3(1.,.78,.46)*exp(-hx*hx)*fall*.13;
   float sp=pow(noise(q*vec2(8.,20.)+vec2(uT*.3,uT*.5)),10.);
   col+=vec3(1.,.95,.8)*sp*g*fall*2.2;
-  // ระลอกน้ำรอบกระทง + แสงเทียนสะท้อนน้ำ (ตำแหน่งกระทงส่งมาจาก JS ทุกเฟรม)
-  for(int i=0;i<16;i++){
-    vec4 k=uK[i]; if(k.w<.01) continue;
-    vec2 dv=vec2((vUv.x-k.x)*asp,(vUv.y-k.y)/.42);
-    float rr=length(dv)/k.z;
-    float env=smoothstep(.9,1.25,rr)*exp(-(rr-1.)*.9)*(1.-smoothstep(3.,3.8,rr));
-    float ring=sin(rr*8.5-uT*1.15)*.5+.5;
-    col+=vec3(.55,.76,.86)*pow(ring,2.)*env*.17*k.w;
-    col-=vec3(.03,.05,.05)*(1.-ring)*env*k.w;
-    float below=(vUv.y-k.y)/k.z;
-    float dxs=(vUv.x-k.x)*asp/k.z;
-    float flick=.7+.3*noise(vec2(dxs*5.,vUv.y*60.-uT*.9));
-    float cg=exp(-dxs*dxs*5.)*smoothstep(.05,.25,below)*exp(-below*1.7)*flick;
-    col+=vec3(1.,.72,.38)*cg*.16*k.w;
-  }
+  // หมอกบางลอยเหนือผิวน้ำใกล้เส้นขอบฟ้า
+  float mist=exp(-d*8.)*(.35+.65*fbm(vec2(vUv.x*asp*1.4+uT*.012,d*3.+uT*.008)));
+  col+=vec3(.42,.56,.66)*mist*.2;
   col*=.75;   // ลดความสว่างน้ำ 25%
   gl_FragColor=vec4(col,1.);
 }`;
@@ -1604,11 +1616,14 @@ void main(){
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon"), uK = gl.getUniformLocation(pr, "uK[0]"), kArr = new Float32Array(64);
+  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon"), uK = gl.getUniformLocation(pr, "uK[0]"), uG = gl.getUniformLocation(pr, "uG[0]"), kArr = new Float32Array(64), gArr = new Float32Array(16);
+  let quality = 0;   // 0 ปกติ, 1 ลดความละเอียด, 2 ปิดระลอก, 3 กลับไปใช้น้ำ CSS (ตัวคุมประสิทธิภาพอัตโนมัติ)
+  try { quality = Math.min(2, Number(localStorage.getItem("loy:wq")) || 0); } catch (_) {}
+  water.dataset.q = quality;
   let alive = true, last = 0, t0 = performance.now();
   function size() {
     const r = water.getBoundingClientRect(); if (!r.width || !r.height) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1), sc = r.width < 700 ? .5 : .7;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), sc = (r.width < 700 ? .5 : .7) * (quality >= 1 ? .7 : 1);
     cv.width = Math.max(2, Math.round(r.width * dpr * sc)); cv.height = Math.max(2, Math.round(r.height * dpr * sc));
     gl.viewport(0, 0, cv.width, cv.height);
     const mr = document.querySelector(".moon").getBoundingClientRect();
@@ -1616,7 +1631,8 @@ void main(){
     gl.uniform2f(uMoon, (mr.left + mr.width / 2 - r.left) / r.width, mr.width / r.width * .5);
   }
   function ripples() {
-    kArr.fill(0);
+    kArr.fill(0); gArr.fill(0);
+    if (quality >= 2) return;
     const wr = water.getBoundingClientRect(); if (!wr.height) return;
     let n = 0;
     items.forEach(it => {
@@ -1626,17 +1642,31 @@ void main(){
       const x = (r.left + r.width / 2 - wr.left) / wr.width, y = (r.top + r.height * .68 - wr.top) / wr.height;
       if (x < -.2 || x > 1.2 || y < -.1 || y > 1.1) return;
       kArr[n * 4] = x; kArr[n * 4 + 1] = y; kArr[n * 4 + 2] = r.width * .36 / wr.height; kArr[n * 4 + 3] = it.drag ? .5 : 1;
+      if (it.el.classList.contains("mine")) { const age = (performance.now() - (it.mineT || (it.mineT = performance.now()))) / 1000; gArr[n] = Math.max(0, 1 - age / 60); }   // แสงวงรอบกระทงของฉัน ~1 นาที
       n++;
     });
   }
   function draw(now) {
-    ripples(); gl.uniform4fv(uK, kArr);
+    ripples(); gl.uniform4fv(uK, kArr); gl.uniform1fv(uG, gArr);
     gl.uniform1f(uT, reduceMotion.matches ? 30 : (now - t0) / 1000 + 20);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  let fAcc = 0, fN = 0, fPrev = 0;
+  function degrade(now) {
+    quality++;
+    if (quality >= 3) { alive = false; water.classList.remove("gl"); cv.remove(); return; }
+    try { localStorage.setItem("loy:wq", String(quality)); } catch (_) {}
+    water.dataset.q = quality; size(); draw(now);
   }
   function loop(now) {
     if (!alive) return;
     requestAnimationFrame(loop);
+    if (!riverVisible || document.hidden || reduceMotion.matches) fPrev = fN = fAcc = 0;
+    else {   // ตัวคุมประสิทธิภาพ: ถ้าเฟรมช้าต่อเนื่อง (<~24fps) ลดคุณภาพทีละขั้น
+      const dt = fPrev ? now - fPrev : 0; fPrev = now;
+      if (dt > 0 && dt < 500) { fAcc += dt; fN++; }
+      if (fN >= 90) { const avg = fAcc / fN; fAcc = fN = 0; if (now - t0 > 3000 && avg > 42) degrade(now); }
+    }
     if (!riverVisible || document.hidden || reduceMotion.matches || now - last < 33) return;
     last = now; draw(now);
   }
