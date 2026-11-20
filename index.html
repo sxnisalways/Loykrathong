@@ -269,6 +269,58 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 .view-by{color:var(--gold);font-weight:700;overflow-wrap:anywhere}
 .view-date{color:var(--muted);font-size:12px;margin-top:2px}
 
+/* ---------- MODAL v2: กระจกน้ำเงิน + ลายไทยมุม + กรอบพรีวิว + การ์ดมน (เปลี่ยนเฉพาะหน้าตา ไม่แตะ ID/คลาสที่ JS ใช้) ---------- */
+.modal{background:radial-gradient(ellipse 80% 60% at 50% 0%,#0d2a4acc,#02070fe6 70%)}
+.dialog{--orn:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 90' fill='none' stroke='%237fc9b4' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M5 86C5 44 28 16 80 6'/%3E%3Cpath d='M16 86C16 56 34 34 64 24' stroke-opacity='.7'/%3E%3Cpath d='M30 28c-9-1-14-9-10-17 8 2 12 8 10 17z' fill='%237fc9b4' fill-opacity='.35'/%3E%3Cpath d='M52 16c-2-8 3-14 11-14 0 8-3 12-11 14z' fill='%237fc9b4' fill-opacity='.35'/%3E%3Cpath d='M12 52c-7-5-5-16 4-17 7 0 10 7 6 11' stroke-opacity='.85'/%3E%3C/svg%3E");
+  position:relative;background:linear-gradient(180deg,#0f2d4bf2,#0a2038f6 55%,#08192df8);border:1.5px solid #6fb7a666;border-radius:26px;
+  box-shadow:0 24px 90px #000b,0 0 0 1px #ffffff0d inset,0 0 38px #3b8f9033}
+.dialog:before,.dialog:after{content:"";position:absolute;width:64px;height:64px;background:var(--orn) no-repeat center/contain;opacity:.75;pointer-events:none;z-index:2}
+.dialog:before{left:6px;top:6px}
+.dialog:after{right:6px;bottom:84px;transform:rotate(180deg)}
+.dlg-head,.dlg-main,.dlg-actions{position:relative;z-index:1}
+.dlg-head{padding:18px 24px 10px 30px}
+.dialog h2{font-size:23px;letter-spacing:.2px;text-shadow:0 0 18px #f5c66b40}
+.dialog .sub{color:#9fb9c8}
+/* กรอบพรีวิว: ผิวน้ำ + ระลอก + ใบบัวริมกรอบ + หิ่งห้อย */
+.preview{margin:0 20px 8px;border-radius:22px;border:2px solid #7fc9b499;
+  box-shadow:0 0 0 1px #0b2a3f inset,0 0 22px #4fb8a52e,0 8px 22px #0008;
+  background:
+    radial-gradient(circle at 12% 28%,#ffd77a 0 1.6px,#ffd77a55 2.5px,transparent 6px),
+    radial-gradient(circle at 86% 20%,#ffd77a 0 1.4px,#ffd77a55 2.4px,transparent 6px),
+    radial-gradient(circle at 72% 62%,#ffe9a8 0 1.2px,#ffe9a844 2.2px,transparent 5px),
+    radial-gradient(circle at 26% 72%,#ffe9a8 0 1.2px,#ffe9a844 2.2px,transparent 5px),
+    radial-gradient(ellipse 15% 22% at 4% 84%,#8fd9b855,transparent 72%),
+    radial-gradient(ellipse 15% 22% at 96% 86%,#8fd9b855,transparent 72%),
+    repeating-radial-gradient(ellipse 52% 30% at 50% 78%,transparent 0 13px,#9fd8ff14 14px 15px),
+    radial-gradient(ellipse 80% 70% at 50% 100%,#2b7aa0,#0b2c48 62%,#071b30)}
+.preview:before{opacity:.07}
+/* หัวข้อกลุ่ม: ทองบนน้ำเงิน */
+label,.lbl{color:#f2cf86;font-family:var(--serif);font-size:15px;margin:16px 0 8px}
+.lbl .num{background:transparent;color:#f5c66b;border:1.5px solid #f5c66b99;width:22px;height:22px;box-shadow:0 0 8px #f5c66b30}
+.lbl small{color:#8fa9b8}
+/* การ์ด/ปุ่มตัวเลือก: มน โปร่งแสง ติดขอบทองเมื่อเลือก */
+.opt{border-radius:16px;background:linear-gradient(180deg,#0b2742cc,#071d33d9);border:1.5px solid #34607e;color:#e8f2f5;transition:border-color .15s,box-shadow .15s,background .15s}
+.opt:hover{border-color:#5f93ad}
+.opt[aria-pressed="true"]{border-color:#f5c66b;background:linear-gradient(180deg,#f5c66b26,#f5c66b0d);box-shadow:0 0 0 1px #f5c66b88 inset,0 0 16px #f5c66b38}
+.opt.card{padding:8px 5px 9px}
+input,textarea{border-radius:14px;border:1.5px solid #34607e;background:#071d33cc}
+input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
+/* ปุ่มล่าง: ยกเลิก (กระจก) + ปล่อยกระทง (ทองเรืองแสง) */
+.dlg-actions{gap:12px;background:linear-gradient(180deg,#08192d00,#08192dee 38%);border-top:1px solid #6fb7a633}
+.dlg-actions button{min-height:52px;border-radius:18px;font-weight:700}
+.dlg-actions .secondary{background:#103252b3;border:1.5px solid #4a7d9a;color:#d6e6ee}
+.dlg-actions .primary{background:linear-gradient(180deg,#ffe596,#f4b948);color:#3b2605;border:1.5px solid #fff1bd;box-shadow:0 0 22px #f5c66b66,0 4px 14px #0006}
+.dlg-actions .primary:hover{box-shadow:0 0 30px #f5c66b99,0 4px 14px #0006}
+.dice{border-radius:14px}
+@media(max-width:480px){
+  .dialog{border-radius:22px}
+  .dialog:before,.dialog:after{width:48px;height:48px}
+  .dlg-head{padding:16px 20px 8px 24px}
+  .preview{margin:0 14px 6px}
+  .dlg-body{padding:0 14px 8px}
+  .dlg-actions{padding-left:14px;padding-right:14px}
+}
+
 @media(min-width:640px){
   .feed{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -517,17 +569,17 @@ function decode(code) {
    2) วาดกระทงเป็น SVG (ซ้อนชั้นตามความลึก)
    ========================================================= */
 const BASES = [
-  {rt:62, rb:60, h:22, top:"#f1eec4", s1:"#a9b874", s2:"#ecf1c4", s3:"#98a766", kind:"banana"},
-  {rt:60, rb:58, h:26, top:"#e9b86c", s1:"#9a5a24", s2:"#dea255", s3:"#7d4519", kind:"bread"},
-  {rt:58, rb:42, h:24, top:"#7a4a2a", s1:"#3d2312", s2:"#7b4b2b", s3:"#2a170a", kind:"coconut"},
-  {rt:66, rb:62, h:9,  top:"#6dbb55", s1:"#245a28", s2:"#3f8a3a", s3:"#1d4a22", kind:"lotusleaf"},
-  {rt:56, rb:52, h:27, top:"#dcb66c", s1:"#7d5a22", s2:"#d2a455", s3:"#664818", kind:"weave"}
+  {kind:"banana",    top:"#e9efc0", s1:"#9fb46a", s2:"#e8efbd", s3:"#8aa05a", line:"#5d7a2e"},
+  {kind:"bread",     top:"#eab66a", s1:"#a2622a", s2:"#e2a457", s3:"#844c1c", line:"#6b3a12"},
+  {kind:"coconut",   top:"#5a341a", s1:"#3d2312", s2:"#7b4b2b", s3:"#2a170a", line:"#1f1008"},
+  {kind:"lotusleaf", top:"#5faf4c", s1:"#2c6a2a", s2:"#4f9a40", s3:"#245a24", line:"#1c4a1c"},
+  {kind:"weave",     top:"#dcb66c", s1:"#8a6428", s2:"#d8ac5c", s3:"#6e4e1c", line:"#5a3d12"}
 ];
-// สีใบตอง: lf = ปกติ, lfd = ใบด้านหลัง (เข้มกว่า), lfl = ใบชั้นใน (อ่อนกว่า)
+// สีใบตอง: lf = ปกติ, lfd = ใบด้านหลัง (เข้มกว่า), lfl = ใบชั้นใน (อ่อนกว่า), dk = สีเส้นขอบ
 const LEAFCOL = [
   {lf:["#2f7d33","#9ad465"], lfd:["#1f5e27","#5ea646"], lfl:["#4c9a3c","#bde784"], st:"#1d5a28", dk:"#16461f"},
   {lf:["#1c5a2a","#5faa55"], lfd:["#123f1d","#3f8139"], lfl:["#2f7a3a","#7fc46f"], st:"#0f3a1a", dk:"#0c2e14"},
-  {lf:["#6fae52","#d6f1a0"], lfd:["#4f8f43","#a6d07a"], lfl:["#8cc467","#ecfbc0"], st:"#3e7a32", dk:"#356a2a"},
+  {lf:["#6fae52","#d6f1a0"], lfd:["#4f8f43","#a6d07a"], lfl:["#8cc467","#ecfbc0"], st:"#3e7a32", dk:"#2f5f26"},
   {lf:["#6b7f2a","#d8d36a"], lfd:["#4f6320","#a6ad50"], lfl:["#8a9a3a","#efe58a"], st:"#4a5a18", dk:"#3c4912"},
   {lf:["#8a6a2e","#e0c07a"], lfd:["#6a4f20","#b9955a"], lfl:["#a98342","#f2d896"], st:"#5a4318", dk:"#483512"},
   {lf:["#5a3a96","#cba8f4"], lfd:["#3f2870","#9c78d2"], lfl:["#7b56b4","#e6ccfc"], st:"#34205e", dk:"#281850"},
@@ -538,194 +590,241 @@ const FLAMES = [
   {a:"#ffe2a8", b:"#ff7f24", g:"#ff9a3c"},
   {a:"#ffffff", b:"#d6efff", g:"#bfe6ff"}
 ];
-const FLOWER_SCALE = {1:.58, 2:.92, 3:.8, 4:1.05, 5:1, 6:.95, 7:.95, 8:.92};
+const FLOWER_SCALE = {0:.9, 1:1, 2:.95, 3:.9, 4:1, 5:1, 6:.95, 7:1, 8:.85};
 let svgSeq = 0;
-const SEPAL = `<path d="M-4 0L0 4L4 0Z" fill="#3a7d34"/>`;
+// สุ่มแบบคงที่ (กระทงใบเดิมหน้าตาเหมือนเดิมทุกที่)
+const jr = (a, b, c) => { const x = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return x - Math.floor(x); };
+const SEPAL = `<path d="M-4.5 -1L0 4L4.5 -1Z" fill="#3a7d34" stroke="#1f4d1a" stroke-width=".6"/>`;
+const SPRIG = (x, y, rot, k) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${k})"><path d="M0 0C-5 -3 -6 -10 0 -14C6 -10 5 -3 0 0Z" fill="#4f9e3c" stroke="#1f4d1a" stroke-width=".8"/><path d="M0 -1V-12" stroke="#c9eb94" stroke-opacity=".6" stroke-width=".6"/></g>`;
 
+/* ---------- ดอกไม้ (ลายเส้นมีขอบ แบบภาพประกอบ) ---------- */
+function lotusMarkup(u) {   // ดอกบัวบานดอกใหญ่: กลีบซ้อน 3 ชั้น ขอบชมพูเข้ม เกสรเหลือง
+  const pet = (a, L, w, f, y0) => `<g transform="translate(0 ${y0}) rotate(${a})"><path d="M0 0C${r1(-w)} ${r1(-L * .22)} ${r1(-w * .95)} ${r1(-L * .72)} 0 ${-L}C${r1(w * .95)} ${r1(-L * .72)} ${r1(w)} ${r1(-L * .22)} 0 0Z" fill="url(#${u}${f})" stroke="#a8335f" stroke-width="1.1" stroke-linejoin="round"/><path d="M0 -3Q${r1(-w * .18)} ${r1(-L * .5)} 0 ${r1(-L * .86)}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width=".9" stroke-linecap="round"/></g>`;
+  let o = "";
+  for (const a of [-86, 86]) o += pet(a, 27, 9, "p2", 2);
+  for (const a of [-64, 64]) o += pet(a, 31, 10, "p2", 1);
+  for (const a of [-36, 36, -14, 14]) o += pet(a, 37, 11, "p1", 0);
+  o += `<ellipse cx="0" cy="-24" rx="13" ry="7" fill="#fff1c4" fill-opacity=".7"/><ellipse cx="0" cy="-27" rx="10" ry="4" fill="#f7c33a" stroke="#c4850c" stroke-width=".9"/>`;
+  for (let i = 0; i < 9; i++) o += `<circle cx="${r1(-7.2 + i * 1.8)}" cy="${r1(-28.2 + (i % 2) * 1.7)}" r="1.05" fill="#e07d0c"/>`;
+  for (const a of [-50, 50]) o += pet(a, 27, 11, "p1", 3);
+  for (const a of [-25, 25]) o += pet(a, 28, 12, "p1", 3);
+  return o + pet(0, 27, 13, "p1", 4);
+}
+function lotusBud(u) {      // ดอกบัวตูม (ใช้เป็นดอกรอบวงเมื่อเลือกดอกบัวอย่างเดียว)
+  return SPRIG(-5, 0, -58, 1.15) + SPRIG(5, 0, 58, 1.15) +
+    `<path d="M0 0C-9 -4 -9 -16 0 -26C9 -16 9 -4 0 0Z" fill="url(#${u}p1)" stroke="#a8335f" stroke-width="1"/>
+     <path d="M0 0C-12 -2 -11 -12 -6 -17C-5 -9 -3 -4 0 0ZM0 0C12 -2 11 -12 6 -17C5 -9 3 -4 0 0Z" fill="url(#${u}p2)" stroke="#a8335f" stroke-width=".9"/>
+     <path d="M-3 -17Q-3.4 -21 -1 -24" stroke="#fff" stroke-opacity=".55" stroke-width="1" fill="none" stroke-linecap="round"/>`;
+}
 function flowerMarkup(type, u) {
-  if (type === 1) {
-    const pet = (a, f) => `<g transform="rotate(${a})"><path d="M0 0C-10 -8 -9 -25 0 -32C9 -25 10 -8 0 0Z" fill="url(#${u}${f})" stroke="#c9477a" stroke-opacity=".45" stroke-width=".9"/><path d="M0 -3V-26M-3 -6Q-4 -17 -1 -24M3 -6Q4 -17 1 -24" stroke="#c9477a" stroke-opacity=".28" stroke-width=".6" fill="none"/></g>`;
-    return pet(-72,"p2") + pet(72,"p2") + pet(-46,"p2") + pet(46,"p2") + pet(-22,"p1") + pet(22,"p1") + pet(0,"p1") +
-      `<ellipse cx="0" cy="-6" rx="5" ry="3" fill="#f7c948"/>`;
+  if (type === 0) return lotusBud(u);
+  if (type === 1) return `<g transform="translate(0 1) scale(.6)">${lotusMarkup(u)}</g>`;
+  if (type === 2) {   // ดาวเรือง
+    let o = `<path d="M-6 -1L0 3L6 -1Z" fill="#3a7d34" stroke="#1f4d1a" stroke-width=".6"/><circle r="12.6" cy="-11" fill="#d86f00" stroke="#8a4200" stroke-width="1"/>`;
+    const ringc = (n, rad, pr, cols, off) => { for (let i = 0; i < n; i++) { const a = (i * 360 / n + off) * Math.PI / 180; o += `<circle cx="${r1(Math.cos(a) * rad)}" cy="${r1(-11 + Math.sin(a) * rad * .94)}" r="${pr}" fill="${cols[i % cols.length]}" stroke="#b35a00" stroke-opacity=".7" stroke-width=".55"/>`; } };
+    ringc(14, 9.6, 4.8, ["#ef8a0c", "#f59a18"], 6); ringc(11, 6.8, 4.4, ["#f6a21a", "#fbb22a"], 20); ringc(7, 3.8, 3.6, ["#fbc02d", "#ffb300"], 10);
+    return o + `<circle cy="-11" r="2.2" fill="#e08a00"/>`;
   }
-  if (type === 2) {
-    let s = `<circle r="11.5" cy="-10" fill="#e8890c"/>`;
-    for (let i = 0; i < 12; i++) { const a = (i * 30 + 8) * Math.PI / 180; s += `<circle cx="${r1(Math.cos(a)*9.6)}" cy="${r1(-10+Math.sin(a)*9)}" r="5.4" fill="${i%2?"#ef8f0f":"#f6a21a"}" stroke="#c86a00" stroke-opacity=".35" stroke-width=".5"/>`; }
-    for (let i = 0; i < 9; i++) { const a = i * 40 * Math.PI / 180; s += `<circle cx="${r1(Math.cos(a)*7.5)}" cy="${r1(-10+Math.sin(a)*7)}" r="5.2" fill="${i%2?"#f9a825":"#fbc02d"}"/>`; }
-    for (let i = 0; i < 6; i++) { const a = (i * 60 + 20) * Math.PI / 180; s += `<circle cx="${r1(Math.cos(a)*3.8)}" cy="${r1(-10+Math.sin(a)*3.6)}" r="4.2" fill="${i%2?"#ffb300":"#f57c00"}"/>`; }
-    return s + `<circle cy="-10" r="2.6" fill="#c76a00"/><path d="M-5 -1L0 3L5 -1Z" fill="#3a7d34"/>`;
+  if (type === 3) {   // กล้วยไม้
+    const pet = (x, y, rx, ry, rot, f) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${x} ${y})" fill="${f}" stroke="#5b1d8c" stroke-opacity=".8" stroke-width=".8"/>`;
+    return SEPAL + `<g transform="translate(0 -12)">${pet(-11, -3, 10.5, 6.8, -22, "#b36be0")}${pet(11, -3, 10.5, 6.8, 22, "#b36be0")}${pet(0, -10, 5.4, 9.5, 0, "#c283ee")}${pet(-6, 6, 5.5, 8, 30, "#a24fd6")}${pet(6, 6, 5.5, 8, -30, "#a24fd6")}
+      <ellipse cx="0" cy="4" rx="4.6" ry="7" fill="#7a1fa8" stroke="#4a1270" stroke-width=".7"/><ellipse cx="0" cy="-.5" rx="3.2" ry="4" fill="#f3ecff" stroke="#c9b3e8" stroke-width=".5"/><ellipse cx="0" cy="-1.5" rx="1.6" ry="2.2" fill="#fde68a"/></g>`;
   }
-  if (type === 3) {
-    return `<g transform="translate(0 -12)">
-      <ellipse cx="-10" cy="-3" rx="10" ry="6.5" transform="rotate(-18 -10 -3)" fill="#b79cf5"/>
-      <ellipse cx="10" cy="-3" rx="10" ry="6.5" transform="rotate(18 10 -3)" fill="#b79cf5"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#9f7aea"/>
-      <ellipse cx="-6" cy="6" rx="5.5" ry="8" transform="rotate(30 -6 6)" fill="#a78bfa"/>
-      <ellipse cx="6" cy="6" rx="5.5" ry="8" transform="rotate(-30 6 6)" fill="#a78bfa"/>
-      <ellipse cx="0" cy="3" rx="4.2" ry="6.5" fill="#6d28d9"/>
-      <ellipse cx="0" cy="1.5" rx="2" ry="3" fill="#fde68a"/></g>` + SEPAL;
+  if (type === 4) {   // กุหลาบ
+    return SPRIG(-6, 0, -62, 1.3) + SPRIG(6, 0, 62, 1.3) +
+      `<path d="M-11 -11C-11 -21 -3 -23 0 -22C8 -23 12 -17 11 -10C10 -3 4 0 -1 0C-8 0 -11 -5 -11 -11Z" fill="#d82a32" stroke="#6f0f18" stroke-width=".9"/>
+       <path d="M-9 -9C-10 -16 -4 -20 3 -19C9 -18 10 -12 9 -8" fill="none" stroke="#8c1320" stroke-width=".9" stroke-linecap="round"/>
+       <path d="M-8 -6C-4 -2 3 -2 8 -7" fill="none" stroke="#f06a5a" stroke-opacity=".7" stroke-width="1.1" stroke-linecap="round"/>
+       <circle cx="0" cy="-11" r="6.6" fill="#e53a42" stroke="#7a1019" stroke-width=".8"/>
+       <path d="M-4 -11C-4 -16 3 -16 4 -12C4 -8 -2 -7 -2 -10C-2 -12 1 -12 1 -11" fill="none" stroke="#7d0f1b" stroke-width="1" stroke-linecap="round"/>
+       <path d="M-8 -15Q-6 -19 -1 -20" fill="none" stroke="#ff9a9a" stroke-opacity=".6" stroke-width="1" stroke-linecap="round"/>`;
   }
-  if (type === 5) {   // มะลิ: ดอกขาวเล็ก 3 ดอกเป็นพวง
-    const jas = (x, y, k) => {
-      let p = "";
-      for (let i = 0; i < 5; i++) p += `<ellipse cx="0" cy="${r1(-5*k)}" rx="${r1(3.4*k)}" ry="${r1(5.6*k)}" transform="rotate(${i*72})" fill="#fffdf4" stroke="#d9d2b0" stroke-width=".5"/>`;
-      return `<g transform="translate(${x} ${y})">${p}<circle r="${r1(1.7*k)}" fill="#e8d36a"/></g>`;
-    };
-    return SEPAL + jas(-6.5, -8, 1) + jas(6.5, -9, 1) + jas(0, -15.5, 1.05);
+  if (type === 5) {   // มะลิ
+    const jas = (x, y, k, rot) => { let p = ""; for (let i = 0; i < 5; i++) p += `<ellipse cx="0" cy="${r1(-5 * k)}" rx="${r1(3.6 * k)}" ry="${r1(5.8 * k)}" transform="rotate(${i * 72 + rot})" fill="#fffdf6" stroke="#a59c74" stroke-width=".6"/>`;
+      return `<g transform="translate(${x} ${y})">${p}<circle r="${r1(2 * k)}" fill="#f0d95a" stroke="#b79a1c" stroke-width=".4"/></g>`; };
+    return SPRIG(-13, -4, -70, 1.25) + SPRIG(13, -3, 70, 1.25) + SEPAL + jas(-6.5, -8, 1, 5) + jas(6.5, -9, 1, 30) + jas(0, -16, 1.05, 14);
   }
-  if (type === 6) {   // อัญชัน: ม่วงน้ำเงิน กลางเหลือง
-    return SEPAL + `<ellipse cx="-7" cy="-9" rx="6.5" ry="9" transform="rotate(-24 -7 -9)" fill="#2f45c8"/>
-      <ellipse cx="7" cy="-9" rx="6.5" ry="9" transform="rotate(24 7 -9)" fill="#2f45c8"/>
-      <ellipse cx="0" cy="-14" rx="9.5" ry="9" fill="url(#${u}pea)"/>
-      <ellipse cx="0" cy="-11" rx="4" ry="5.5" fill="#a9b8ff" fill-opacity=".75"/>
-      <ellipse cx="0" cy="-9" rx="2.2" ry="3.4" fill="#ffd84d"/>`;
+  if (type === 6) {   // อัญชัน
+    const pt = (x, y, rx, ry, rot) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${x} ${y})" fill="#2640c4" stroke="#0f1c70" stroke-width=".9"/><ellipse cx="${r1(x * .8)}" cy="${r1(y * .85 + 1)}" rx="${r1(rx * .22)}" ry="${r1(ry * .62)}" transform="rotate(${rot} ${x} ${y})" fill="#f4f6ff" fill-opacity=".9"/>`;
+    return SEPAL + pt(-8, -9, 6.8, 9.6, -26) + pt(8, -9, 6.8, 9.6, 26) + `<ellipse cx="0" cy="-12" rx="9.5" ry="9.4" fill="url(#${u}pea)" stroke="#0f1c70" stroke-width=".9"/><ellipse cx="0" cy="-10" rx="3.2" ry="6" fill="#eef2ff" fill-opacity=".9"/><ellipse cx="0" cy="-8" rx="1.8" ry="3.2" fill="#ffd84d"/>`;
   }
-  if (type === 7) {   // เบญจมาศ: กลีบเส้นยาว ขาวอมเหลือง
-    let p = SEPAL;
-    for (let ring = 0; ring < 2; ring++) for (let i = 0; i < 14; i++) {
-      p += `<ellipse cx="0" cy="${ring ? -4.6 : -6.4}" rx="1.9" ry="${ring ? 5 : 7}" transform="translate(0 -11) rotate(${r1(i * 360 / 14 + ring * 12)})" fill="${ring ? "#ffe58a" : "#fff6c8"}" stroke="#e0c968" stroke-opacity=".4" stroke-width=".3"/>`;
-    }
-    return p + `<circle cx="0" cy="-11" r="2.6" fill="#f2b01e"/>`;
+  if (type === 7) {   // เบญจมาศ
+    let o = SEPAL;
+    [[16, 8.5, "#fff3c4"], [13, 6.5, "#ffe27a"], [9, 4.4, "#ffd04a"]].forEach(([n, L, col], ring) => {
+      for (let i = 0; i < n; i++) o += `<ellipse cx="0" cy="${r1(-L * .6)}" rx="${ring ? 1.9 : 2.1}" ry="${r1(L * .62)}" transform="translate(0 -11) rotate(${r1(i * 360 / n + ring * 11)})" fill="${col}" stroke="#c9a23a" stroke-width=".5"/>`;
+    });
+    return o + `<circle cy="-11" r="2.4" fill="#e9a21a" stroke="#a86a00" stroke-width=".5"/>`;
   }
-  if (type === 8) {   // ชบา: แดง 5 กลีบ เกสรเหลือง
-    let p = SEPAL;
-    for (let i = 0; i < 5; i++) p += `<ellipse cx="0" cy="-6.5" rx="6.2" ry="8.2" transform="translate(0 -11) rotate(${i * 72})" fill="${i % 2 ? "#e53935" : "#f0504a"}" stroke="#a31515" stroke-opacity=".35" stroke-width=".5"/>`;
-    return p + `<circle cx="0" cy="-11" r="3.2" fill="#8e0b1c"/><path d="M0 -11L5 -19" stroke="#ffe27a" stroke-width="1.1" stroke-linecap="round"/><circle cx="5" cy="-19.4" r="1.4" fill="#ffd54a"/><circle cx="3.4" cy="-17.6" r="1" fill="#ffd54a"/>`;
-  }
-  return `<circle cy="-10" r="10.5" fill="#d81b4a"/><path d="M-7 -12C-7 -20 7 -20 7 -12" fill="#f0507a"/><circle cy="-10" r="6.5" fill="#e53366"/>
-    <path d="M-4 -10C-4 -15 4 -15 4 -10C4 -6 -2 -6 -2 -9C-2 -12 2 -12 2 -10" fill="none" stroke="#8e1236" stroke-width="1.3" stroke-linecap="round"/>
-    <path d="M-6 -1L0 3L6 -1Z" fill="#3a7d34"/>`;
+  // 8 ชบา
+  let p = SPRIG(-10, -2, -70, 1.1) + SPRIG(10, -2, 70, 1.1);
+  for (let i = 0; i < 5; i++) p += `<path d="M0 0C-7 -3 -9 -11 -4 -14C-2 -15.5 2 -15.5 4 -14C9 -11 7 -3 0 0Z" transform="translate(0 -11) rotate(${i * 72})" fill="${i % 2 ? "#e53935" : "#f0504a"}" stroke="#8a1010" stroke-width=".8"/>`;
+  return p + `<circle cx="0" cy="-11" r="3.2" fill="#8e0b1c"/><path d="M0 -11L5 -19" stroke="#ffe27a" stroke-width="1.1" stroke-linecap="round"/><circle cx="5" cy="-19.4" r="1.4" fill="#ffd54a"/><circle cx="3.4" cy="-17.6" r="1" fill="#ffd54a"/>`;
 }
 function flowerDefs(u) {
-  return `<linearGradient id="${u}p1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffeaf1"/><stop offset="1" stop-color="#f06c9a"/></linearGradient>
-  <linearGradient id="${u}p2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbc4d8"/><stop offset="1" stop-color="#dc4d7e"/></linearGradient>
+  return `<linearGradient id="${u}p1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f06f9f"/><stop offset=".55" stop-color="#f8a6c4"/><stop offset="1" stop-color="#ffe6f0"/></linearGradient>
+  <linearGradient id="${u}p2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e5588a"/><stop offset="1" stop-color="#fbc4d8"/></linearGradient>
   <radialGradient id="${u}pea" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#6a7bff"/><stop offset="1" stop-color="#2a38b5"/></radialGradient>`;
 }
 function flowerIcon(type) {
   const u = "i" + (++svgSeq);
-  return `<svg viewBox="-22 -36 44 42" aria-hidden="true"><defs>${flowerDefs(u)}</defs><g transform="scale(${type===1?1:.9}) translate(0 ${type===1?2:0})">${flowerMarkup(type, u)}</g></svg>`;
-}
-function leafMarkup(style, w, h, fill, st, dk, u, v) {
-  st = st || "#1d5a28"; dk = dk || "#16461f";
-  let d, half, extra = "";
-  if (style === 4) {          // ใบตองม้วน: หลอดใบตองตั้งขึ้น ปลายม้วนมน
-    d = `M${r1(-w/2)} 0V${r1(-h*.86)}Q${r1(-w/2)} ${-h} 0 ${-h}Q${r1(w/2)} ${-h} ${r1(w/2)} ${r1(-h*.86)}V0Z`;
-    half = `M${r1(w*.12)} 0V${-h}Q${r1(w/2)} ${-h} ${r1(w/2)} ${r1(-h*.86)}V0Z`;
-    extra = `<path d="M${r1(-w*.45)} ${r1(-h*.8)}Q0 ${r1(-h*.66)} ${r1(w*.45)} ${r1(-h*.9)}M${r1(-w*.45)} ${r1(-h*.55)}Q0 ${r1(-h*.42)} ${r1(w*.45)} ${r1(-h*.62)}M${r1(-w*.45)} ${r1(-h*.3)}Q0 ${r1(-h*.18)} ${r1(w*.45)} ${r1(-h*.36)}" stroke="${dk}" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
-  } else if (style === 5) {   // ใบตองพัดจีบ: จีบรัศมีเหมือนพัด
-    d = `M${r1(-w*.28)} 0L${r1(-w*.6)} ${r1(-h*.72)}Q0 ${r1(-h*1.18)} ${r1(w*.6)} ${r1(-h*.72)}L${r1(w*.28)} 0Z`;
-    half = `M0 0L${r1(w*.6)} ${r1(-h*.72)}Q${r1(w*.3)} ${r1(-h*1.02)} 0 ${r1(-h*.98)}Z`;
-    extra = [-.3, -.1, .1, .3].map(k => `<path d="M${r1(k*w*.35)} 0L${r1(k*w*1.9)} ${r1(-h*(.97-Math.abs(k)*.45))}" stroke="${dk}" stroke-opacity=".32" stroke-width=".8"/>`).join("");
-  } else if (style === 2) {
-    d = `M${-w/2} 0C${r1(-w*.8)} ${r1(-h*.65)} ${r1(-w*.32)} ${-h} 0 ${-h}C${r1(w*.32)} ${-h} ${r1(w*.8)} ${r1(-h*.65)} ${w/2} 0Z`;
-    half = `M0 0V${-h}C${r1(w*.32)} ${-h} ${r1(w*.8)} ${r1(-h*.65)} ${w/2} 0Z`;
-  } else {
-    d = `M${-w/2} 0Q${r1(-w*.55)} ${r1(-h*.55)} 0 ${-h}Q${r1(w*.55)} ${r1(-h*.55)} ${w/2} 0Z`;
-    half = `M0 0V${-h}Q${r1(w*.55)} ${r1(-h*.55)} ${w/2} 0Z`;
-  }
-  if (style <= 3) {
-    extra = `<path d="M${r1(-w*.22)} 0L${r1(-w*.09)} ${r1(-h*.76)}M${r1(w*.22)} 0L${r1(w*.09)} ${r1(-h*.76)}" stroke="${dk}" stroke-opacity=".2" stroke-width=".7" fill="none"/>
-    <path d="M${r1(w*.04)} ${r1(-h*.94)}L${r1(w*.16)} ${r1(-h*.7)}" stroke="#fff" stroke-opacity=".5" stroke-width=".9" stroke-linecap="round"/>`;
-  }
-  // ความนุ่มของใบ: สีเหลือบแต่ละใบไม่เท่ากัน + เงาทึบที่โคนใบ + แสงสะท้อนไล่จางที่ครึ่งใบ
-  const vv = v == null ? .5 : v, tint = `<path d="${d}" fill="${vv < .5 ? "#f2ea84" : dk}" fill-opacity="${r1(.04 + .2 * Math.abs(vv - .5) * 2) }"/>`;
-  const soft = u ? `<path d="${d}" fill="url(#${u}ao)"/>` : "";
-  return `<path d="${d}" fill="${fill}" stroke="${st}" stroke-opacity=".5" stroke-width=".8"/>${tint}${soft}<path d="${half}" fill="${u ? "url(#" + u + "hl)" : "#fff"}" fill-opacity="${u ? 1 : .13}"/><path d="M0 0V${r1(-h*.9)}" stroke="${dk}" stroke-opacity=".3" stroke-width=".9"/>${extra}`;
+  return `<svg viewBox="-22 -36 44 42" aria-hidden="true"><defs>${flowerDefs(u)}</defs><g transform="translate(0 ${type === 1 ? -6 : 0}) scale(.9)">${flowerMarkup(type, u)}</g></svg>`;
 }
 
+/* ---------- ใบตอง ---------- */
+function leafPath(style, w, h) {
+  const W = w / 2;
+  if (style === 4) return `M${r1(-W)} 0Q${r1(-W * .95)} ${r1(-h * .55)} ${r1(-W * .25)} ${r1(-h * .9)}Q0 ${-h} ${r1(W * .25)} ${r1(-h * .9)}Q${r1(W * .95)} ${r1(-h * .55)} ${r1(W)} 0Q0 ${r1(h * .1)} ${r1(-W)} 0Z`;
+  if (style === 5) return `M${r1(-W * .45)} 0L${r1(-W * 1.1)} ${r1(-h * .7)}Q0 ${r1(-h * 1.16)} ${r1(W * 1.1)} ${r1(-h * .7)}L${r1(W * .45)} 0Q0 ${r1(h * .08)} ${r1(-W * .45)} 0Z`;
+  if (style === 1) return `M${r1(-W)} 0C${r1(-W * 1.25)} ${r1(-h * .45)} ${r1(-W * .45)} ${r1(-h * .78)} 0 ${-h}C${r1(W * .45)} ${r1(-h * .78)} ${r1(W * 1.25)} ${r1(-h * .45)} ${r1(W)} 0Q0 ${r1(h * .14)} ${r1(-W)} 0Z`;
+  return `M${r1(-W)} 0C${r1(-W * 1.3)} ${r1(-h * .5)} ${r1(-W * .62)} ${r1(-h * .9)} 0 ${-h}C${r1(W * .62)} ${r1(-h * .9)} ${r1(W * 1.3)} ${r1(-h * .5)} ${r1(W)} 0Q0 ${r1(h * .14)} ${r1(-W)} 0Z`;
+}
+function leafSVG(style, w, h, fid, LC, u, v) {
+  const d = leafPath(style, w, h), W = w / 2, dk = LC.dk;
+  let o = `<path d="${d}" fill="url(#${u}${fid})"/><path d="${d}" fill="url(#${u}ao)"/><path d="${d}" fill="url(#${u}sh)"/>`;
+  if (v != null) o += `<path d="${d}" fill="${v < .5 ? "#f6f0a0" : dk}" fill-opacity="${(.03 + Math.abs(v - .5) * .2).toFixed(2)}"/>`;
+  if (style === 5) {          // พัดจีบ: รอยจีบแผ่เป็นรัศมี
+    o += [-.6, -.3, 0, .3, .6].map(k => `<path d="M${r1(k * W * .4)} 0L${r1(k * W * 1.6)} ${r1(-h * (.92 - Math.abs(k) * .35))}" stroke="${dk}" stroke-opacity=".45" stroke-width=".8"/><path d="M${r1((k + .12) * W * .4)} 0L${r1((k + .12) * W * 1.6)} ${r1(-h * (.92 - Math.abs(k + .12) * .35))}" stroke="#fff" stroke-opacity=".22" stroke-width=".7"/>`).join("");
+  } else if (style === 4) {   // ม้วน: ขอบใบที่ม้วนทับ
+    const flap = `M${r1(-W * .92)} ${r1(-h * .12)}Q${r1(-W * .1)} ${r1(-h * .3)} ${r1(W * .3)} ${r1(-h * .88)}`;
+    o += `<path d="${flap}Q${r1(W * .8)} ${r1(-h * .5)} ${r1(W)} 0Q0 ${r1(h * .1)} ${r1(-W)} 0Z" fill="${dk}" fill-opacity=".14"/><path d="${flap}" fill="none" stroke="${dk}" stroke-opacity=".7" stroke-width="1"/>
+      <path d="M${r1(-W * .6)} ${r1(-h * .35)}Q${r1(-W * .75)} ${r1(-h * .65)} ${r1(-W * .2)} ${r1(-h * .86)}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.3" stroke-linecap="round"/>`;
+  } else {                    // ใบตองแหลม/กลีบมน/สองชั้น: เส้นกลางใบ + เส้นใบ + แสงขอบ
+    let vn = "";
+    for (let k = 1; k <= 3; k++) { const y0 = -h * (.12 + k * .19), y1 = y0 - h * .14, x1 = W * (.82 - k * .14);
+      vn += `M0 ${r1(y0)}Q${r1(-x1 * .5)} ${r1(y0 - h * .03)} ${r1(-x1)} ${r1(y1)}M0 ${r1(y0)}Q${r1(x1 * .5)} ${r1(y0 - h * .03)} ${r1(x1)} ${r1(y1)}`; }
+    o += `<path d="${vn}" stroke="${dk}" stroke-opacity=".32" stroke-width=".7" fill="none"/>
+      <path d="M0 0Q${r1(W * .05)} ${r1(-h * .5)} 0 ${r1(-h * .9)}" stroke="${dk}" stroke-opacity=".5" stroke-width="1.6" fill="none"/>
+      <path d="M-.6 -1Q${r1(W * .05 - .6)} ${r1(-h * .5)} -.6 ${r1(-h * .86)}" stroke="#f4ffd0" stroke-opacity=".55" stroke-width=".8" fill="none"/>
+      <path d="M${r1(-W * .66)} ${r1(-h * .16)}Q${r1(-W * .8)} ${r1(-h * .5)} ${r1(-W * .24)} ${r1(-h * .84)}" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="1.4" stroke-linecap="round"/>`;
+    if (style === 3) {        // สองชั้น: ใบเล็กสีอ่อนซ้อนด้านหน้า
+      const d2 = leafPath(2, w * .58, h * .7);
+      o += `<path d="${d2}" fill="url(#${u}lfl)" stroke="${dk}" stroke-width="1.1" stroke-linejoin="round"/><path d="${d2}" fill="url(#${u}sh)"/><path d="M0 -1V${r1(-h * .62)}" stroke="${dk}" stroke-opacity=".45" stroke-width="1"/><path d="M-.5 -1V${r1(-h * .6)}" stroke="#f4ffd0" stroke-opacity=".5" stroke-width=".7"/>`;
+    }
+  }
+  return o + `<path d="${d}" fill="none" stroke="${dk}" stroke-width="1.3" stroke-linejoin="round"/>`;
+}
+
+/* ---------- ประกอบกระทง ---------- */
 function krathongSVG(spec, opt) {
   opt = opt || {};
   const u = "k" + (++svgSeq), A = opt.anim !== false;
   const F = FLAMES[spec.m - 1] || FLAMES[0];
   const B = BASES[spec.b - 1] || BASES[0];
   const LC = LEAFCOL[(spec.g || 1) - 1] || LEAFCOL[0];
-  const cx = 100, cy = 100, ry = 19, rx = B.rt, by = cy + B.h;
-  const items = [];
-
-  // --- ใบตอง ---
-  function ring(n, rf, h, w, off, fill, style) {
-    for (let i = 0; i < n; i++) {
-      const t = Math.PI * 2 * i / n + off, c = Math.cos(t), s = Math.sin(t);
-      const px = cx + rx * rf * c, py = cy + ry * rf * s + 1.5;
-      const hh = h * (1 - .2 * Math.max(0, s)), tilt = c * (style === 4 ? 16 : 26) + (i % 2 ? 3 : -3);
-      const f = (fill === "lf" && s < -.2) ? "lfd" : fill;
-      items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(tilt)})">${leafMarkup(style, w, hh, "url(#" + u + f + ")", LC.st, LC.dk, u, ((i * 7 + n * 3) % 11) / 10)}</g>`});
-    }
-  }
-  if (spec.l === 3) { ring(16, 1, 38, 27, 0, "lfd", 1); ring(16, .74, 28, 21, Math.PI / 16, "lfl", 1); }
-  else if (spec.l === 4) { ring(22, 1, 34, 14, 0, "lf", 4); ring(16, .74, 25, 13, Math.PI / 16, "lfl", 4); }
-  else if (spec.l === 5) { ring(14, 1, 30, 30, 0, "lf", 5); ring(14, .72, 22, 23, Math.PI / 14, "lfl", 5); }
-  else ring(20, 1, 32, 25, 0, "lf", spec.l);
-
-  // --- ดอกไม้ ---
-  const N = 7;
-  for (let j = 0; j < N; j++) {
-    const t = Math.PI * 2 * j / N + .45, c = Math.cos(t), s = Math.sin(t);
-    const type = spec.f[j % spec.f.length];
-    const px = cx + rx * .5 * c, py = cy - 4 + ry * .6 * s;
-    const sc = FLOWER_SCALE[type] * (.92 + .16 * ((j * 5) % 3) / 2);
-    items.push({y:py, m:`<g transform="translate(${r1(px)} ${r1(py)}) rotate(${r1(c*10)}) scale(${r1(sc*100)/100})"><ellipse cx="2" cy="-2" rx="14" ry="6.5" fill="#031208" fill-opacity=".3"/>${flowerMarkup(type, u)}<ellipse cx="-2" cy="-13" rx="13" ry="12" fill="url(#${u}fsh)"/></g>`});
-  }
-
-  // --- กลางกระทง + เปลวไฟ ---
-  let body, fy, fs;
-  if (spec.c === 2) {
-    body = `<rect x="-7" y="-32" width="14" height="33" rx="2.5" fill="url(#${u}cd)"/><ellipse cx="0" cy="-32" rx="7" ry="2.4" fill="#fff3d6"/>
-      <path d="M-4.5 -31v8q0 2.4 2.4 0v-7M3 -31v11q0 2.4 2.4 0v-10" fill="#fff0c8"/><path d="M0 -33v-3" stroke="#3a2a1a" stroke-width="1.3"/>`;
-    fy = -37; fs = 1.25;
-  } else if (spec.c === 3) {
-    body = `<rect x="-4" y="-4" width="8" height="6" rx="1" fill="#7a4a2b"/>
-      <ellipse cx="0" cy="-18" rx="13" ry="15" fill="#ffc45a" fill-opacity=".5" stroke="#f5c66b" stroke-width="1"/>
-      <path d="M0 -33V-3M-7 -31Q-13 -18 -7 -5M7 -31Q13 -18 7 -5" stroke="#d79a3a" stroke-opacity=".75" fill="none" stroke-width=".9"/>
-      <rect x="-5" y="-36" width="10" height="3.5" rx="1" fill="#b3761f"/><path d="M0 -36v-4" stroke="#b3761f" stroke-width="1"/>`;
-    fy = -18; fs = .8;
-  } else {
-    body = `<path d="M-6 1L-20 -40" stroke="#7a4a2b" stroke-width="1.5" stroke-linecap="round"/><path d="M6 1L20 -40" stroke="#7a4a2b" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="-20" cy="-40" r="1.8" fill="#ff5b3a"/><circle cx="20" cy="-40" r="1.8" fill="#ff5b3a"/>
-      <rect x="-4.5" y="-28" width="9" height="29" rx="2" fill="url(#${u}cd)"/><ellipse cx="0" cy="-28" rx="4.5" ry="1.8" fill="#fff3d6"/><path d="M0 -29v-3" stroke="#3a2a1a" stroke-width="1.2"/>`;
-    fy = -33; fs = 1;
-  }
-  const flame = `<g transform="translate(0 ${fy}) scale(${fs})"><circle r="24" fill="url(#${u}gl)"${A?' class="glow"':''}/>
-    <g${A?' class="flame"':''}><path d="M0 -13C5 -6 5.5 0 0 3.5C-5.5 0 -5 -6 0 -13Z" fill="url(#${u}fl)"/><ellipse cy="-1" rx="1.8" ry="3.6" fill="#fff" fill-opacity=".9"/></g></g>`;
-  items.push({y:cy + 3, m:`<g transform="translate(${cx} ${cy + 3})">${body}${flame}</g>`});
-  items.sort((a, b) => a.y - b.y);
+  const style = spec.l || 1, cx = 100;
+  const flowers = Array.isArray(spec.f) && spec.f.length ? spec.f : [1];
 
   // --- ฐาน ---
-  const side = `M${cx - B.rt} ${cy}L${cx - B.rb} ${by}A${B.rb} ${r1(ry*.95)} 0 0 0 ${cx + B.rb} ${by}L${cx + B.rt} ${cy}Z`;
+  const PY = 108, PRY = 15, isLeaf = B.kind === "lotusleaf";
+  const PR = isLeaf ? 93 : 86, PRB = B.kind === "coconut" ? 68 : isLeaf ? 90 : 83;
+  const T = {banana:11, bread:11, coconut:13, lotusleaf:4, weave:10}[B.kind] || 10;
+  const FB = r1(PY + PRY * .95 + T);
+  const side = `M${cx - PR} ${PY}L${cx - PRB} ${PY + T}A${PRB} ${r1(PRY * .95)} 0 0 0 ${cx + PRB} ${PY + T}L${cx + PR} ${PY}Z`;
+  const arcPt = (t, r, ry, y0) => [r1(cx - Math.cos(t) * r), r1(y0 + Math.sin(t) * ry)];
   let deco = "", topDeco = "";
   if (B.kind === "banana") {
-    for (const k of [1, 2]) {
-      const y = cy + B.h * k / 3, rr = B.rt + (B.rb - B.rt) * k / 3;
-      deco += `<path d="M${r1(cx-rr)} ${r1(y)}A${r1(rr)} ${r1(ry*.97)} 0 0 0 ${r1(cx+rr)} ${r1(y)}" stroke="#6b7d34" stroke-opacity=".35" stroke-width="1.2" fill="none"/>`;
+    for (let i = 1; i < 30; i++) {
+      const t = Math.PI * i / 30, a = jr(i, 3, 2), p = arcPt(t, PR, PRY, PY), q = arcPt(t, PRB, PRY * .95, PY + T);
+      deco += `<path d="M${p[0]} ${p[1]}L${q[0]} ${q[1]}" stroke="${a < .5 ? "#6f8a3a" : "#fffbe0"}" stroke-opacity="${r1(.25 + a * .35)}" stroke-width="${r1(.6 + a * .8)}"/>`;
     }
-    topDeco = `<ellipse cx="${cx}" cy="${cy}" rx="${r1(rx*.78)}" ry="${r1(ry*.78)}" fill="none" stroke="#a7b36e" stroke-opacity=".5"/>`;
+    deco += `<path d="M${cx - PRB} ${PY + T - 4}A${PRB} ${r1(PRY * .95)} 0 0 0 ${cx + PRB} ${PY + T - 4}L${cx + PRB} ${PY + T}A${PRB} ${r1(PRY * .95)} 0 0 1 ${cx - PRB} ${PY + T}Z" fill="#4f6d26" fill-opacity=".5"/>`;
   } else if (B.kind === "bread") {
-    for (let i = 0; i < 16; i++) { const x = cx - 52 + (i * 37 % 104), y = cy + 6 + (i * 13 % 16); deco += `<circle cx="${x}" cy="${y}" r="1.1" fill="#7d4519" fill-opacity=".45"/>`; }
-    topDeco = `<ellipse cx="${cx}" cy="${cy}" rx="${rx-2}" ry="${ry-1}" fill="none" stroke="#a86a2a" stroke-width="2.4" stroke-opacity=".7"/>`;
+    for (let i = 0; i < 28; i++) { const t = Math.PI * (i + .5) / 28, k = .25 + .55 * jr(i, 8, 1), p = arcPt(t, PR - (PR - PRB) * k, PRY, PY + T * k);
+      deco += `<circle cx="${p[0]}" cy="${p[1]}" r="${r1(.8 + jr(i, 8, 2) * .6)}" fill="#6b3a12" fill-opacity=".5"/>`; }
+    deco += `<path d="M${cx - PR + 4} ${PY + 2}A${PR - 4} ${PRY - 1} 0 0 0 ${cx + PR - 4} ${PY + 2}" stroke="#ffd99a" stroke-opacity=".5" stroke-width="1.6" fill="none"/>`;
   } else if (B.kind === "coconut") {
-    for (let i = 0; i < 22; i++) { const x = cx - 46 + (i * 29 % 92), y = cy + 5 + (i * 11 % 13); deco += `<path d="M${x} ${y}l1.5 6" stroke="#1f1008" stroke-opacity=".5" stroke-width="1"/>`; }
-    topDeco = `<ellipse cx="${cx}" cy="${cy+1}" rx="${r1(rx*.86)}" ry="${r1(ry*.82)}" fill="#24140a"/><ellipse cx="${cx}" cy="${cy+3}" rx="${r1(rx*.7)}" ry="${r1(ry*.6)}" fill="#3a2212"/>`;
-  } else if (B.kind === "lotusleaf") {   // ใบบัว: จานใบบัวเส้นใบแผ่รอบ
-    for (let i = 0; i < 14; i++) { const t = Math.PI * 2 * i / 14; topDeco += `<path d="M${cx} ${cy}L${r1(cx + Math.cos(t) * rx * .94)} ${r1(cy + Math.sin(t) * ry * .94)}" stroke="#2f6f2f" stroke-opacity=".38" stroke-width=".9"/>`; }
-    topDeco += `<ellipse cx="${cx}" cy="${cy}" rx="6" ry="2.4" fill="#a6dc8a" fill-opacity=".7"/>`;
-  } else {                                // ไม้ไผ่สาน: ลายสานทแยง
-    for (let i = -5; i <= 5; i++) { const x = cx + i * 9; deco += `<path d="M${x} ${cy + 2}L${x + 6} ${by - 1}" stroke="#5a3d12" stroke-opacity=".35" stroke-width="1.2"/><path d="M${x + 6} ${cy + 2}L${x} ${by - 1}" stroke="#f3d79a" stroke-opacity=".22" stroke-width="1"/>`; }
-    for (const k of [1, 2]) { const y = cy + B.h * k / 3; deco += `<path d="M${cx - B.rt} ${y}A${B.rt} ${ry} 0 0 0 ${cx + B.rt} ${y}" stroke="#5a3d12" stroke-opacity=".3" fill="none" stroke-width="1"/>`; }
-    for (const f of [.86, .62, .38]) topDeco += `<ellipse cx="${cx}" cy="${cy}" rx="${r1(rx * f)}" ry="${r1(ry * f)}" fill="none" stroke="#7d5a22" stroke-opacity=".38"/>`;
+    for (let i = 0; i < 34; i++) { const t = Math.PI * (i + .5) / 34, k = .15 + .6 * jr(i, 9, 1), p = arcPt(t, PR - (PR - PRB) * k, PRY * (1 - .05 * k), PY + T * k);
+      deco += `<path d="M${p[0]} ${p[1]}l${r1((jr(i, 9, 3) - .5) * 2)} 4" stroke="#1f1008" stroke-opacity=".55" stroke-width=".9"/>`; }
+  } else if (isLeaf) {
+    for (let i = 0; i < 18; i++) { const t = Math.PI * 2 * i / 18; topDeco += `<path d="M${cx} ${PY}L${r1(cx + Math.cos(t) * PR * .97)} ${r1(PY + Math.sin(t) * PRY * .97)}" stroke="#2c6a2a" stroke-opacity=".45" stroke-width=".9"/>`; }
+    topDeco += `<ellipse cx="${cx}" cy="${PY}" rx="${r1(PR * .9)}" ry="${r1(PRY * .9)}" fill="none" stroke="#9fd27a" stroke-opacity=".35"/>`;
+  } else {   // ไม้ไผ่สาน
+    for (let i = -8; i <= 8; i++) {
+      const x = cx + i * 9, xb = x + 5, dx = (x - cx) / PR, dxb = (xb - cx) / PRB;
+      const yt = PY + PRY * Math.sqrt(Math.max(0, 1 - dx * dx)), yb = PY + T + PRY * .95 * Math.sqrt(Math.max(0, 1 - dxb * dxb));
+      deco += `<path d="M${r1(x)} ${r1(yt)}L${r1(xb)} ${r1(yb)}" stroke="#5a3d12" stroke-opacity=".4" stroke-width="1.2"/><path d="M${r1(xb)} ${r1(yt)}L${r1(x)} ${r1(yb)}" stroke="#f3d79a" stroke-opacity=".3" stroke-width="1"/>`;
+    }
   }
-  // ใบตองห่อรอบฐาน: วงแหวนใบตองต่อเนื่อง + ชายใบพับลงด้านหน้า (ทำให้ใบดูต่อกับฐาน ไม่ลอย)
-  const ro = r1(rx * 1.03), ri = r1(rx * .62), sd = r1(Math.min(11, B.h * .55 + 3));
-  let pleats = "";
-  for (let i = 1; i < 26; i++) { const t = Math.PI * i / 26, x = r1(cx - Math.cos(t) * ro), y = r1(cy + Math.sin(t) * (ry + 1)); pleats += `M${x} ${y}l${r1(-Math.cos(t) * 1.2)} ${sd - 1}`; }
-  const wrap = `<path fill-rule="evenodd" fill="url(#${u}lfd)" d="M${r1(cx - ro)} ${cy}A${ro} ${r1(ry + 1)} 0 1 0 ${r1(cx + ro)} ${cy}A${ro} ${r1(ry + 1)} 0 1 0 ${r1(cx - ro)} ${cy}ZM${r1(cx - rx * .6)} ${cy}A${ri} ${r1(ry * .6)} 0 1 1 ${r1(cx + rx * .6)} ${cy}A${ri} ${r1(ry * .6)} 0 1 1 ${r1(cx - rx * .6)} ${cy}Z"/>
-    <path d="M${r1(cx - ro)} ${cy}A${ro} ${r1(ry + 1)} 0 0 0 ${r1(cx + ro)} ${cy}L${r1(cx + ro + 1)} ${cy + sd}A${r1(ro + 1)} ${r1(ry + 2)} 0 0 1 ${r1(cx - ro - 1)} ${cy + sd}Z" fill="url(#${u}lf)" stroke="${LC.st}" stroke-opacity=".5" stroke-width=".8"/>
-    <path d="${pleats}" stroke="${LC.dk}" stroke-opacity=".3" stroke-width=".8" fill="none"/>
-    <path d="M${r1(cx - ro + 2)} ${cy + 2}A${r1(ro - 2)} ${r1(ry - 1)} 0 0 0 ${r1(cx + ro - 2)} ${cy + 2}" stroke="#fff" stroke-opacity=".3" stroke-width="1.1" fill="none"/>`;
-  // เงาแสงเทียนสะท้อนผิวน้ำ: ขีดแสงสั้น ๆ ใต้ฐาน (สั่นไหวเบา ๆ)
-  const streaks = [[34, 9, .36], [24, 15, .26], [15, 21, .18]].map(([w, dy, o], i) =>
-    `<rect x="${cx - w}" y="${by + dy}" width="${w * 2}" height="1.9" rx=".95" fill="${F.g}" fill-opacity="${o}"${A ? ` class="streak" style="animation-delay:${-i * .7}s"` : ""}/>`).join("");
+  // จานใบตองแบ่งช่องรองใต้กระทง (แบบภาพอ้างอิง)
+  let skirt = "";
+  if (!isLeaf) {
+    const sr = PR - 2, sry = PRY - .5, sy = PY - 3, sh = 4;
+    let seg = "";
+    for (let i = 1; i < 16; i++) { const t = Math.PI * i / 16, c0 = Math.cos(t), s0 = Math.sin(t);
+      seg += `M${r1(cx - c0 * sr * .84)} ${r1(sy + s0 * sry * .84)}L${r1(cx - c0 * sr)} ${r1(sy + s0 * sry)}l0 ${sh}`; }
+    skirt = `<path d="M${cx - sr} ${sy}A${sr} ${sry} 0 0 0 ${cx + sr} ${sy}L${cx + sr} ${sy + sh}A${sr} ${sry} 0 0 1 ${cx - sr} ${sy + sh}Z" fill="url(#${u}lfd)" stroke="${LC.dk}" stroke-width="1.1"/>
+      <ellipse cx="${cx}" cy="${sy}" rx="${sr}" ry="${sry}" fill="url(#${u}lf)" stroke="${LC.dk}" stroke-width="1.1"/>
+      <path d="${seg}" stroke="${LC.dk}" stroke-opacity=".55" stroke-width=".8" fill="none"/>`;
+  }
 
-  return `<svg class="kr-svg" viewBox="0 34 200 132" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs>
+  // --- ใบตองสองชั้น (แยกครึ่งหลัง/ครึ่งหน้า เพื่อซ้อนกับดอกไม้ได้ถูกต้อง) ---
+  const ringLeaves = (n, rx, ry, yc, h, w, off, seed) => {
+    const back = [], front = [];
+    for (let i = 0; i < n; i++) {
+      const t = off + Math.PI * 2 * i / n, c = Math.cos(t), s = Math.sin(t);
+      const hh = h * (1 - .12 * s) * (1 + (jr(i, seed, 2) - .5) * .1), ww = w * (1 + (jr(i, seed, 3) - .5) * .1);
+      const tilt = c * 30 + (jr(i, seed, 4) - .5) * 6, y = yc + ry * s;
+      const g = `<g transform="translate(${r1(cx + rx * c)} ${r1(y)}) rotate(${r1(tilt)})">${leafSVG(style, r1(ww), r1(hh), s < -.1 ? "lfd" : "lf", LC, u, jr(i, seed, 5))}</g>`;
+      (s < -.02 ? back : front).push({y, m:g});
+    }
+    const join = a => a.sort((p, q) => p.y - q.y).map(o => o.m).join("");
+    return {back:join(back), front:join(front)};
+  };
+  // [จำนวนใบนอก, กว้าง, สูง, จำนวนใบใน, กว้าง, สูง]
+  const LS = {1:[12, 40, 36, 10, 34, 31], 2:[12, 40, 34, 10, 34, 30], 3:[12, 40, 35, 10, 34, 30], 4:[16, 24, 35, 12, 22, 30], 5:[11, 36, 31, 9, 31, 27]}[style] || [12, 40, 36, 10, 34, 31];
+  const outer = ringLeaves(LS[0], 76, 14, 104, LS[2], LS[1], Math.PI / 2, 11);
+  const inner = ringLeaves(LS[3], 58, 11, 94, LS[5], LS[4], Math.PI / 2 + Math.PI / LS[3], 12);
+
+  // --- ดอกไม้: ดอกเด่นตรงกลาง + วงดอกไม้รอบ ---
+  const items = [];
+  const hasLotus = flowers.includes(1);
+  let pool = flowers.filter(t => t !== 1);
+  const centerType = hasLotus ? 1 : (pool[0] || 2);
+  if (!hasLotus && pool.length > 1) pool = pool.slice(1).concat(pool[0]);
+  if (!pool.length) pool = [0];
+  const SLOTS = [[215, .9], [180, .95], [145, 1], [112, 1.05], [68, 1.05], [35, 1], [0, .95], [325, .9]];
+  SLOTS.forEach(([deg, k], j) => {
+    const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), type = pool[j % pool.length];
+    const x = cx + 46 * c + (jr(j, 7, 1) - .5) * 4, y = 86 + 12 * s + (jr(j, 7, 2) - .5) * 3;
+    const sc = r1((FLOWER_SCALE[type] || 1) * k * (.78 + jr(j, 7, 3) * .12) * 100) / 100;
+    const rot = r1(c * 14 + (jr(j, 7, 4) - .5) * 14);
+    items.push({y, m:`<g transform="translate(${r1(x)} ${r1(y)}) rotate(${rot}) scale(${sc})"><ellipse cx="1.5" cy="-1.5" rx="13" ry="5" fill="#021006" fill-opacity=".35"/>${flowerMarkup(type, u)}</g>`});
+  });
+  if (hasLotus) items.push({y:84, m:`<g transform="translate(${cx} 85) scale(1.06)"><ellipse cx="0" cy="0" rx="30" ry="6" fill="#021006" fill-opacity=".35"/>${lotusMarkup(u)}</g>`});
+  else items.push({y:84, m:`<g transform="translate(${cx} 86) scale(1.6)"><ellipse cx="1" cy="-1" rx="14" ry="5" fill="#021006" fill-opacity=".35"/>${flowerMarkup(centerType, u)}</g>`});
+
+  // --- เทียน / ธูป / โคม (อยู่หลังดอกเด่น) ---
+  const wax = (wt, wb, h, lean) => `<g transform="rotate(${lean})"><path d="M${-wb} 1L${-wt} ${-h}Q0 ${r1(-h - 2.4)} ${wt} ${-h}L${wb} 1Z" fill="url(#${u}cd)"/>
+      <path d="M${r1(wt * .2)} ${-h}L${wb} 1L${r1(wb * .35)} 1Z" fill="#b07f3a" fill-opacity=".16"/><path d="M${-wb} 1L${-wt} ${-h}Q0 ${r1(-h - 2.4)} ${wt} ${-h}L${wb} 1Z" fill="none" stroke="#8f6a2c" stroke-width=".9"/><path d="M${r1(-wt * .55)} ${r1(-h + 2)}L${r1(-wb * .55)} -2" stroke="#fff" stroke-opacity=".45" stroke-width="1" stroke-linecap="round"/>
+      <ellipse cx="0" cy="${-h}" rx="${wt}" ry="${r1(wt * .38)}" fill="#fff3d6"/><ellipse cx="${r1(wt * .1)}" cy="${-h}" rx="${r1(wt * .55)}" ry="${r1(wt * .2)}" fill="#f2d9a0" fill-opacity=".75"/>
+      <path d="M${r1(-wt * .75)} ${-h}v${r1(h * .2)}q0 2.4 2.2 0v${r1(-h * .17)}M${r1(wt * .3)} ${-h}v${r1(h * .3)}q0 2.4 2.3 0v${r1(-h * .27)}" fill="#fff0c8" stroke="#d9bd84" stroke-opacity=".7" stroke-width=".45"/>
+      <path d="M0 ${-h}Q.9 ${r1(-h - 2)} 1.8 ${r1(-h - 3.2)}" stroke="#3a2a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/></g>`;
+  const flameAt = (y, s) => `<g transform="translate(0 ${y}) scale(${s})"><circle r="24" fill="url(#${u}gl)"${A ? ' class="glow"' : ""}/>
+    <g${A ? ' class="flame"' : ""}><path d="M0 -13C5 -6 5.5 0 0 3.5C-5.5 0 -5 -6 0 -13Z" fill="url(#${u}fl)"/><ellipse cy="-1" rx="1.8" ry="3.6" fill="#fff" fill-opacity=".9"/></g></g>`;
+  const stick = (x0, y0, x1, y1) => { const px = f => r1(x0 + (x1 - x0) * f), py = f => r1(y0 + (y1 - y0) * f);
+    return `<path d="M${x0} ${y0}L${x1} ${y1}" stroke="#4a2410" stroke-width="2.8" stroke-linecap="round"/><path d="M${x0} ${y0}L${x1} ${y1}" stroke="#b8763a" stroke-width="1.5" stroke-linecap="round"/><path d="M${px(.04)} ${py(.04)}L${px(.25)} ${py(.25)}" stroke="#c2302a" stroke-width="1.6" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="1.7" fill="#ff5b2a"${A ? ' class="glow"' : ""}/>`; };
+  let center;
+  if (spec.c === 2) {
+    center = `<g transform="translate(${cx} 82)">${wax(7, 8.2, 62, 1)}${flameAt(-67, 1.25)}</g>`;
+  } else if (spec.c === 3) {
+    center = `<g transform="translate(${cx} 84)"><path d="M0 2V-30" stroke="#5a3418" stroke-width="2.2" stroke-linecap="round"/><g transform="translate(0 -28)">
+      <rect x="-4" y="-4" width="8" height="6" rx="1" fill="#7a4a2b" stroke="#3a2010" stroke-width=".7"/>
+      <ellipse cx="0" cy="-18" rx="13" ry="15" fill="#ffc45a" fill-opacity=".55" stroke="#b3761f" stroke-width="1.1"/>
+      <path d="M0 -33V-3M-7 -31Q-13 -18 -7 -5M7 -31Q13 -18 7 -5" stroke="#d79a3a" stroke-opacity=".75" fill="none" stroke-width=".9"/>
+      <rect x="-5" y="-36" width="10" height="3.5" rx="1" fill="#b3761f" stroke="#6b3e10" stroke-width=".6"/><path d="M0 -36v-4" stroke="#b3761f" stroke-width="1"/>${flameAt(-18, .8)}</g></g>`;
+  } else {   // เทียน + ธูป: เทียนสูง เทียนเตี้ย และธูปสองดอก
+    center = stick(86, 86, 80, 20) + stick(91, 86, 88, 18) +
+      `<g transform="translate(101 82)">${wax(4.6, 5.4, 60, -1)}${flameAt(-65, 1)}</g>` +
+      `<g transform="translate(120 84)">${wax(4.2, 5, 46, 2)}${flameAt(-51, .9)}</g>`;
+  }
+  items.push({y:-1, m:center});
+  items.sort((a, b) => a.y - b.y);
+
+  // แสงเทียนสะท้อนผิวน้ำ
+  const streaks = [[36, 8, .36], [26, 14, .26], [16, 20, .18]].map(([w, dy, o], i) =>
+    `<rect x="${cx - w}" y="${r1(FB + dy)}" width="${w * 2}" height="1.9" rx=".95" fill="${F.g}" fill-opacity="${o}"${A ? ` class="streak" style="animation-delay:${-i * .7}s"` : ""}/>`).join("");
+
+  return `<svg class="kr-svg" viewBox="0 0 200 164" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs>
     <linearGradient id="${u}lf" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.lf[0]}"/><stop offset="1" stop-color="${LC.lf[1]}"/></linearGradient>
     <linearGradient id="${u}lfd" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.lfd[0]}"/><stop offset="1" stop-color="${LC.lfd[1]}"/></linearGradient>
     <linearGradient id="${u}lfl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.lfl[0]}"/><stop offset="1" stop-color="${LC.lfl[1]}"/></linearGradient>
@@ -734,23 +833,24 @@ function krathongSVG(spec, opt) {
     <linearGradient id="${u}fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${F.b}"/><stop offset="1" stop-color="${F.a}"/></linearGradient>
     <radialGradient id="${u}gl"><stop offset="0" stop-color="${F.g}" stop-opacity=".6"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
     <radialGradient id="${u}tp" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
-    <radialGradient id="${u}wl"><stop offset="0" stop-color="${F.g}" stop-opacity=".3"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${u}wl"><stop offset="0" stop-color="${F.g}" stop-opacity=".22"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
     <radialGradient id="${u}wg"><stop offset="0" stop-color="${F.g}" stop-opacity=".42"/><stop offset="1" stop-color="${F.g}" stop-opacity="0"/></radialGradient>
-    <linearGradient id="${u}ao" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.dk}" stop-opacity=".5"/><stop offset=".5" stop-color="${LC.dk}" stop-opacity=".14"/><stop offset="1" stop-color="${LC.dk}" stop-opacity="0"/></linearGradient>
-    <linearGradient id="${u}hl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fffbe0" stop-opacity=".3"/></linearGradient>
-    <radialGradient id="${u}fsh" cx=".4" cy=".3" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#2a0a10" stop-opacity=".26"/></radialGradient>
+    <linearGradient id="${u}ao" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${LC.dk}" stop-opacity=".5"/><stop offset=".5" stop-color="${LC.dk}" stop-opacity=".12"/><stop offset="1" stop-color="${LC.dk}" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${u}sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
     <radialGradient id="${u}cs"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".6" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
     ${flowerDefs(u)}</defs>
-    <ellipse cx="${cx}" cy="${by + 7}" rx="${B.rt + 24}" ry="12" fill="url(#${u}wg)"${A?' class="glow"':''}/>
+    <ellipse cx="${cx}" cy="${r1(FB + 6)}" rx="${PR + 14}" ry="13" fill="url(#${u}wg)"${A ? ' class="glow"' : ""}/>
     ${streaks}
-    <ellipse cx="${cx}" cy="${by + 3}" rx="${B.rb + 16}" ry="13" fill="url(#${u}cs)"/>
-    <path d="${side}" fill="url(#${u}sd)"/>${deco}
-    <path d="M${cx - B.rt * .62} ${cy + 3}L${cx - B.rb * .6} ${by - 1}" stroke="#fff" stroke-opacity=".22" stroke-width="${B.h < 12 ? 2 : 5}" stroke-linecap="round"/>
-    <ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="${B.top}"/><ellipse cx="${cx}" cy="${cy}" rx="${B.rt}" ry="${ry}" fill="url(#${u}tp)"/>${topDeco}
-    <path d="M${cx - B.rt + 3} ${cy + 3}A${B.rt - 3} ${ry - 3} 0 0 0 ${cx + B.rt - 3} ${cy + 3}" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1.2"/>
-    ${wrap}
+    <ellipse cx="${cx}" cy="${r1(FB - 3)}" rx="${PRB + 14}" ry="12" fill="url(#${u}cs)"/>
+    <path d="${side}" fill="url(#${u}sd)" stroke="${B.line}" stroke-width="1.2" stroke-linejoin="round"/>${deco}
+    <ellipse cx="${cx}" cy="${PY}" rx="${PR}" ry="${PRY}" fill="${B.top}" stroke="${B.line}" stroke-width="1.2"/><ellipse cx="${cx}" cy="${PY}" rx="${PR}" ry="${PRY}" fill="url(#${u}tp)"/>${topDeco}
+    ${skirt}
+    ${outer.back}${inner.back}
+    <ellipse cx="${cx}" cy="92" rx="62" ry="13" fill="url(#${u}lfd)" stroke="${LC.dk}" stroke-width="1"/><ellipse cx="${cx}" cy="91" rx="50" ry="9" fill="#000" fill-opacity=".22"/>
+    ${inner.front}
     ${items.map(i => i.m).join("")}
-    <ellipse cx="${cx}" cy="${cy - 6}" rx="${rx * .8}" ry="${ry * 1.3}" fill="url(#${u}wl)" pointer-events="none"/></svg>`;
+    ${outer.front}
+    <ellipse cx="${cx}" cy="60" rx="64" ry="34" fill="url(#${u}wl)" pointer-events="none"/></svg>`;
 }
 
 /* =========================================================
