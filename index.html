@@ -147,7 +147,8 @@ button:disabled{opacity:.6;cursor:wait}
 .bolt-spark{position:absolute;z-index:200;width:5px;height:5px;margin:-2px 0 0 -2px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #9fc9ffcc;pointer-events:none}
 .bolt-ring{position:absolute;z-index:150;width:70px;height:26px;border:1.5px solid #cfe5ffcc;border-radius:50%;pointer-events:none}
 .kr.is-drag .kr-bob{animation-play-state:paused;transform:translateY(-6px) scale(1.06)}
-.kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%}
+.kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%;will-change:transform}
+.kr:not(.mine) :is(.flame,.glow,.streak,.ripple),.kr.is-drag :is(.flame,.glow,.streak,.ripple){animation:none}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
 .kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:13px;font-weight:500;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
 .kr.mine .kr-name{background:var(--gold);color:#1b2a30;border-color:transparent;font-weight:700}
@@ -1084,9 +1085,26 @@ function dateLabel(value) {
 function render() {
   if ($("count")) $("count").textContent = totalCount == null ? (hasLoaded ? String(wishes.length) + (wishes.length === 100 ? "+" : "") : "—") : totalCount.toLocaleString("th-TH");
   const list = wishes.filter(w => !w.blocked);
-  $("feed").innerHTML = list.length ? list.slice(0, visibleCount).map(w =>
-    `<article class="wish-card"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`).join("")
-    : `<p class="empty">${hasLoaded ? "ยังไม่มีกระทงในสายน้ำ มาเป็นคนแรกที่ฝากคำอธิษฐานกันครับ" : "ยังไม่มีข้อมูลให้แสดง"}</p>`;
+  const feed = $("feed"), shown = list.slice(0, visibleCount);
+  if (!shown.length) {
+    feed.innerHTML = `<p class="empty">${hasLoaded ? "ยังไม่มีกระทงในสายน้ำ มาเป็นคนแรกที่ฝากคำอธิษฐานกันครับ" : "ยังไม่มีข้อมูลให้แสดง"}</p>`;
+  } else {
+    // สร้างเฉพาะการ์ดใหม่ ใช้การ์ดเดิมซ้ำ (SVG กระทงหนัก ไม่สร้างใหม่ทุกครั้งที่โหลด)
+    const old = new Map();
+    feed.querySelectorAll(".wish-card[data-id]").forEach(el => old.set(el.dataset.id, el));
+    const frag = [];
+    shown.forEach(w => {
+      let el = old.get(w.id);
+      if (!el) {
+        const t = document.createElement("template");
+        t.innerHTML = `<article class="wish-card" data-id="${escapeHTML(w.id)}"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`;
+        el = t.content.firstElementChild;
+      }
+      frag.push(el);
+    });
+    const cur = [...feed.children];
+    if (cur.length !== frag.length || cur.some((c, i) => c !== frag[i])) feed.replaceChildren(...frag);
+  }
   syncRiver();
   $("showMore").hidden = visibleCount >= list.length;
 }
