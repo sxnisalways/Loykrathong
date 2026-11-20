@@ -269,19 +269,19 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 .view-by{color:var(--gold);font-weight:700;overflow-wrap:anywhere}
 .view-date{color:var(--muted);font-size:12px;margin-top:2px}
 /* ---------- กระทงที่ถืออยู่ในน้ำ (ไม่มีกรอบ) ---------- */
-.held{position:absolute;left:50%;bottom:5%;width:min(46vw,190px);transform:translateX(-50%);z-index:3;text-align:center;animation:heldIn .8s ease both}
+.held{position:absolute;inset:0;z-index:3;pointer-events:none}
 .held[hidden]{display:none}
-.held-glow{position:absolute;left:-30%;right:-30%;bottom:20%;height:46%;background:radial-gradient(closest-side,#f5c66b2e,transparent 72%);pointer-events:none}
+.held-kr{position:absolute;left:0;top:0;transform-origin:50% 50%;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;pointer-events:auto;animation:heldIn .8s ease both}
 .held-bob{animation:heldBob 4.6s ease-in-out infinite;transform-origin:50% 85%}
-.held-kr{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;border-radius:14px}
 .held-kr svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
 .held-kr.pop svg{animation:heldPop .6s ease both}
-.held-hint{margin-top:2px;font-size:13px;line-height:1.5;color:#ffeab5;text-shadow:0 1px 8px #000d,0 0 12px #000a;animation:heldPulse 2.4s ease-in-out infinite;pointer-events:none}
-.held-err{font-size:12px;line-height:1.5;color:#ffb4a8;text-shadow:0 1px 6px #000d;margin-top:2px;overflow-wrap:anywhere}
+.held-ui{position:absolute;left:0;right:0;text-align:center;animation:heldIn .8s ease both}
+.held-hint{font-size:13px;line-height:1.5;color:#ffeab5;text-shadow:0 1px 8px #000d,0 0 12px #000a;animation:heldPulse 2.4s ease-in-out infinite}
+.held-err{font-size:12px;line-height:1.5;color:#ffb4a8;text-shadow:0 1px 6px #000d;margin-top:2px;overflow-wrap:anywhere;padding:0 16px}
 .held-err:empty{display:none}
-.held-edit{display:inline-block;margin-top:2px;padding:6px 12px;min-height:0;background:none;border:0;box-shadow:none;color:#bcd0da;font-size:12px;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-shadow:0 1px 6px #000d;opacity:.8}
+.held-edit{pointer-events:auto;display:inline-block;margin-top:0;padding:6px 12px;min-height:0;background:none;border:0;box-shadow:none;color:#bcd0da;font-size:12px;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-shadow:0 1px 6px #000d;opacity:.8}
 body.holding .fab,body.holding .hint,body.holding .river-empty{display:none}
-@keyframes heldIn{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes heldIn{from{opacity:0}to{opacity:1}}
 @keyframes heldBob{0%,100%{transform:translateY(0) rotate(-.7deg)}50%{transform:translateY(-3px) rotate(.7deg)}}
 @keyframes heldPulse{0%,100%{opacity:.75}50%{opacity:1}}
 @keyframes heldPop{from{opacity:.55;filter:brightness(.8)}to{opacity:1;filter:none}}
@@ -459,11 +459,12 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
     <div class="river-label" aria-hidden="true">✦ สายน้ำแห่งคำอธิษฐาน ✦</div>
     <!-- กระทงที่ถืออยู่ในน้ำ: แตะจุดเทียน → แตะอีกครั้งเพื่อปล่อย -->
     <div class="held" id="held" hidden>
-      <div class="held-glow" aria-hidden="true"></div>
-      <div class="held-bob"><div class="held-kr" id="heldKr" role="button" tabindex="0" aria-label="แตะเพื่อจุดเทียน"></div></div>
-      <div class="held-hint" id="heldHint">แตะเพื่อจุดเทียน</div>
-      <div class="held-err" id="heldErr" role="status" aria-live="polite"></div>
-      <button class="held-edit" id="heldEdit" type="button">แก้ไข</button>
+      <div class="held-kr" id="heldKr" role="button" tabindex="0" aria-label="แตะเพื่อจุดเทียน"><div class="held-bob" id="heldBob"></div></div>
+      <div class="held-ui" id="heldUi">
+        <div class="held-hint" id="heldHint">แตะเพื่อจุดเทียน</div>
+        <div class="held-err" id="heldErr" role="status" aria-live="polite"></div>
+        <button class="held-edit" id="heldEdit" type="button">แก้ไข</button>
+      </div>
     </div>
     <div class="krathongs" id="river"></div>
     <div class="river-empty" id="riverEmpty" hidden>ยังไม่มีกระทงในสายน้ำ<br>มาเป็นคนแรกที่ปล่อยกระทงกันครับ</div>
@@ -1187,6 +1188,7 @@ function measure() {
   river.style.setProperty("--kw", KW + "px");
   const sky = $("fxSky"); if (sky) sky.style.setProperty("--rise", Math.round(sky.clientHeight * .95) + "px");
   items.forEach(it => { it.w = KW; it.h = it.el.offsetHeight || KW * .6; place(it); });
+  if (typeof layoutHeld === "function" && !$("held").hidden) layoutHeld();
 }
 function place(it) {
   const s = .72 + .5 * it.y;
@@ -1206,18 +1208,26 @@ function addItem(w, index, fresh, mine) {
   el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
   river.appendChild(el);
   let x, y;
-  if (mine) { x = .2; y = .62; }   // กระทงของฉันลอยเข้ามาจากขอบน้ำด้านล่าง (ดู it.enter)
+  if (mine && heldPos) { x = heldPos.x; y = heldPos.y; }   // ปล่อยจากตำแหน่งที่ถืออยู่
+  else if (mine) { x = .2; y = .62; }   // กระทงของฉันลอยเข้ามาจากขอบน้ำด้านล่าง (ดู it.enter)
   else if (fresh) { x = -.12; y = .1 + .62 * frac(h1 * 7.3); }
   else { x = .08 + .84 * frac(index * .618034 + .13); y = .1 + .62 * frac(index * .381966 + .31); }
   const it = {id:w.id, wish:w, el, x, y, v:.010 + .012 * h2, w:KW, h:0, drag:false, hover:false, moved:false};
   it.h = el.offsetHeight || KW * .6;
-  if (mine && !reduceMotion.matches) { it.enter = {t0:performance.now(), y0:1.04, y1:y, x1:x, dur:2100}; it.y = it.enter.y0; it.x = x - .05; }
+  if (mine && heldPos) {
+    it.v = .006; items.set(w.id, it); place(it);
+    // จัดให้ตัวกระทง (svg) อยู่กึ่งกลางเดียวกับที่ถือ แล้วค่อยลอย
+    const sv = el.querySelector(".kr-bob > svg"), rc = river.getBoundingClientRect();
+    if (sv) { const r = sv.getBoundingClientRect(); it.y -= ((r.top + r.height / 2 - rc.top) - heldPos.cy) / H; place(it); }
+    it.glide = {t0:performance.now(), y0:it.y, y1:.62, dur:40000}; hideHold();
+  }
+  else if (mine && !reduceMotion.matches) { it.enter = {t0:performance.now(), y0:1.04, y1:y, x1:x, dur:2100}; it.y = it.enter.y0; it.x = x - .05; }
   items.set(w.id, it);
   place(it);
 
   el.addEventListener("pointerdown", e => {
     if (e.button > 0) return;
-    it.enter = null;
+    it.enter = null; it.glide = null;
     const rc = river.getBoundingClientRect();
     it.drag = true; it.moved = false; it.px = e.clientX; it.py = e.clientY;
     it.gx = (e.clientX - rc.left) / W - it.x; it.gy = (e.clientY - rc.top) / H - it.y;
@@ -1357,6 +1367,11 @@ function tick(t) {
       }
       if (it.drag || it.hover) return;
       it.x += it.v * dt;
+      if (it.glide) {
+        const p = Math.min(1, (performance.now() - it.glide.t0) / it.glide.dur), e = p * p * (3 - 2 * p);
+        it.y = it.glide.y0 + (it.glide.y1 - it.glide.y0) * e;
+        if (p >= 1) it.glide = null;
+      }
       const half = (it.w * .6) / W;
       if (it.x > 1 + half) it.x = -half;
       place(it);
@@ -1644,19 +1659,38 @@ let heldState = "dark";   // dark = ยังไม่จุดเทียน, 
 const HELD_HINT = {dark:"แตะเพื่อจุดเทียน", lit:"แตะอีกครั้งเพื่อปล่อยกระทง"};
 function renderHeld(pop) {
   const kr = $("heldKr");
-  kr.innerHTML = krathongSVG(design, {anim:true, lit:heldState === "lit"});
+  $("heldBob").innerHTML = krathongSVG(design, {anim:true, lit:heldState === "lit"});
   kr.classList.remove("pop"); if (pop) { void kr.offsetWidth; kr.classList.add("pop"); }
   kr.setAttribute("aria-label", HELD_HINT[heldState]);
   $("heldHint").textContent = HELD_HINT[heldState];
 }
+let heldPos = null;   // ตำแหน่งกลางของกระทงที่ถืออยู่ (px ในแม่น้ำ) ใช้ส่งต่อให้กระทงที่ปล่อย
+function layoutHeld() {
+  if ($("held").hidden) return;
+  const kr = $("heldKr");
+  kr.style.width = KW + "px";
+  const h = kr.offsetHeight || KW * .8;
+  // ขนาด/การวางเดียวกับกระทงที่ลอยอยู่ (place) เพื่อให้ตอนปล่อยไม่กระโดด
+  let y = .72;
+  const s0 = .72 + .5 * y, bottomRoom = 74;
+  y = clamp((H - bottomRoom - h * s0 * .5 + h * .05) / H, .5, .8);
+  const s = .72 + .5 * y, cx = W / 2, cy = y * H - h * .55 + h / 2;
+  kr.style.transform = "translate3d(" + (cx - KW / 2).toFixed(1) + "px," + (y * H - h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
+  const ui = $("heldUi");
+  ui.style.top = Math.round(cy + h * s / 2 + 2) + "px";
+  heldPos = {x:.5, y, cy, s, h};
+}
 function showHold() {
-  heldState = "dark"; renderHeld(false);
+  heldState = "dark";
   $("heldErr").textContent = "";
   $("held").hidden = false;
   document.body.classList.add("holding");
-  $("held").scrollIntoView({behavior:"smooth", block:"end"});
+  measure();
+  renderHeld(false);
+  layoutHeld();
+  $("water").scrollIntoView({behavior:"smooth", block:"end"});
 }
-function hideHold() { $("held").hidden = true; document.body.classList.remove("holding"); }
+function hideHold() { $("held").hidden = true; heldPos = null; document.body.classList.remove("holding"); }
 $("launch").onclick = () => {
   if (saving) return;
   const wish = $("wish").value.trim(), name = $("name").value.trim() || "ไม่ระบุชื่อ";
@@ -1730,7 +1764,6 @@ async function submitKrathong() {
     $("heldHint").textContent = HELD_HINT[heldState];
   }
   if (saved) {
-    hideHold();
     playLaunchSound();
     closeModal();
     wishLight();
@@ -1740,11 +1773,7 @@ async function submitKrathong() {
     const refreshed = await loadKrathongs(true);
     if (refreshed) setStatus("บันทึกกระทงสำเร็จแล้ว · อัปเดตข้อมูลล่าสุดจาก Supabase แล้ว");
     else setStatus("บันทึกกระทงสำเร็จแล้ว แต่โหลดรายการล่าสุดไม่สำเร็จ กรุณากด ‘โหลดข้อมูลใหม่’ โดยไม่ต้องส่งกระทงซ้ำ", true);
-    const moonRect = document.querySelector(".moon").getBoundingClientRect(), mineItem = items.get(justLaunchedId), vh = window.innerHeight;
-    const moonY = moonRect.top + moonRect.height / 2 + window.scrollY;
-    const krY = mineItem ? mineItem.el.getBoundingClientRect().bottom + window.scrollY - (mineItem.enter ? (mineItem.y - mineItem.enter.y1) * H : 0) : 0;
-    if (mineItem && krY - moonY < vh - 120) window.scrollTo({top:Math.max(0, (moonY + krY) / 2 - vh / 2), behavior:"smooth"});
-    else $("water").scrollIntoView({behavior:"smooth", block:"center"});
+    hideHold();
   } else $("heldErr").textContent = $("formStatus").textContent;
 }
 loadKrathongs();
