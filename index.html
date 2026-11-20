@@ -268,27 +268,24 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 .view-wish{font-size:var(--fs-wishv);line-height:1.85;margin:4px 0 12px;overflow-wrap:anywhere;white-space:pre-wrap}
 .view-by{color:var(--gold);font-weight:700;overflow-wrap:anywhere}
 .view-date{color:var(--muted);font-size:12px;margin-top:2px}
-/* ---------- แผงถือกระทง ---------- */
-.hold{position:fixed;left:0;right:0;bottom:0;z-index:12;display:flex;justify-content:center;padding:0 12px max(12px,env(safe-area-inset-bottom));pointer-events:none}
-.hold[hidden]{display:none}
-.hold-card{pointer-events:auto;width:min(100%,420px);text-align:center;padding:0 18px 16px;border-radius:26px;position:relative;
-  background:linear-gradient(180deg,#0f2d4bee,#08192df5);border:1.5px solid #6fb7a666;box-shadow:0 18px 60px #000c,0 0 34px #3b8f9033;
-  animation:holdIn .45s cubic-bezier(.2,.9,.3,1) both}
-.hold-kr{width:min(250px,64vw);margin:-62px auto -6px;position:relative;filter:drop-shadow(0 10px 18px #0009);animation:holdBob 3.4s ease-in-out infinite}
-.hold-kr:before{content:"";position:absolute;inset:-14% -18%;background:radial-gradient(closest-side,#f5c66b38,transparent 72%);pointer-events:none;z-index:-1}
-.hold-kr svg{display:block;width:100%;height:auto}
-.hold-ttl{font-family:var(--serif);font-size:19px;color:var(--gold);text-shadow:0 0 16px #f5c66b40}
-.hold-sub{color:#9fb9c8;font-size:13px;line-height:1.6;margin:2px 0 12px}
-.hold-err{color:#ffb4a8;font-size:13px;line-height:1.6;margin:-4px 0 10px;overflow-wrap:anywhere}
-.hold-err:empty{display:none}
-.hold-act{display:flex;gap:12px}
-.hold-act button{flex:1;min-height:52px;border-radius:18px;font-weight:700}
-.hold-act .secondary{flex:0 0 32%;background:#103252b3;border:1.5px solid #4a7d9a;color:#d6e6ee}
-.hold-act .primary{background:linear-gradient(180deg,#ffe596,#f4b948);color:#3b2605;border:1.5px solid #fff1bd;box-shadow:0 0 22px #f5c66b66,0 4px 14px #0006}
-body.holding .fab{display:none}
-@keyframes holdIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
-@keyframes holdBob{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-6px) rotate(.6deg)}}
-@media(prefers-reduced-motion:reduce){.hold-card,.hold-kr{animation:none}}
+/* ---------- กระทงที่ถืออยู่ในน้ำ (ไม่มีกรอบ) ---------- */
+.held{position:absolute;left:50%;bottom:5%;width:min(46vw,190px);transform:translateX(-50%);z-index:3;text-align:center;animation:heldIn .8s ease both}
+.held[hidden]{display:none}
+.held-glow{position:absolute;left:-30%;right:-30%;bottom:20%;height:46%;background:radial-gradient(closest-side,#f5c66b2e,transparent 72%);pointer-events:none}
+.held-bob{animation:heldBob 4.6s ease-in-out infinite;transform-origin:50% 85%}
+.held-kr{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;border-radius:14px}
+.held-kr svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
+.held-kr.pop svg{animation:heldPop .6s ease both}
+.held-hint{margin-top:2px;font-size:13px;line-height:1.5;color:#ffeab5;text-shadow:0 1px 8px #000d,0 0 12px #000a;animation:heldPulse 2.4s ease-in-out infinite;pointer-events:none}
+.held-err{font-size:12px;line-height:1.5;color:#ffb4a8;text-shadow:0 1px 6px #000d;margin-top:2px;overflow-wrap:anywhere}
+.held-err:empty{display:none}
+.held-edit{display:inline-block;margin-top:2px;padding:6px 12px;min-height:0;background:none;border:0;box-shadow:none;color:#bcd0da;font-size:12px;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-shadow:0 1px 6px #000d;opacity:.8}
+body.holding .fab,body.holding .hint,body.holding .river-empty{display:none}
+@keyframes heldIn{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes heldBob{0%,100%{transform:translateY(0) rotate(-.7deg)}50%{transform:translateY(-3px) rotate(.7deg)}}
+@keyframes heldPulse{0%,100%{opacity:.75}50%{opacity:1}}
+@keyframes heldPop{from{opacity:.55;filter:brightness(.8)}to{opacity:1;filter:none}}
+@media(prefers-reduced-motion:reduce){.held,.held-bob,.held-hint,.held-kr.pop svg{animation:none}}
 
 /* ---------- MODAL v2: กระจกน้ำเงิน + ลายไทยมุม + กรอบพรีวิว + การ์ดมน (เปลี่ยนเฉพาะหน้าตา ไม่แตะ ID/คลาสที่ JS ใช้) ---------- */
 .modal{background:radial-gradient(ellipse 80% 60% at 50% 0%,#0d2a4acc,#02070fe6 70%)}
@@ -460,6 +457,14 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
     <div class="glitter" aria-hidden="true"></div>
     <div class="depth" aria-hidden="true"></div>
     <div class="river-label" aria-hidden="true">✦ สายน้ำแห่งคำอธิษฐาน ✦</div>
+    <!-- กระทงที่ถืออยู่ในน้ำ: แตะจุดเทียน → แตะอีกครั้งเพื่อปล่อย -->
+    <div class="held" id="held" hidden>
+      <div class="held-glow" aria-hidden="true"></div>
+      <div class="held-bob"><div class="held-kr" id="heldKr" role="button" tabindex="0" aria-label="แตะเพื่อจุดเทียน"></div></div>
+      <div class="held-hint" id="heldHint">แตะเพื่อจุดเทียน</div>
+      <div class="held-err" id="heldErr" role="status" aria-live="polite"></div>
+      <button class="held-edit" id="heldEdit" type="button">แก้ไข</button>
+    </div>
     <div class="krathongs" id="river"></div>
     <div class="river-empty" id="riverEmpty" hidden>ยังไม่มีกระทงในสายน้ำ<br>มาเป็นคนแรกที่ปล่อยกระทงกันครับ</div>
     <div class="hint" id="hint">แตะกระทงเพื่ออ่านคำอธิษฐาน · ลากเพื่อย้ายตำแหน่งได้</div>
@@ -481,17 +486,6 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
 
 <canvas id="fwCanvas" aria-hidden="true"></canvas>
 <button class="primary fab" id="openFab" type="button"><span aria-hidden="true">✦</span> สร้างกระทง</button>
-
-<!-- ถือกระทงไว้ก่อน: กดปล่อยอีกครั้งข้างนอกโมดอลจึงจะบันทึกและลอย -->
-<div class="hold" id="hold" hidden role="region" aria-label="กระทงที่ถืออยู่ในมือ">
-  <div class="hold-card">
-    <div class="hold-kr" id="holdKr" aria-hidden="true"></div>
-    <div class="hold-ttl">กระทงอยู่ในมือคุณแล้ว</div>
-    <div class="hold-sub" id="holdSub">พร้อมเมื่อไหร่ กดปล่อยลงสายน้ำได้เลย</div>
-    <div class="hold-err" id="holdErr" role="status" aria-live="polite"></div>
-    <div class="hold-act"><button class="secondary" id="holdEdit" type="button">แก้ไข</button><button class="primary" id="holdGo" type="button">ปล่อยกระทง ✨</button></div>
-  </div>
-</div>
 
 <!-- Create modal -->
 <div class="modal" id="createModal" role="presentation">
@@ -739,7 +733,7 @@ function leafSVG(style, w, h, fid, LC, u, v) {
 /* ---------- ประกอบกระทง ---------- */
 function krathongSVG(spec, opt) {
   opt = opt || {};
-  const u = "k" + (++svgSeq), A = opt.anim !== false;
+  const u = "k" + (++svgSeq), A = opt.anim !== false, LIT = opt.lit !== false;
   const F = FLAMES[spec.m - 1] || FLAMES[0];
   const B = BASES[spec.b - 1] || BASES[0];
   const LC = LEAFCOL[(spec.g || 1) - 1] || LEAFCOL[0];
@@ -831,10 +825,10 @@ function krathongSVG(spec, opt) {
       <ellipse cx="0" cy="${-h}" rx="${wt}" ry="${r1(wt * .38)}" fill="#fff3d6"/><ellipse cx="${r1(wt * .1)}" cy="${-h}" rx="${r1(wt * .55)}" ry="${r1(wt * .2)}" fill="#f2d9a0" fill-opacity=".75"/>
       <path d="M${r1(-wt * .75)} ${-h}v${r1(h * .2)}q0 2.4 2.2 0v${r1(-h * .17)}M${r1(wt * .3)} ${-h}v${r1(h * .3)}q0 2.4 2.3 0v${r1(-h * .27)}" fill="#fff0c8" stroke="#d9bd84" stroke-opacity=".7" stroke-width=".45"/>
       <path d="M0 ${-h}Q.9 ${r1(-h - 2)} 1.8 ${r1(-h - 3.2)}" stroke="#3a2a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/></g>`;
-  const flameAt = (y, s) => `<g transform="translate(0 ${y}) scale(${s})"><circle r="24" fill="url(#${u}gl)"${A ? ' class="glow"' : ""}/>
+  const flameAt = (y, s) => !LIT ? "" : `<g transform="translate(0 ${y}) scale(${s})"><circle r="24" fill="url(#${u}gl)"${A ? ' class="glow"' : ""}/>
     <g${A ? ' class="flame"' : ""}><path d="M0 -13C5 -6 5.5 0 0 3.5C-5.5 0 -5 -6 0 -13Z" fill="url(#${u}fl)"/><ellipse cy="-1" rx="1.8" ry="3.6" fill="#fff" fill-opacity=".9"/></g></g>`;
   const stick = (x0, y0, x1, y1) => { const px = f => r1(x0 + (x1 - x0) * f), py = f => r1(y0 + (y1 - y0) * f);
-    return `<path d="M${x0} ${y0}L${x1} ${y1}" stroke="#4a2410" stroke-width="2.8" stroke-linecap="round"/><path d="M${x0} ${y0}L${x1} ${y1}" stroke="#b8763a" stroke-width="1.5" stroke-linecap="round"/><path d="M${px(.04)} ${py(.04)}L${px(.25)} ${py(.25)}" stroke="#c2302a" stroke-width="1.6" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="1.7" fill="#ff5b2a"${A ? ' class="glow"' : ""}/>`; };
+    return `<path d="M${x0} ${y0}L${x1} ${y1}" stroke="#4a2410" stroke-width="2.8" stroke-linecap="round"/><path d="M${x0} ${y0}L${x1} ${y1}" stroke="#b8763a" stroke-width="1.5" stroke-linecap="round"/><path d="M${px(.04)} ${py(.04)}L${px(.25)} ${py(.25)}" stroke="#c2302a" stroke-width="1.6" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="1.7" fill="${LIT ? "#ff5b2a" : "#7a3a22"}"${A && LIT ? ' class="glow"' : ""}/>`; };
   let center;
   if (spec.c === 2) {
     center = `<g transform="translate(${cx} 82)">${wax(7, 8.2, 62, 1)}${flameAt(-67, 1.25)}</g>`;
@@ -871,8 +865,8 @@ function krathongSVG(spec, opt) {
     <linearGradient id="${u}sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
     <radialGradient id="${u}cs"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".6" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
     ${flowerDefs(u)}</defs>
-    <ellipse cx="${cx}" cy="${r1(FB + 6)}" rx="${PR + 14}" ry="13" fill="url(#${u}wg)"${A ? ' class="glow"' : ""}/>
-    ${streaks}
+    ${LIT ? `<ellipse cx="${cx}" cy="${r1(FB + 6)}" rx="${PR + 14}" ry="13" fill="url(#${u}wg)"${A ? ' class="glow"' : ""}/>` : ""}
+    ${LIT ? streaks : ""}
     <ellipse cx="${cx}" cy="${r1(FB - 3)}" rx="${PRB + 14}" ry="12" fill="url(#${u}cs)"/>
     <path d="${side}" fill="url(#${u}sd)" stroke="${B.line}" stroke-width="1.2" stroke-linejoin="round"/>${deco}
     <ellipse cx="${cx}" cy="${PY}" rx="${PR}" ry="${PRY}" fill="${B.top}" stroke="${B.line}" stroke-width="1.2"/><ellipse cx="${cx}" cy="${PY}" rx="${PR}" ry="${PRY}" fill="url(#${u}tp)"/>${topDeco}
@@ -882,7 +876,7 @@ function krathongSVG(spec, opt) {
     ${inner.front}
     ${items.map(i => i.m).join("")}
     ${outer.front}
-    <ellipse cx="${cx}" cy="60" rx="64" ry="34" fill="url(#${u}wl)" pointer-events="none"/></svg>`;
+    ${LIT ? `<ellipse cx="${cx}" cy="60" rx="64" ry="34" fill="url(#${u}wl)" pointer-events="none"/>` : ""}</svg>`;
 }
 
 /* =========================================================
@@ -1646,14 +1640,23 @@ function uuid() {
   return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
 }
 // ขั้นที่ 1: กดในโมดอล = ถือกระทงไว้ก่อน (ยังไม่บันทึก ยังไม่ลอย)
-function showHold() {
-  $("holdKr").innerHTML = krathongSVG(design, {anim:true});
-  $("holdErr").textContent = "";
-  $("hold").hidden = false;
-  document.body.classList.add("holding");
-  $("holdGo").focus({preventScroll:true});
+let heldState = "dark";   // dark = ยังไม่จุดเทียน, lit = จุดแล้ว (แตะอีกครั้งเพื่อปล่อย)
+const HELD_HINT = {dark:"แตะเพื่อจุดเทียน", lit:"แตะอีกครั้งเพื่อปล่อยกระทง"};
+function renderHeld(pop) {
+  const kr = $("heldKr");
+  kr.innerHTML = krathongSVG(design, {anim:true, lit:heldState === "lit"});
+  kr.classList.remove("pop"); if (pop) { void kr.offsetWidth; kr.classList.add("pop"); }
+  kr.setAttribute("aria-label", HELD_HINT[heldState]);
+  $("heldHint").textContent = HELD_HINT[heldState];
 }
-function hideHold() { $("hold").hidden = true; document.body.classList.remove("holding"); }
+function showHold() {
+  heldState = "dark"; renderHeld(false);
+  $("heldErr").textContent = "";
+  $("held").hidden = false;
+  document.body.classList.add("holding");
+  $("held").scrollIntoView({behavior:"smooth", block:"end"});
+}
+function hideHold() { $("held").hidden = true; document.body.classList.remove("holding"); }
 $("launch").onclick = () => {
   if (saving) return;
   const wish = $("wish").value.trim(), name = $("name").value.trim() || "ไม่ระบุชื่อ";
@@ -1664,12 +1667,18 @@ $("launch").onclick = () => {
   setStatus("", false, true);
   closeModal();
   showHold();
-  $("water").scrollIntoView({behavior:"smooth", block:"center"});
 };
-$("holdEdit").onclick = () => { if (saving) return; hideHold(); openCreate(); };
+$("heldEdit").onclick = () => { if (saving) return; hideHold(); openCreate(); };
+const tapHeld = () => {
+  if (saving) return;
+  if (heldState === "dark") { heldState = "lit"; renderHeld(true); }
+  else submitKrathong();
+};
+$("heldKr").onclick = tapHeld;
+$("heldKr").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tapHeld(); } });
 ["open", "openFab"].forEach(id => { const f = $(id).onclick; $(id).onclick = e => { if (saving) return; hideHold(); f(e); }; });
-// ขั้นที่ 2: กดปล่อยกระทงข้างนอก = บันทึกจริง (โค้ดบันทึกเดิม)
-$("holdGo").onclick = async () => {
+// ขั้นที่ 3: แตะกระทงที่จุดเทียนแล้วอีกครั้ง = บันทึกจริง (โค้ดบันทึกเดิม)
+async function submitKrathong() {
   if (saving) return;
   const dialog = $("createDialog");
   const wish = $("wish").value.trim();
@@ -1680,7 +1689,7 @@ $("holdGo").onclick = async () => {
     hideHold(); openCreate(); $("wish").focus(); return;
   }
   const remaining = Math.ceil((lastSubmittedAt + COOLDOWN_MS - Date.now()) / 1000);
-  if (remaining > 0) { setStatus("กรุณารออีก " + remaining + " วินาทีก่อนปล่อยกระทงถัดไป", true, true); $("holdErr").textContent = $("formStatus").textContent; return; }
+  if (remaining > 0) { setStatus("กรุณารออีก " + remaining + " วินาทีก่อนปล่อยกระทงถัดไป", true, true); $("heldErr").textContent = $("formStatus").textContent; return; }
   // Preserve the same UUID on a retry, preventing duplicate inserts after a lost response.
   const signature = JSON.stringify([name, wish, code]);
   if (!pendingSubmission || pendingSubmission.signature !== signature) {
@@ -1689,8 +1698,9 @@ $("holdGo").onclick = async () => {
   saving = true;
   dialog.setAttribute("aria-busy", "true");
   dialog.querySelectorAll("button,input,textarea").forEach(el => el.disabled = true);
-  $("holdGo").disabled = $("holdEdit").disabled = true;
-  $("holdGo").textContent = "กำลังบันทึก…";
+  $("heldEdit").disabled = true;
+  $("heldHint").textContent = "กำลังปล่อยกระทง…";
+  $("heldErr").textContent = "";
   setStatus("กำลังส่งคำอธิษฐานไปยัง Supabase…", false, true);
   let saved = false;
   try {
@@ -1716,8 +1726,8 @@ $("holdGo").onclick = async () => {
     saving = false;
     dialog.removeAttribute("aria-busy");
     dialog.querySelectorAll("button,input,textarea").forEach(el => el.disabled = false);
-    $("holdGo").disabled = $("holdEdit").disabled = false;
-    $("holdGo").textContent = "ปล่อยกระทง ✨";
+    $("heldEdit").disabled = false;
+    $("heldHint").textContent = HELD_HINT[heldState];
   }
   if (saved) {
     hideHold();
@@ -1735,302 +1745,8 @@ $("holdGo").onclick = async () => {
     const krY = mineItem ? mineItem.el.getBoundingClientRect().bottom + window.scrollY - (mineItem.enter ? (mineItem.y - mineItem.enter.y1) * H : 0) : 0;
     if (mineItem && krY - moonY < vh - 120) window.scrollTo({top:Math.max(0, (moonY + krY) / 2 - vh / 2), behavior:"smooth"});
     else $("water").scrollIntoView({behavior:"smooth", block:"center"});
-  } else $("holdErr").textContent = $("formStatus").textContent;
-};
-loadKrathongs();
-setInterval(() => { if (!document.hidden && !saving) loadKrathongs(true); }, 20000);
-document.addEventListener("visibilitychange", () => { if (!document.hidden && !saving) loadKrathongs(true); });
-window.addEventListener("online", () => { if (!saving) loadKrathongs(); });
-
-/* =========================================================
-   น้ำ WebGL (Natural Water Shader) — ถ้าไม่รองรับ/ผิดพลาด จะใช้น้ำ CSS เดิมโดยอัตโนมัติ
-   ========================================================= */
-(function waterGL() {
-  const water = $("water");
-  if (!water || !window.WebGLRenderingContext) return;
-  const cv = document.createElement("canvas");
-  cv.id = "waterGL"; cv.setAttribute("aria-hidden", "true");
-  let gl = null;
-  try { gl = cv.getContext("webgl", {antialias:false, alpha:false, powerPreference:"low-power"}) || cv.getContext("experimental-webgl"); } catch (_) {}
-  if (!gl) return;
-  const VS = "attribute vec2 p;varying vec2 vUv;void main(){vUv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}";
-  const FS = `precision highp float;
-varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; uniform vec4 uK[16]; uniform float uG[16]; uniform sampler2D uTex; uniform vec4 uTemple;
-float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
-float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
-float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*noise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return s;}
-float hgt(vec2 q,float t){return fbm(q*1.5+vec2(t*.05,t*.03))+.5*fbm(q*vec2(3.4,2.8)+vec2(-t*.07,t*.05));}
-void main(){
-  float d=vUv.y, asp=uRes.x/uRes.y;
-  float z=1./(.10+d*.95);
-  vec2 q=vec2((vUv.x-.5)*asp*z*1.25,z*1.35);
-  float e=.03, h0=hgt(q,uT);
-  vec2 n=vec2(hgt(q+vec2(e,0.),uT)-h0,hgt(q+vec2(0.,e),uT)-h0)/e;
-  n*=mix(.3,1.,smoothstep(0.,.5,d));
-  vec3 top=vec3(.10,.34,.46), mid=vec3(.04,.176,.286), deep=vec3(.012,.055,.105);
-  vec3 col=mix(mix(top,mid,smoothstep(0.,.42,d)),deep,smoothstep(.42,1.,d));
-  float sky=pow(1.-d,3.);
-  col+=vec3(.09,.13,.16)*sky*(.55+.9*h0);
-  col*=1.+.5*(h0-.55)*(.35+.65*d);
-  col+=vec3(.02,.05,.07)*clamp(n.x*.5+n.y*.35,0.,1.)*(.4+d);
-  // ระลอกน้ำรอบกระทง + แสงเทียนสะท้อนน้ำ + แสงวงรอบกระทงของฉัน (ตำแหน่งส่งมาจาก JS ทุกเฟรม)
-  float rdx=0., rbr=0.;
-  for(int i=0;i<16;i++){
-    vec4 k=uK[i]; if(k.w<.01) continue;
-    vec2 dv=vec2((vUv.x-k.x)*asp,(vUv.y-k.y)/.42);
-    float len=length(dv), rr=len/k.z;
-    float env=smoothstep(.9,1.25,rr)*exp(-(rr-1.)*.9)*(1.-smoothstep(3.,3.8,rr));
-    float ph=rr*8.5-uT*1.15, ring=sin(ph)*.5+.5;
-    col+=vec3(.55,.76,.86)*pow(ring,2.)*env*.17*k.w;
-    col-=vec3(.03,.05,.05)*(1.-ring)*env*k.w;
-    rdx+=cos(ph)*env*(dv.x/max(len,.0001))*k.w*.022;   // ระลอกบิดเงาแสงจันทร์
-    rbr+=(ring-.5)*2.*env*k.w;
-    float below=(vUv.y-k.y)/k.z;
-    float dxs=(vUv.x-k.x)*asp/k.z;
-    float flick=.7+.3*noise(vec2(dxs*5.,vUv.y*60.-uT*.9));
-    float cg=exp(-dxs*dxs*5.)*smoothstep(.05,.25,below)*exp(-below*1.7)*flick;
-    col+=vec3(1.,.72,.38)*cg*.16*k.w;
-    float gl=uG[i];
-    if(gl>.01){
-      col+=vec3(1.,.78,.45)*exp(-rr*rr*.5)*gl*.2;
-      float pr=fract(uT*.22+float(i)*.37), pw=exp(-pow((rr-(1.2+pr*2.6))*2.2,2.))*(1.-pr);
-      col+=vec3(1.,.84,.55)*pw*gl*.22;
-    }
-  }
-  // เงาพระจันทร์: ถูกบิดตามคลื่นและขาดเป็นช่วง ๆ
-  float dx=(vUv.x-uMoon.x)*asp;
-  float w=uMoon.y*asp*(.40+.80*d);
-  float warp=n.x*.03*(.4+d)+(fbm(q*vec2(.7,1.8)+uT*.09)-.5)*.11*(.3+d)+rdx;
-  float xx=(dx+warp)/w;
-  float g=exp(-xx*xx);
-  float br=noise(vec2(q.x*2.8+uT*.10,q.y*6.5-uT*.22));
-  br=smoothstep(.40,.78,br+(h0-.55)*.55+rbr*.3);
-  float fall=smoothstep(.0,.05,d)*(1.-smoothstep(.42,.80,d));
-  col+=vec3(1.,.84,.52)*g*br*fall*.85;
-  float hx=dx/(w*2.4);
-  col+=vec3(1.,.78,.46)*exp(-hx*hx)*fall*.13;
-  float sp=pow(noise(q*vec2(8.,20.)+vec2(uT*.3,uT*.5)),10.);
-  col+=vec3(1.,.95,.8)*sp*g*fall*2.2;
-  // หมอกบางลอยเหนือผิวน้ำใกล้เส้นขอบฟ้า
-  float mist=exp(-d*8.)*(.35+.65*fbm(vec2(vUv.x*asp*1.4+uT*.012,d*3.+uT*.008)));
-  col+=vec3(.42,.56,.66)*mist*.2;
-  col*=.75;   // ลดความสว่างน้ำ 25%
-  // เงาพระปรางค์สะท้อนน้ำ: ภาพวัดกลับด้าน ระริกตามคลื่น เบลอเล็กน้อย จางลงตามระยะ
-  if(uTemple.w>.5){
-    float r=d/uTemple.z, ux=(vUv.x-uTemple.x)/uTemple.y+.5;
-    if(r>0. && r<1. && ux>0. && ux<1.){
-      float wob=(n.x*.9+(noise(vec2(d*38.,uT*.5))-.5)*1.4)*.007*(.3+r*1.3);
-      float bl=.004*(.6+r);
-      vec4 t=vec4(0.);
-      for(int j=-2;j<=2;j++){ vec2 tc=vec2(ux+wob+float(j)*bl,1.-r); t+=texture2D(uTex,tc)*(j==0?.3:(abs(float(j))==1.?.22:.13)); }
-      float m=(1.-smoothstep(0.,.78,r))*smoothstep(0.,.14,ux)*(1.-smoothstep(.86,1.,ux))*.36;
-      col=col*(1.-t.a*m*.35)+t.rgb*m;
-    }
-  }
-  gl_FragColor=vec4(col,1.);
-}`;
-  function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; }
-  const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
-  if (!vs || !fs) return;
-  const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
-  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
-  gl.useProgram(pr);
-  const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const uRes = gl.getUniformLocation(pr, "uRes"), uT = gl.getUniformLocation(pr, "uT"), uMoon = gl.getUniformLocation(pr, "uMoon"), uK = gl.getUniformLocation(pr, "uK[0]"), uG = gl.getUniformLocation(pr, "uG[0]"), uTemple = gl.getUniformLocation(pr, "uTemple"), kArr = new Float32Array(64), gArr = new Float32Array(16);
-  let quality = 0;   // 0 ปกติ, 1 ลดความละเอียด, 2 ปิดระลอก, 3 กลับไปใช้น้ำ CSS (ตัวคุมประสิทธิภาพอัตโนมัติ)
-  try { quality = Math.min(2, Number(localStorage.getItem("loy:wq")) || 0); } catch (_) {}
-  water.dataset.q = quality;
-  let alive = true, last = 0, t0 = performance.now();
-  let texReady = false;
-  function size() {
-    const r = water.getBoundingClientRect(); if (!r.width || !r.height) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1), sc = (r.width < 700 ? .5 : .7) * (quality >= 1 ? .7 : 1);
-    cv.width = Math.max(2, Math.round(r.width * dpr * sc)); cv.height = Math.max(2, Math.round(r.height * dpr * sc));
-    gl.viewport(0, 0, cv.width, cv.height);
-    const mr = document.querySelector(".moon").getBoundingClientRect();
-    gl.uniform2f(uRes, cv.width, cv.height);
-    const tpl = document.querySelector(".temple");
-    if (tpl) { const tr = tpl.getBoundingClientRect(); gl.uniform4f(uTemple, (tr.left + tr.width / 2 - r.left) / r.width, tr.width / r.width, tr.width * .625 / r.height, texReady ? 1 : 0); }
-    else gl.uniform4f(uTemple, 0, 1, 1, 0);
-    gl.uniform2f(uMoon, (mr.left + mr.width / 2 - r.left) / r.width, mr.width / r.width * .5);
-  }
-  function ripples() {
-    kArr.fill(0); gArr.fill(0);
-    if (quality >= 2) return;
-    const wr = water.getBoundingClientRect(); if (!wr.height) return;
-    let n = 0;
-    items.forEach(it => {
-      if (n >= 16 || it.el.classList.contains("struck")) return;
-      const sv = it.svgEl || (it.svgEl = it.el.querySelector(".kr-svg")); if (!sv) return;
-      const r = sv.getBoundingClientRect();
-      const x = (r.left + r.width / 2 - wr.left) / wr.width, y = (r.top + r.height * .68 - wr.top) / wr.height;
-      if (x < -.2 || x > 1.2 || y < -.1 || y > 1.1) return;
-      kArr[n * 4] = x; kArr[n * 4 + 1] = y; kArr[n * 4 + 2] = r.width * .36 / wr.height; kArr[n * 4 + 3] = it.drag ? .5 : 1;
-      if (it.el.classList.contains("mine")) { const age = (performance.now() - (it.mineT || (it.mineT = performance.now()))) / 1000; gArr[n] = Math.max(0, 1 - age / 60); }   // แสงวงรอบกระทงของฉัน ~1 นาที
-      n++;
-    });
-  }
-  function draw(now) {
-    ripples(); gl.uniform4fv(uK, kArr); gl.uniform1fv(uG, gArr);
-    gl.uniform1f(uT, reduceMotion.matches ? 30 : (now - t0) / 1000 + 20);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  }
-  let fAcc = 0, fN = 0, fPrev = 0;
-  function degrade(now) {
-    quality++;
-    if (quality >= 3) { alive = false; water.classList.remove("gl"); cv.remove(); return; }
-    try { localStorage.setItem("loy:wq", String(quality)); } catch (_) {}
-    water.dataset.q = quality; size(); draw(now);
-  }
-  function loop(now) {
-    if (!alive) return;
-    requestAnimationFrame(loop);
-    if (!riverVisible || document.hidden || reduceMotion.matches) fPrev = fN = fAcc = 0;
-    else {   // ตัวคุมประสิทธิภาพ: ถ้าเฟรมช้าต่อเนื่อง (<~24fps) ลดคุณภาพทีละขั้น
-      const dt = fPrev ? now - fPrev : 0; fPrev = now;
-      if (dt > 0 && dt < 500) { fAcc += dt; fN++; }
-      if (fN >= 90) { const avg = fAcc / fN; fAcc = fN = 0; if (now - t0 > 3000 && avg > 42) degrade(now); }
-    }
-    if (!riverVisible || document.hidden || reduceMotion.matches || now - last < 33) return;
-    last = now; draw(now);
-  }
-  cv.addEventListener("webglcontextlost", e => { e.preventDefault(); alive = false; water.classList.remove("gl"); cv.remove(); });
-  water.insertBefore(cv, water.firstChild);
-  water.classList.add("gl");
-  // แปลงภาพพระปรางค์ (SVG) เป็น texture สำหรับเงาสะท้อน — ถ้าไม่สำเร็จจะใช้เงา CSS เดิม
-  try {
-    const tpl = document.querySelector(".temple");
-    if (tpl) {
-      const c = tpl.cloneNode(true); c.removeAttribute("class");
-      c.setAttribute("xmlns", "http://www.w3.org/2000/svg"); c.setAttribute("width", "480"); c.setAttribute("height", "300");
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const cn = document.createElement("canvas"); cn.width = 480; cn.height = 300;
-          cn.getContext("2d").drawImage(img, 0, 0, 480, 300);
-          const tx = gl.createTexture(); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tx);
-          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cn);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-          if (gl.getError() !== gl.NO_ERROR) return;
-          texReady = true; water.classList.add("tx"); size(); draw(performance.now());
-        } catch (_) {}
-      };
-      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(c));
-    }
-  } catch (_) {}
-  size(); draw(performance.now());
-  if (window.ResizeObserver) new ResizeObserver(() => { size(); draw(performance.now()); }).observe(water);
-  else window.addEventListener("resize", () => { size(); draw(performance.now()); });
-  requestAnimationFrame(loop);
-})();
-</script>
-</body>
-</html>
-
-  [[880, .5, 2.6, 0], [1318.5, .26, 2, 0], [2430, .1, 1.1, 0], [1174.7, .3, 2.2, .22], [1760, .14, 1.6, .22]].forEach(([f, a, d, delay]) => {
-    const o = c.createOscillator(), g = c.createGain();
-    o.type = "sine"; o.frequency.value = f;
-    g.gain.setValueAtTime(0, t + delay);
-    g.gain.linearRampToValueAtTime(a, t + delay + .015);
-    g.gain.exponentialRampToValueAtTime(.0008, t + delay + d);
-    o.connect(g); g.connect(out); o.start(t + delay); o.stop(t + delay + d + .05);
-  });
-  const len = Math.floor(c.sampleRate * 1.3), buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-  const n = c.createBufferSource(); n.buffer = buf;
-  const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.2;
-  bp.frequency.setValueAtTime(1500, t + .1); bp.frequency.exponentialRampToValueAtTime(350, t + 1.2);
-  const ng = c.createGain();
-  ng.gain.setValueAtTime(0, t + .1); ng.gain.linearRampToValueAtTime(.4, t + .22); ng.gain.exponentialRampToValueAtTime(.001, t + 1.3);
-  n.connect(bp); bp.connect(ng); ng.connect(out); n.start(t + .1); n.stop(t + 1.4);
+  } else $("heldErr").textContent = $("formStatus").textContent;
 }
-
-$("open").onclick = openCreate;
-$("openFab").onclick = openCreate;
-$("cancel").onclick = closeModal;
-$("viewClose").onclick = closeModal;
-$("viewMake").onclick = () => { closeModal(); openCreate(); };
-if ($("scrollFeed")) $("scrollFeed").onclick = () => $("feedSection").scrollIntoView({behavior:"smooth", block:"start"});
-$("refresh").onclick = () => loadKrathongs();
-$("showMore").onclick = () => { visibleCount += 12; render(); };
-
-function uuid() {
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  bytes[6] = (bytes[6] & 15) | 64;
-  bytes[8] = (bytes[8] & 63) | 128;
-  const hex = [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
-  return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
-}
-$("launch").onclick = async () => {
-  if (saving) return;
-  const dialog = $("createDialog");
-  const wish = $("wish").value.trim();
-  const name = $("name").value.trim() || "ไม่ระบุชื่อ";
-  const code = encode(design);
-  if (!wish || wish.length > 180 || name.length > 24 || !CODE_RE.test(code)) {
-    setStatus("กรุณาใส่คำอธิษฐาน 1–180 ตัวอักษร และชื่อเล่นไม่เกิน 24 ตัวอักษร", true, true);
-    $("wish").focus(); return;
-  }
-  const remaining = Math.ceil((lastSubmittedAt + COOLDOWN_MS - Date.now()) / 1000);
-  if (remaining > 0) { setStatus("กรุณารออีก " + remaining + " วินาทีก่อนปล่อยกระทงถัดไป", true, true); return; }
-  // Preserve the same UUID on a retry, preventing duplicate inserts after a lost response.
-  const signature = JSON.stringify([name, wish, code]);
-  if (!pendingSubmission || pendingSubmission.signature !== signature) {
-    pendingSubmission = {signature, row:{id:uuid(), display_name:name, flower:code, wish, created_at:new Date().toISOString()}};
-  }
-  saving = true;
-  dialog.setAttribute("aria-busy", "true");
-  dialog.querySelectorAll("button,input,textarea").forEach(el => el.disabled = true);
-  dialog.focus({preventScroll:true});
-  $("launch").textContent = "กำลังบันทึก…";
-  setStatus("กำลังส่งคำอธิษฐานไปยัง Supabase…", false, true);
-  let saved = false;
-  try {
-    try {
-      await api("", {method:"POST", headers:{"Content-Type":"application/json", Prefer:"return=minimal"}, body:JSON.stringify(pendingSubmission.row)});
-    } catch (error) {
-      if (error.status !== 409 || error.code !== "23505") throw error;
-      // A previous request may have committed even when its response was lost.
-      const check = await api("?select=" + COLUMNS + "&id=eq." + encodeURIComponent(pendingSubmission.row.id));
-      const rows = await check.json();
-      if (!rows.length || (!rows[0].blocked && (rows[0].wish !== wish || rows[0].display_name !== name)) || rows[0].flower !== code) throw error;
-    }
-    saved = true;
-    justLaunchedId = pendingSubmission.row.id;
-    lastSubmittedAt = Date.now();
-    try { localStorage.setItem("loy:lastSubmittedAt", String(lastSubmittedAt)); } catch (_) {}
-    pendingSubmission = null;
-    $("wish").value = ""; $("name").value = ""; $("wishCount").textContent = "0/180";
-    design = cloneSpec(DEFAULT_SPEC);
-  } catch (error) {
-    setStatus(readableError(error) + " · ข้อความยังอยู่ หากเครือข่ายขัดข้องให้ลองส่งข้อความเดิมอีกครั้ง ระบบใช้รหัสเดิมเพื่อลดการบันทึกซ้ำ", true, true);
-  } finally {
-    saving = false;
-    dialog.removeAttribute("aria-busy");
-    dialog.querySelectorAll("button,input,textarea").forEach(el => el.disabled = false);
-    $("launch").textContent = "ปล่อยกระทง ✨";
-  }
-  if (saved) {
-    playLaunchSound();
-    closeModal();
-    wishLight();
-    setStatus("บันทึกกระทงสำเร็จแล้ว กำลังโหลดข้อมูลล่าสุด…");
-    // Avoid racing a background refresh that started before the insert.
-    while (loading) await new Promise(resolve => setTimeout(resolve, 100));
-    const refreshed = await loadKrathongs(true);
-    if (refreshed) setStatus("บันทึกกระทงสำเร็จแล้ว · อัปเดตข้อมูลล่าสุดจาก Supabase แล้ว");
-    else setStatus("บันทึกกระทงสำเร็จแล้ว แต่โหลดรายการล่าสุดไม่สำเร็จ กรุณากด ‘โหลดข้อมูลใหม่’ โดยไม่ต้องส่งกระทงซ้ำ", true);
-    const moonRect = document.querySelector(".moon").getBoundingClientRect(), mineItem = items.get(justLaunchedId), vh = window.innerHeight;
-    const moonY = moonRect.top + moonRect.height / 2 + window.scrollY;
-    const krY = mineItem ? mineItem.el.getBoundingClientRect().bottom + window.scrollY - (mineItem.enter ? (mineItem.y - mineItem.enter.y1) * H : 0) : 0;
-    if (mineItem && krY - moonY < vh - 120) window.scrollTo({top:Math.max(0, (moonY + krY) / 2 - vh / 2), behavior:"smooth"});
-    else $("water").scrollIntoView({behavior:"smooth", block:"center"});
-  } else $("wish").focus({preventScroll:true});
-};
 loadKrathongs();
 setInterval(() => { if (!document.hidden && !saving) loadKrathongs(true); }, 20000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !saving) loadKrathongs(true); });
