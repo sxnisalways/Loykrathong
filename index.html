@@ -1200,16 +1200,110 @@ function hash(str) {
   for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
   return (h >>> 0) / 4294967295;
 }
+/* =========================================================
+   จัดวางกระทงบนแม่น้ำ: ใกล้–ไกล + กันทับซ้อน + ตำแหน่งคงที่
+   - ทุกใบไหลด้วยความเร็วเท่ากัน (เฟรมลอย D) ระยะห่างจึงคงที่ ไม่ทับกันทีหลัง
+   - ตำแหน่งตัวเลือกมาจาก hash(id) แบบ deterministic แล้วเลือกที่กล่องกระทง+ป้ายชื่อไม่ชนใบอื่น
+   - คำนวณเฉพาะตอนเพิ่ม/ลบ/ปรับขนาดจอ/ปล่อยหลังลาก ไม่ทุกเฟรม
+   ========================================================= */
+const RV = {gap:6, edge:8, speed:.009, bands:[[.14,.34],[.34,.56],[.56,.78]], ks:[1, .9, .8, .7]};
+let D = 0, layoutSig = "";                 // D = ระยะที่น้ำไหลสะสม (สัดส่วนความกว้าง)
+const depthScale = y => .5 + .8 * y;       // ไกล ~.58 ใกล้ ~1.1
+const halfW = () => (KW * .7) / W;
+const period = () => 1 + 2 * halfW();
+function xOf(ux) { const P = period(), h = halfW(); return (((ux + D + h) % P) + P) % P - h; }
+function boxAt(it, ux, y, k) {            // กล่องกระทง+ป้ายชื่อ (px) ตามขนาดจริงและสเกล
+  const s = depthScale(y) * k;
+  return {cx: ux * W, cy: y * H - it.h * .05, w: KW * s * .96, h: it.h * s * .95, vx: xOf(ux) * W};
+}
+function overlapArea(a, b, PW) {
+  let dx = Math.abs(a.cx - b.cx) % PW; if (dx > PW / 2) dx = PW - dx;
+  const ox = (a.w + b.w) / 2 + RV.gap - dx, oy = (a.h + b.h) / 2 + RV.gap - Math.abs(a.cy - b.cy);
+  return ox > 0 && oy > 0 ? ox * oy : 0;
+}
+function scoreAt(it, ux, y, k, others) {  // -1 = หลุดขอบ, 0 = ว่าง, >0 = พื้นที่ทับ
+  const b = boxAt(it, ux, y, k);
+  if (b.vx - b.w / 2 < RV.edge || b.vx + b.w / 2 > W - RV.edge || b.cy - b.h / 2 < 6 || b.cy + b.h / 2 > H - 6) return -1;
+  const PW = period() * W; let sum = 0;
+  for (const o of others) sum += overlapArea(b, boxAt(o, o.ux, o.y, o.k || 1), PW);
+  return sum;
+}
+const otherItems = it => [...items.values()].filter(o => o !== it && o.placed);
+function slotFor(it, others) {             // ตำแหน่งแรกที่ว่างจากรายการตัวเลือกของ id นี้ (ไม่พอ → สแกนตาราง → ลดขนาด)
+  const id = it.id, bh = hash(id + "band"), b0 = bh < .25 ? 0 : bh < .7 ? 1 : 2;
+  const y0 = RV.bands[b0][0] + (RV.bands[b0][1] - RV.bands[b0][0]) * hash(id + "y0"), x0 = .06 + .88 * hash(id + "x0");
+  let best = null;
+  for (const k of RV.ks) {
+    for (let j = 0; j < 40; j++) {
+      const yr = RV.bands[j < 14 ? b0 : (b0 + 1 + (j & 1)) % 3];
+      const y = yr[0] + (yr[1] - yr[0]) * hash(id + "y" + j), ux = .06 + .88 * hash(id + "x" + j) - D;
+      const sc = scoreAt(it, ux, y, k, others);
+      if (sc < 0) continue;
+      if (sc === 0) return {ux, y, k};
+      if (!best || sc < best.sc) best = {ux, y, k, sc};
+    }
+    let g = null;                          // ไม่เจอจากตัวเลือก: หาช่องว่างบนตารางที่ใกล้จุดที่ชอบที่สุด
+    for (let y = .12; y <= .8; y += .035) for (let xv = .05; xv <= .95; xv += .035) {
+      const ux = xv - D;
+      if (scoreAt(it, ux, y, k, others) !== 0) continue;
+      const d = Math.hypot((xv - x0) * W, (y - y0) * H);
+      if (!g || d < g.d) g = {ux, y, k, d};
+    }
+    if (g) return g;
+  }
+  return best || {ux: .5 - D, y: .5, k: RV.ks[RV.ks.length - 1]};
+}
+function nearestFree(it, ux, y, others) {  // ที่ว่างใกล้ตำแหน่งนี้ที่สุด (ใช้ตอนปล่อยหลังลาก/ส่งต่อจากมือ)
+  for (const k of RV.ks) {
+    let best = null;
+    for (let dy = -.5; dy <= .5; dy += .03) for (let dx = -.6; dx <= .6; dx += .03) {
+      const y2 = y + dy, u2 = ux + dx;
+      if (y2 < .1 || y2 > .8) continue;
+      if (scoreAt(it, u2, y2, k, others) !== 0) continue;
+      const d = Math.hypot(dx * W, dy * H);
+      if (!best || d < best.d) best = {ux: u2, y: y2, k, d};
+    }
+    if (best) return best;
+  }
+  return null;
+}
+function startGlide(it, to, dur) {
+  it.glide = {t0: performance.now(), dur, ux0: it.ux, y0: it.y, k0: it.k || 1, ux1: to.ux, y1: to.y, k1: to.k};
+}
+function layoutRiver(all) {
+  const list = [...items.values()], keep = it => it.userMoved || it.striking;
+  const pending = list.filter(it => all ? !keep(it) : !it.placed).sort((a, b) =>
+    ((Date.parse(a.wish.created_at) || 0) - (Date.parse(b.wish.created_at) || 0)) || (a.id < b.id ? -1 : 1));
+  if (!pending.length) return;
+  if (all) pending.forEach(it => { it.placed = false; it.glide = null; });
+  const placed = list.filter(it => it.placed);
+  pending.forEach(it => {
+    const sl = slotFor(it, placed);
+    it.ux = sl.ux; it.y = sl.y; it.k = sl.k; it.x = xOf(it.ux); it.placed = true;
+    placed.push(it); place(it);
+  });
+}
+function settle(it) {                      // หลังปล่อยจากการลาก: ถ้าทับใบอื่น ขยับไปที่ว่างใกล้สุดเบา ๆ
+  const others = otherItems(it);
+  if (scoreAt(it, it.ux, it.y, it.k || 1, others) === 0) return;
+  const to = nearestFree(it, it.ux, it.y, others);
+  if (to) startGlide(it, to, 800);
+}
 function measure() {
   W = river.clientWidth || 320; H = river.clientHeight || 300;
   KW = Math.round(clamp(W * .17, 92, 150));
   river.style.setProperty("--kw", KW + "px");
   const sky = $("fxSky"); if (sky) sky.style.setProperty("--rise", Math.round(sky.clientHeight * .95) + "px");
-  items.forEach(it => { it.w = KW; it.h = it.el.offsetHeight || KW * .6; place(it); });
+  items.forEach(it => { it.w = KW; it.h = it.el.offsetHeight || KW * .6; });
+  const sig = W + "x" + H + "x" + KW, changed = sig !== layoutSig && layoutSig !== "";
+  layoutSig = sig;
+  if (changed) items.forEach(it => { if (it.userMoved || it.striking) it.ux = it.x - D; });
+  layoutRiver(changed);
+  items.forEach(place);
   if (typeof layoutHeld === "function" && !$("held").hidden) layoutHeld();
 }
 function place(it) {
-  const s = .72 + .5 * it.y;
+  const s = depthScale(it.y) * (it.k || 1);
   it.el.style.transform = "translate3d(" + (it.x * W - it.w / 2).toFixed(1) + "px," + (it.y * H - it.h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
   it.el.style.zIndex = Math.round(it.y * 100);
   const sw = (.55 + .7 * Math.min(1, it.y)).toFixed(1);   // ไกลโยกน้อย ใกล้โยกมาก
@@ -1225,22 +1319,22 @@ function addItem(w, index, fresh, mine) {
   el.setAttribute("aria-label", "อ่านคำอธิษฐานของ " + name);
   el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
   river.appendChild(el);
-  let x, y;
-  if (mine && heldPos) { x = heldPos.x; y = heldPos.y; }   // ปล่อยจากตำแหน่งที่ถืออยู่
-  else if (mine) { x = .2; y = .62; }   // กระทงของฉันลอยเข้ามาจากขอบน้ำด้านล่าง (ดู it.enter)
-  else if (fresh) { x = -.12; y = .1 + .62 * frac(h1 * 7.3); }
-  else { x = .08 + .84 * frac(index * .618034 + .13); y = .1 + .62 * frac(index * .381966 + .31); }
-  const it = {id:w.id, wish:w, el, x, y, v:.010 + .012 * h2, w:KW, h:0, drag:false, hover:false, moved:false};
+  const it = {id:w.id, wish:w, el, x:.5, y:.5, ux:.5 - D, k:1, w:KW, h:0, drag:false, hover:false, moved:false, placed:false, userMoved:false};
   it.h = el.offsetHeight || KW * .6;
+  items.set(w.id, it);
   if (mine && heldPos) {
-    it.v = .006; items.set(w.id, it); place(it);
-    // จัดให้ตัวกระทง (svg) อยู่กึ่งกลางเดียวกับที่ถือ แล้วค่อยลอย
+    // ปล่อยจากตำแหน่งที่ถืออยู่: เริ่มกึ่งกลางเดิม แล้วถ้าทับใบอื่นค่อยไหลไปที่ว่างใกล้สุด
+    it.ux = heldPos.x - D; it.y = heldPos.y; it.x = xOf(it.ux); place(it);
     const sv = el.querySelector(".kr-bob > svg"), rc = river.getBoundingClientRect();
     if (sv) { const r = sv.getBoundingClientRect(); it.y -= ((r.top + r.height / 2 - rc.top) - heldPos.cy) / H; place(it); }
-    it.glide = {t0:performance.now(), y0:it.y, y1:.62, dur:40000}; hideHold();
+    const others = otherItems(it);
+    if (scoreAt(it, it.ux, it.y, 1, others) !== 0) { const to = nearestFree(it, it.ux, it.y, others); if (to) startGlide(it, to, 12000); }
+    it.placed = true; hideHold();
+  } else if (mine) {
+    const sl = slotFor(it, otherItems(it));
+    it.ux = sl.ux; it.k = sl.k; it.y = sl.y; it.x = xOf(it.ux); it.placed = true;
+    if (!reduceMotion.matches) { it.enter = {t0:performance.now(), y0:1.04, y1:sl.y, dur:2100}; it.y = it.enter.y0; }   // ลอยเข้ามาจากขอบน้ำด้านล่าง
   }
-  else if (mine && !reduceMotion.matches) { it.enter = {t0:performance.now(), y0:1.04, y1:y, x1:x, dur:2100}; it.y = it.enter.y0; it.x = x - .05; }
-  items.set(w.id, it);
   place(it);
 
   el.addEventListener("pointerdown", e => {
@@ -1258,6 +1352,7 @@ function addItem(w, index, fresh, mine) {
       const rc = river.getBoundingClientRect();
       it.x = clamp((e.clientX - rc.left) / W - it.gx, .02, .98);
       it.y = clamp((e.clientY - rc.top) / H - it.gy, .06, .78);
+      it.ux = it.x - D; it.userMoved = true; it.placed = true;
       place(it);
     }
   });
@@ -1266,6 +1361,7 @@ function addItem(w, index, fresh, mine) {
     it.drag = false; el.classList.remove("is-drag");
     try { el.releasePointerCapture(e.pointerId); } catch (_) {}
     if (!it.moved && e.type === "pointerup") openWish(it.wish);
+    else if (it.moved) settle(it);
   };
   el.addEventListener("pointerup", end);
   el.addEventListener("pointercancel", end);
@@ -1277,6 +1373,7 @@ function syncRiver() {
   const compact = window.innerWidth < 700 || window.innerHeight < 520;
   const list = wishes.slice(0, compact ? 6 : 12);
   const ids = new Set(list.map(w => w.id));
+  measure();
   items.forEach((it, id) => { if (!ids.has(id) && !it.striking) { it.el.remove(); items.delete(id); } });
   const first = !riverReady;
   list.forEach((w, i) => { if (!items.has(w.id)) addItem(w, i, !first && hasLoaded, w.id === justLaunchedId); });
@@ -1376,22 +1473,21 @@ let last = 0;
 function tick(t) {
   const dt = Math.min(.1, (t - last) / 1000 || 0); last = t;
   if (riverVisible && !document.hidden && !reduceMotion.matches) {
+    D += RV.speed * dt;
     items.forEach(it => {
       if (it.enter) {
         const p = Math.min(1, (performance.now() - it.enter.t0) / it.enter.dur), e = 1 - Math.pow(1 - p, 3);
-        it.y = it.enter.y0 + (it.enter.y1 - it.enter.y0) * e; it.x = it.enter.x1 - .05 * (1 - e);
+        it.y = it.enter.y0 + (it.enter.y1 - it.enter.y0) * e;
         if (p >= 1) it.enter = null;
-        place(it); return;
+        it.x = xOf(it.ux); place(it); return;
       }
-      if (it.drag || it.hover) return;
-      it.x += it.v * dt;
+      if (it.drag || it.hover) { it.ux -= RV.speed * dt; if (it.glide) it.glide.t0 += dt * 1000; return; }   // ค้างอยู่กับที่
       if (it.glide) {
-        const p = Math.min(1, (performance.now() - it.glide.t0) / it.glide.dur), e = p * p * (3 - 2 * p);
-        it.y = it.glide.y0 + (it.glide.y1 - it.glide.y0) * e;
+        const g = it.glide, p = Math.min(1, (performance.now() - g.t0) / g.dur), e = p * p * (3 - 2 * p);
+        it.ux = g.ux0 + (g.ux1 - g.ux0) * e; it.y = g.y0 + (g.y1 - g.y0) * e; it.k = g.k0 + (g.k1 - g.k0) * e;
         if (p >= 1) it.glide = null;
       }
-      const half = (it.w * .6) / W;
-      if (it.x > 1 + half) it.x = -half;
+      it.x = xOf(it.ux);
       place(it);
     });
   }
@@ -1690,9 +1786,9 @@ function layoutHeld() {
   const h = kr.offsetHeight || KW * .8;
   // ขนาด/การวางเดียวกับกระทงที่ลอยอยู่ (place) เพื่อให้ตอนปล่อยไม่กระโดด
   let y = .72;
-  const s0 = .72 + .5 * y, bottomRoom = 74;
+  const s0 = depthScale(y), bottomRoom = 74;
   y = clamp((H - bottomRoom - h * s0 * .5 + h * .05) / H, .5, .8);
-  const s = .72 + .5 * y, cx = W / 2, cy = y * H - h * .55 + h / 2;
+  const s = depthScale(y), cx = W / 2, cy = y * H - h * .55 + h / 2;
   kr.style.transform = "translate3d(" + (cx - KW / 2).toFixed(1) + "px," + (y * H - h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
   const ui = $("heldUi");
   ui.style.top = Math.round(cy + h * s / 2 + 2) + "px";
