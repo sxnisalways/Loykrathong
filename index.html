@@ -417,6 +417,9 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
+/* ---------- Focus Mode (หน้าสร้าง/แก้ไขกระทง) ---------- */
+.krathongs{transition:opacity .35s ease,filter .35s ease}
+body.focus-create .krathongs{opacity:.55;filter:saturate(.75);pointer-events:none}
 /* ---------- หัวใจ + กระทงของฉัน ---------- */
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .mine-chip{min-height:0;display:inline-flex;align-items:center;gap:6px;padding:4px 13px;border-radius:99px;border:1px solid #f5c66b66;background:#04101f66;color:var(--gold);font-size:12.5px;font-weight:600;line-height:1.6;transition:border-color .15s,box-shadow .15s,background .15s}
@@ -1255,7 +1258,13 @@ function hash(str) {
    ========================================================= */
 const RV = {gap:6, edge:8, speed:.009, bands:[[.14,.34],[.34,.56],[.56,.78]], ks:[1, .9, .8, .7]};
 let D = 0, layoutSig = "";                 // D = ระยะที่น้ำไหลสะสม (สัดส่วนความกว้าง)
-const depthScale = y => .5 + .8 * y;       // ไกล ~.58 ใกล้ ~1.1
+// Depth-based scaling: ไกล 65–75% / กลาง 85–95% / ใกล้ 100–110% ของขนาดมาตรฐาน (KW) ต่อเนื่องไม่กระโดด
+const DEPTH = [[.14,.65],[.30,.75],[.36,.85],[.56,.95],[.62,1],[.78,1.1]];
+function depthScale(y) {
+  if (y <= DEPTH[0][0]) return DEPTH[0][1];
+  for (let i = 1; i < DEPTH.length; i++) if (y <= DEPTH[i][0]) { const a = DEPTH[i - 1], b = DEPTH[i]; return a[1] + (b[1] - a[1]) * (y - a[0]) / (b[0] - a[0]); }
+  return DEPTH[DEPTH.length - 1][1];
+}
 const halfW = () => (KW * .7) / W;
 const period = () => 1 + 2 * halfW();
 function xOf(ux) { const P = period(), h = halfW(); return (((ux + D + h) % P) + P) % P - h; }
@@ -1573,6 +1582,7 @@ function openModal(modal, focusEl) {
   previousFocus = document.activeElement;
   fitViewport();
   activeModal = modal;
+  document.body.classList.toggle("focus-create", modal.id === "createModal");   // Focus Mode: หรี่กระทงในแม่น้ำ (ไม่หยุด animation)
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
   (focusEl || modal.querySelector(".dialog")).focus({preventScroll:true});
@@ -1581,6 +1591,7 @@ function closeModal() {
   if (saving || !activeModal) return;
   activeModal.classList.remove("open");
   activeModal = null;
+  document.body.classList.remove("focus-create");
   document.body.style.overflow = "";
   if (previousFocus && previousFocus.focus) previousFocus.focus();
 }
