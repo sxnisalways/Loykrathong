@@ -282,11 +282,24 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 .held-err:empty{display:none}
 .held-edit{pointer-events:auto;display:inline-block;margin-top:0;padding:6px 12px;min-height:0;background:none;border:0;box-shadow:none;color:#bcd0da;font-size:12px;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-shadow:0 1px 6px #000d;opacity:.8}
 body.holding .fab,body.holding .hint,body.holding .river-empty{display:none}
+/* โฟกัสกระทงที่ถือ: ขยายใหญ่ (คำนวณใน layoutHeld) + แสงอุ่น + ระลอก/เงาสะท้อนใต้ฐาน ด้วย CSS ล้วน */
+.held-kr{scale:1;animation:heldIn .8s ease both,heldZoom .9s cubic-bezier(.2,.7,.2,1) both}
+.held-glow{position:absolute;left:-18%;right:-18%;top:-26%;bottom:-6%;border-radius:50%;pointer-events:none;background:radial-gradient(ellipse at 50% 58%,#ffcf7a55 0,#ffb55a26 38%,#ffb55a00 68%);animation:heldGlow 4.2s ease-in-out infinite}
+.held-rip{position:absolute;left:-6%;right:-6%;top:72%;height:34%;pointer-events:none}
+.held-rip:before,.held-rip:after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid #ffe6b0aa;opacity:0;animation:heldRip 4.8s ease-out infinite}
+.held-rip:after{animation-delay:-2.4s}
+.held-bob{position:relative;filter:saturate(1.08) contrast(1.05)}
+.held-bob:after{content:"";position:absolute;left:12%;right:12%;bottom:-16%;height:14%;border-radius:50%;pointer-events:none;background:radial-gradient(ellipse at 50% 30%,#ffd98a66,#ffd98a00 70%);opacity:.8}
+body.holding .krathongs{opacity:.8}
+body.holding .kr-rip{opacity:.6}
+@keyframes heldZoom{from{scale:.8}to{scale:1}}
+@keyframes heldGlow{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes heldRip{0%{transform:scale(.62);opacity:.55}100%{transform:scale(1.25);opacity:0}}
 @keyframes heldIn{from{opacity:0}to{opacity:1}}
 @keyframes heldBob{0%,100%{transform:translateY(0) rotate(-.7deg)}50%{transform:translateY(-3px) rotate(.7deg)}}
 @keyframes heldPulse{0%,100%{opacity:.75}50%{opacity:1}}
 @keyframes heldPop{from{opacity:.55;filter:brightness(.8)}to{opacity:1;filter:none}}
-@media(prefers-reduced-motion:reduce){.held,.held-bob,.held-hint,.held-kr.pop svg{animation:none}}
+@media(prefers-reduced-motion:reduce){.held,.held-bob,.held-hint,.held-kr.pop svg,.held-kr,.held-glow,.held-rip:before,.held-rip:after{animation:none}.held-rip:before,.held-rip:after{opacity:.3}}
 
 /* ---------- MODAL v2: กระจกน้ำเงิน + ลายไทยมุม + กรอบพรีวิว + การ์ดมน (เปลี่ยนเฉพาะหน้าตา ไม่แตะ ID/คลาสที่ JS ใช้) ---------- */
 .modal{background:radial-gradient(ellipse 80% 60% at 50% 0%,#0d2a4acc,#02070fe6 70%)}
@@ -498,7 +511,7 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
     <div class="river-label" aria-hidden="true">✦ สายน้ำแห่งคำอธิษฐาน ✦</div>
     <!-- กระทงที่ถืออยู่ในน้ำ: แตะจุดเทียน → แตะอีกครั้งเพื่อปล่อย -->
     <div class="held" id="held" hidden>
-      <div class="held-kr" id="heldKr" role="button" tabindex="0" aria-label="แตะเพื่อจุดเทียน"><div class="held-bob" id="heldBob"></div></div>
+      <div class="held-kr" id="heldKr" role="button" tabindex="0" aria-label="แตะเพื่อจุดเทียน"><i class="held-glow" aria-hidden="true"></i><i class="held-rip" aria-hidden="true"></i><div class="held-bob" id="heldBob"></div></div>
       <div class="held-ui" id="heldUi">
         <div class="held-hint" id="heldHint">แตะเพื่อจุดเทียน</div>
         <div class="held-err" id="heldErr" role="status" aria-live="polite"></div>
@@ -1335,7 +1348,7 @@ function applyFx(it) {                      // ความสว่าง/ป�
   if (pe !== it.pe) { it.pe = pe; it.el.style.pointerEvents = pe ? "" : "none"; }
 }
 function place(it) {
-  const s = it.sc;
+  const s = it.sc * (it.zoom || 1);
   it.el.style.transform = "translate3d(" + (it.x * W - it.w / 2).toFixed(1) + "px," + (it.y * H - it.h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ") rotate(" + it.rot.toFixed(2) + "deg)";
   it.el.style.zIndex = Math.round(it.y * 100);
   const sw = (.55 + .7 * Math.min(1, it.y)).toFixed(1);   // ไกลโยกน้อย ใกล้โยกมาก
@@ -1371,6 +1384,15 @@ function avoidPass() {                      // กระทงลอยผ่า
   L.filter(it => it.d < FLOW.nearD).sort((a, b) => a.d - b.d).forEach((it, i) => { it.rush = i >= cap; });
   L.forEach(it => { if (it.d >= FLOW.nearD) it.rush = false; });
   items.forEach(it => { it.ovT = 1; });
+  if (heldPos && !$("held").hidden) {          // ขณะถือกระทง: ใบที่ลอยมาทับตำแหน่งที่ถือจะจางลงชั่วคราว (ไม่หาย) แล้วกลับมาเมื่อพ้น
+    const hw = KW * heldPos.s * .9, hh = heldPos.h * heldPos.s * .9;
+    items.forEach(it => {
+      if (!it.placed) return;
+      const w = KW * it.sc * .96, h = it.h * it.sc * .9;
+      const ox = Math.min((hw + w) / 2 - Math.abs(it.x * W - W / 2), w), oy = Math.min((hh + h) / 2 - Math.abs(it.y * H - heldPos.y * H), h);
+      if (ox > 0 && oy > 0 && ox * oy / (w * h) > .12) it.ovT = .2;
+    });
+  }
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
     const a = L[i], b = L[j];
     const wa = KW * a.sc * .96, wb = KW * b.sc * .96, ha = a.h * a.sc * .9, hb = b.h * b.sc * .9;
@@ -1420,7 +1442,7 @@ function addItem(w, index, fresh, mine) {
   initFlow(it);
   if (mine && heldPos) {
     // ปล่อยจากตำแหน่งที่ถืออยู่: เริ่มกึ่งกลางเดิม แล้วลอยต่อตามเส้นทางของมันช้า ๆ
-    it.x = heldPos.x; it.y = heldPos.y; it.sc = depthScale(it.y); place(it);
+    it.zoom = reduceMotion.matches ? 1 : heldPos.zoom; it.x = heldPos.x; it.y = heldPos.y; it.sc = depthScale(it.y); place(it);
     const sv = el.querySelector(".kr-bob > svg"), rc = river.getBoundingClientRect();
     if (sv) { const r = sv.getBoundingClientRect(); it.y -= ((r.top + r.height / 2 - rc.top) - heldPos.cy) / H; it.sc = depthScale(it.y); place(it); }
     it.placed = true; reanchor(it);
@@ -1568,6 +1590,7 @@ function tick(t) {
     items.forEach(it => {
       if (!it.placed) return;
       if (it.drag || it.hover) { it.t0 += dt * 1000; return; }   // ค้างอยู่กับที่ (เวลาของมันหยุดด้วย)
+      if (it.zoom > 1.004) it.zoom += (1 - it.zoom) * Math.min(1, dt * 1.5); else if (it.zoom) it.zoom = 0;
       if (it.rush) it.t0 -= dt * 1000 * (FLOW.rush - 1);
       it.ov += (it.ovT - it.ov) * Math.min(1, dt * 2.2);
       flowAt(it, now, lite); applyFx(it); place(it);
@@ -1872,15 +1895,16 @@ function layoutHeld() {
   const kr = $("heldKr");
   kr.style.width = KW + "px";
   const h = kr.offsetHeight || KW * .8;
-  // ขนาด/การวางเดียวกับกระทงที่ลอยอยู่ (place) เพื่อให้ตอนปล่อยไม่กระโดด
+  // ตำแหน่งกลางค่อนไปล่าง + ขยาย 1.25–1.4 เท่าตามจอ (ตอนปล่อยกระทงจะหดลงสู่ขนาดลอยตามระยะอย่างนุ่มนวล)
+  const zoom = clamp(W < 500 ? 1.25 : W < 900 ? 1.32 : 1.4, 1.25, Math.max(1.25, (W * .62) / KW));
   let y = .72;
-  const s0 = depthScale(y), bottomRoom = 74;
-  y = clamp((H - bottomRoom - h * s0 * .5 + h * .05) / H, .5, .8);
-  const s = depthScale(y), cx = W / 2, cy = y * H - h * .55 + h / 2;
+  const s0 = depthScale(y) * zoom, bottomRoom = 78;
+  y = clamp((H - bottomRoom - h * s0 * .5 + h * .05) / H, .46, .78);
+  const s = depthScale(y) * zoom, cx = W / 2, cy = y * H - h * .55 + h / 2;
   kr.style.transform = "translate3d(" + (cx - KW / 2).toFixed(1) + "px," + (y * H - h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
   const ui = $("heldUi");
   ui.style.top = Math.round(cy + h * s / 2 + 2) + "px";
-  heldPos = {x:.5, y, cy, s, h};
+  heldPos = {x:.5, y, cy, s, h, zoom};
 }
 function showHold() {
   heldState = "dark";
