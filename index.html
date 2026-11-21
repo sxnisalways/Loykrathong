@@ -467,6 +467,31 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 .kr.hl .kr-name{background:var(--gold);color:#1b2a30;box-shadow:0 0 16px #f5c66bcc;transition:all .3s}
 .kr.hl .kr-svg{filter:drop-shadow(0 0 12px #ffd98acc)}
 @media(prefers-reduced-motion:reduce){.like-btn.pop .heart{animation:none}}
+/* สถิติแห่งแสงจันทร์ */
+.ms{margin-top:8px}
+.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ms-card{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0;padding:14px 16px;text-align:left;font:inherit;color:var(--cream);background:linear-gradient(160deg,#123a6338,#06152866);border:1px solid #f5c66b2e;border-radius:18px;box-shadow:0 0 22px #04101f66 inset}
+.ms-k{font-family:var(--serif);font-size:13px;color:#f2cf86}
+.ms-v{display:block;font-family:var(--serif);font-size:clamp(26px,6vw,34px);line-height:1.25;color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ms-v.ms-sm{font-size:clamp(18px,4.6vw,22px)}
+.ms-card small{color:var(--muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.ms-top{flex-direction:row;align-items:center;gap:10px;cursor:pointer;min-height:64px}
+.ms-top:disabled{cursor:default}
+.ms-top:not(:disabled):hover{border-color:#f5c66b80}
+.ms-top .thumb{flex:0 0 clamp(52px,14vw,64px);width:clamp(52px,14vw,64px)}
+.ms-top .thumb svg{width:100%;height:auto;display:block}
+.ms-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ms-tl{grid-column:1/-1}
+.ms-tl svg{display:block;width:100%;height:72px;margin-top:6px}
+.ms-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:11.5px}
+.ms-bar{fill:#f5c66b;opacity:.85}
+.ms-bar.z{fill:#f5c66b55}
+.ms-err{margin:10px 0 0;color:#f2cf86;font-size:13px}
+.ms-err button{min-height:0;margin-left:6px;padding:3px 12px;border-radius:99px;border:1px solid #f5c66b66;background:#04101f66;color:var(--gold);font:inherit;cursor:pointer}
+.ms-grid[aria-busy="true"] .ms-v{opacity:.45}
+.ms-grid:not([aria-busy="true"]) .ms-v{transition:opacity .4s}
+@media(min-width:900px){.ms-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -529,6 +554,17 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 <div class="river-fade" aria-hidden="true"></div>
 <main>
   <p id="connectionStatus" class="connection-status" role="status" aria-live="polite">กำลังโหลดกระทงจากสายน้ำ…</p>
+  <section id="statsSection" class="ms" aria-labelledby="msTitle">
+    <div class="section-head"><h2 id="msTitle">สถิติแห่งแสงจันทร์</h2></div>
+    <div class="ms-grid" id="msGrid" aria-busy="true">
+      <div class="ms-card"><span class="ms-k">กระทงและคำอธิษฐาน</span><b class="ms-v" id="msK">—</b><small>ที่ลอยอยู่ในสายน้ำ</small></div>
+      <div class="ms-card"><span class="ms-k">หัวใจทั้งหมด</span><b class="ms-v" id="msH">—</b><small>ที่ทุกคนส่งให้กัน</small></div>
+      <div class="ms-card"><span class="ms-k">ฐานยอดนิยม</span><b class="ms-v ms-sm" id="msB">—</b><small id="msBn">&nbsp;</small></div>
+      <button class="ms-card ms-top" id="msTop" type="button" disabled><span class="thumb" id="msTopT" aria-hidden="true"></span><span class="ms-tx"><span class="ms-k">กระทงยอดหัวใจ</span><b class="ms-v ms-sm" id="msTopN">—</b><small id="msTopH">&nbsp;</small></span></button>
+      <div class="ms-card ms-tl"><span class="ms-k">กระทงที่ลอยใน 24 ชั่วโมงที่ผ่านมา</span><svg id="msChart" viewBox="0 0 240 64" preserveAspectRatio="none" role="img" aria-label="กราฟจำนวนกระทงรายชั่วโมง"></svg><div class="ms-axis"><span id="msA0"></span><span id="msA1"></span></div></div>
+    </div>
+    <p class="ms-err" id="msErr" role="status" hidden>โหลดสถิติไม่สำเร็จ <button type="button" id="msRetry">ลองอีกครั้ง</button></p>
+  </section>
   <section id="feedSection">
     <div class="section-head"><h2>คำอธิษฐานจากทุกคน</h2><span class="count-pill">ลอยแล้ว <b id="count">—</b> กระทง</span><button class="mine-chip" id="mineBtn" type="button"><span aria-hidden="true">♡</span> กระทงของฉัน</button></div>
     <div class="feed" id="feed" aria-busy="true"></div>
@@ -1975,7 +2011,7 @@ async function submitKrathong() {
       const rows = await check.json();
       if (!rows.length || (!rows[0].blocked && (rows[0].wish !== wish || rows[0].display_name !== name)) || rows[0].flower !== code) throw error;
     }
-    saved = true;
+    saved = true; statsDirty();
     justLaunchedId = pendingSubmission.row.id;
     lastSubmittedAt = Date.now();
     try { localStorage.setItem("loy:lastSubmittedAt", String(lastSubmittedAt)); } catch (_) {}
@@ -2149,7 +2185,7 @@ async function toggleLike() {
     likes.counts.set(id, prevN);
     if (viewId === id) $("likeMsg").textContent = e.status === 429 ? "กดเร็วเกินไป รอสักครู่" : "บันทึกหัวใจไม่สำเร็จ ลองใหม่อีกครั้ง";
   } finally {
-    likes.busy.delete(id);
+    likes.busy.delete(id); statsDirty();
     await refreshLikes([id]);                                   // ยึดค่าจากฐานข้อมูลเป็นหลัก
     if (viewId === id) renderLike();
   }
@@ -2234,6 +2270,65 @@ $("mineBtn").onclick = openMine;
 $("mineClose").onclick = closeModal;
 window.addEventListener("online", () => { sessionOrNull(); });
 sessionOrNull();   // เปิดเว็บ: ตรวจ session ถ้ายังไม่มีให้ล็อกอินแบบ anonymous (ครั้งเดียว)
+
+
+/* ---------- สถิติแห่งแสงจันทร์: ดึงจาก RPC festival_stats (ยอดรวมเท่านั้น) ---------- */
+const MS = {ttl:60000, minGap:10000, last:0, busy:false, timer:null, seen:false, loaded:false, top:null};
+const msNum = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
+const msFmt = n => msNum(n).toLocaleString("th-TH");
+const msTime = x => new Date(x).toLocaleTimeString("th-TH", {hour:"2-digit", minute:"2-digit"});
+function msRender(d) {
+  $("msK").textContent = msFmt(d.krathongs);
+  $("msH").textContent = msFmt(d.hearts);
+  const b = d.popular_base && Number(d.popular_base.b);
+  const bn = (PARTS.base.find(p => p.id === b) || {}).name;
+  $("msB").textContent = bn || "—";
+  $("msBn").textContent = bn ? msFmt(d.popular_base.n) + " กระทง" : "ยังไม่มีข้อมูล";
+  const t = d.top && d.top.id && msNum(d.top.n) > 0 ? d.top : null;
+  MS.top = t;
+  $("msTop").disabled = !t;
+  if (t && CODE_RE.test(String(t.flower))) { try { $("msTopT").innerHTML = krathongSVG(decode(t.flower), {anim:false}); } catch (_) { $("msTopT").innerHTML = ""; } } else $("msTopT").innerHTML = "";
+  $("msTopN").textContent = t ? (t.display_name || "ไม่ระบุชื่อ") : "ยังไม่มีหัวใจ";
+  $("msTopH").textContent = t ? "♥ " + msFmt(t.n) + " หัวใจ" : "รอหัวใจดวงแรก";
+  const tl = Array.isArray(d.timeline) ? d.timeline.map(x => ({t:Date.parse(x.t), n:msNum(x.n)})).filter(x => Number.isFinite(x.t)) : [];
+  const max = Math.max(1, ...tl.map(x => x.n)), w = 240 / Math.max(1, tl.length);
+  $("msChart").innerHTML = tl.map((x, i) => {
+    const h = x.n ? Math.max(4, Math.round(x.n / max * 60)) : 2;
+    return '<rect class="ms-bar' + (x.n ? "" : " z") + '" x="' + (i * w + w * .18).toFixed(1) + '" y="' + (64 - h) + '" width="' + (w * .64).toFixed(1) + '" height="' + h + '" rx="1.5"><title>' + escapeHTML(msTime(x.t) + " · " + x.n + " กระทง") + '</title></rect>';
+  }).join("");
+  $("msA0").textContent = tl.length ? msTime(tl[0].t) : ""; $("msA1").textContent = tl.length ? msTime(tl[tl.length - 1].t) : "";
+  $("msChart").setAttribute("aria-label", "กราฟจำนวนกระทงรายชั่วโมง รวม " + tl.reduce((a, x) => a + x.n, 0) + " กระทงใน 24 ชั่วโมง");
+}
+async function loadStats(force) {
+  const now = Date.now();
+  if (MS.busy || (!force && !MS.dirty && now - MS.last < MS.ttl) || now - MS.last < MS.minGap) return;
+  MS.busy = true; MS.last = now; MS.dirty = false;
+  try {
+    const d = await (await rest("/rpc/festival_stats", {method:"POST", body:{p_hours:24}})).json();
+    if (!d || typeof d !== "object") throw new Error("bad");
+    msRender(d); MS.loaded = true;
+    $("msGrid").setAttribute("aria-busy", "false"); $("msErr").hidden = true;
+  } catch (e) {
+    if (!MS.loaded) { $("msGrid").setAttribute("aria-busy", "false"); $("msErr").hidden = false; }   // เคยโหลดได้แล้ว: คงค่าเดิมไว้เงียบ ๆ
+  } finally { MS.busy = false; }
+}
+function statsDirty() { MS.dirty = true; if (MS.seen && !document.hidden) { clearTimeout(MS.dt); MS.dt = setTimeout(() => loadStats(false), Math.max(1500, MS.last + MS.minGap - Date.now() + 50)); } }
+function statsTick() { if (MS.seen && !document.hidden) loadStats(false); }
+(function initStats() {
+  const sec = $("statsSection");
+  if (!sec) return;
+  $("msRetry").addEventListener("click", () => { $("msErr").hidden = true; $("msGrid").setAttribute("aria-busy", "true"); MS.last = 0; loadStats(true); });
+  $("msTop").addEventListener("click", async () => {
+    const t = MS.top; if (!t) return;
+    let w = wishes.find(x => x.id === t.id);
+    if (!w) { try { const rows = await (await api("?select=" + COLUMNS + "&id=eq." + encodeURIComponent(t.id))).json(); w = rows[0]; } catch (_) {} }
+    if (w) openWish(w);
+  });
+  const go = on => { MS.seen = on; clearInterval(MS.timer); if (on) { loadStats(false); MS.timer = setInterval(statsTick, MS.ttl); } };
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => go(es.some(e => e.isIntersecting)), {rootMargin:"200px"}).observe(sec);
+  else go(true);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) statsTick(); });
+})();
 
 loadKrathongs();
 setInterval(() => { if (!document.hidden && !saving) loadKrathongs(true); }, 20000);
