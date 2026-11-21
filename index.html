@@ -1260,14 +1260,14 @@ function hash(str) {
    - กันซ้อนกัน: เลือกเลนห่างใบอื่นตอนเกิด + ตรวจทุก ~0.45 วินาที (ไม่ใช่ทุกเฟรม) แล้วผลักออกด้านข้างเบา ๆ
    ========================================================= */
 const FLOW = {
-  groupA: .6,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
-  travel: [110, 190],          // วินาทีที่ใช้ลอยจากใกล้ไปไกล (สุ่มต่อกระทงจาก id) ยิ่งมากยิ่งช้า
-  yNear: .76, yFar: .14,       // ตำแหน่งแนวตั้งในแม่น้ำ (สัดส่วนความสูง) ใกล้ / ไกล
-  scaleNear: 1.06, scaleFar: .66,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
+  groupA: .7,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
+  travel: [50, 100],          // วินาทีที่ใช้ลอยจากใกล้ไปไกล (สุ่มต่อกระทงจาก id) ยิ่งมากยิ่งช้า
+  yNear: .76, yFar: .11,       // ตำแหน่งแนวตั้งในแม่น้ำ (สัดส่วนความสูง) ใกล้ / ไกล
+  scaleNear: .93, scaleFar: .26,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
   opacityFar: .8,              // ความสว่างตอนไกลสุด (ใกล้ = 1)
-  farZone: [.58, .98],         // ความลึกปลายทางของกลุ่ม A
+  farZone: [.62, .99],         // ความลึกปลายทางของกลุ่ม A
   fade: .06,                   // ช่วงจางเข้า/จางออกของกลุ่ม B (สัดส่วนของรอบ)
-  sway: .018, tilt: 3.2,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
+  sway: .03, tilt: 3.2, nearCap: [4, 6], nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
   gap: 6, edge: 8,
   labelHide: [.72, .88]        // ป้ายชื่อเริ่มจางที่ depth นี้ และหายที่ depth นี้
 };
@@ -1348,7 +1348,9 @@ function layoutRiver() {                    // กำหนดเลน/เว�
   if (!pending.length) return;
   const placed = list.filter(it => it.placed), now = flowClock();
   pending.forEach(it => {
-    const p0 = it.fresh ? 0 : fhash(it.id + "age") * (it.grp === "A" ? 1.3 : .94);   // ตอนโหลด: กระจายกระทงไปตามเส้นทาง
+    let p0 = it.fresh ? 0 : fhash(it.id + "age") * (it.grp === "A" ? 1.3 : .94);   // ตอนโหลด: กระจายกระทงไปตามเส้นทาง
+    const cap = W < 700 ? FLOW.nearCap[0] : FLOW.nearCap[1];
+    if (!it.fresh) for (let t = 0; t < 12 && depthAtProgress(it, p0) < FLOW.nearD && placed.filter(o => o.d < FLOW.nearD).length >= cap; t++) p0 += .07;
     it.t0 = now - p0 * it.Tc * 1000;
     const d0 = depthAtProgress(it, p0);
     let best = null;
@@ -1365,6 +1367,9 @@ function layoutRiver() {                    // กำหนดเลน/เว�
 }
 function avoidPass() {                      // ผลักกระทงที่ซ้อนกันออกด้านข้างเบา ๆ (เรียกทุก ~0.45 วิ ไม่ใช่ทุกเฟรม)
   const L = [...items.values()].filter(it => it.placed && !it.drag && !it.hover && it.f > .3);
+  const cap = W < 700 ? FLOW.nearCap[0] : FLOW.nearCap[1];   // โซนใกล้แน่นเกิน: ใบที่เกินลอยผ่านเร็วขึ้น (ต่อเนื่อง ไม่กระโดด)
+  L.filter(it => it.d < FLOW.nearD).sort((a, b) => a.d - b.d).forEach((it, i) => { it.rush = i >= cap; });
+  L.forEach(it => { if (it.d >= FLOW.nearD) it.rush = false; });
   L.forEach(it => { it.axT = it.ax * .92; it.hit = false; });   // ไม่ซ้อนแล้วค่อย ๆ คลายกลับ
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
     const a = L[i], b = L[j];
@@ -1563,6 +1568,7 @@ function tick(t) {
     items.forEach(it => {
       if (!it.placed) return;
       if (it.drag || it.hover) { it.t0 += dt * 1000; return; }   // ค้างอยู่กับที่ (เวลาของมันหยุดด้วย)
+      if (it.rush) it.t0 -= dt * 1000 * (FLOW.rush - 1);
       it.ax += (it.axT - it.ax) * k;
       flowAt(it, now, lite); applyFx(it); place(it);
       if (it.hlWait) tryHighlight(it);
