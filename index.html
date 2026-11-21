@@ -1263,11 +1263,11 @@ const FLOW = {
   groupA: .7,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
   travel: [50, 100],          // วินาทีที่ใช้ลอยจากใกล้ไปไกล (สุ่มต่อกระทงจาก id) ยิ่งมากยิ่งช้า
   yNear: .76, yFar: .11,       // ตำแหน่งแนวตั้งในแม่น้ำ (สัดส่วนความสูง) ใกล้ / ไกล
-  scaleNear: .93, scaleFar: .26,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
+  scaleNear: 1, scaleFar: .35,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
   opacityFar: .8,              // ความสว่างตอนไกลสุด (ใกล้ = 1)
   farZone: [.62, .99],         // ความลึกปลายทางของกลุ่ม A
   fade: .06,                   // ช่วงจางเข้า/จางออกของกลุ่ม B (สัดส่วนของรอบ)
-  sway: .03, tilt: 3.2, nearCap: [4, 6], nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
+  sway: .03, tilt: 3.2, count: [10, 16], nearCap: [4, 6], overlapFade: .45, nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
   gap: 6, edge: 8,
   labelHide: [.72, .88]        // ป้ายชื่อเริ่มจางที่ depth นี้ และหายที่ depth นี้
 };
@@ -1295,7 +1295,7 @@ function initFlow(it) {
   it.ph = [h("p1") * 6.2832, h("p2") * 6.2832, h("p3") * 6.2832];
   it.amp = .6 + .8 * h("am");
   it.lane0 = .1 + .8 * h("x0"); it.lane = null; it.laneCyc = 0;
-  it.ax = 0; it.axT = 0; it.d = 0; it.sc = depthScale(it.y); it.rot = 0; it.f = 1;
+  it.ax = 0; it.ov = 1; it.ovT = 1; it.d = 0; it.sc = depthScale(it.y); it.rot = 0; it.f = 1;
   it.op = -1; it.lab = -1; it.pe = true; it.keepFade0 = false;
   it.bob = it.el.querySelector(".kr-bob"); it.nm = it.el.querySelector(".kr-name");
 }
@@ -1327,11 +1327,11 @@ function flowAt(it, now, lite) {            // คำนวณตำแหน่
   it.y = yOfD(d);
 }
 function applyFx(it) {                      // ความสว่าง/ป้ายชื่อ/การแตะ (เขียน DOM เฉพาะเมื่อค่าเปลี่ยน)
-  const op = (1 - (1 - FLOW.opacityFar) * it.d) * it.f;
+  const op = (1 - (1 - FLOW.opacityFar) * it.d) * it.f * it.ov;
   if (Math.abs(op - it.op) > .01) { it.op = op; it.bob.style.opacity = op.toFixed(3); }
   const lab = clamp((FLOW.labelHide[1] - it.d) / (FLOW.labelHide[1] - FLOW.labelHide[0]), 0, 1);
   if (Math.abs(lab - it.lab) > .02) { it.lab = lab; if (it.nm) it.nm.style.opacity = lab.toFixed(2); }
-  const pe = it.f > .2;                     // ตอนจางหายอยู่ไม่รับการแตะ
+  const pe = it.f * it.ov > .2;                     // ตอนจางหายอยู่ไม่รับการแตะ
   if (pe !== it.pe) { it.pe = pe; it.el.style.pointerEvents = pe ? "" : "none"; }
 }
 function place(it) {
@@ -1365,23 +1365,23 @@ function layoutRiver() {                    // กำหนดเลน/เว�
     placed.push(it);
   });
 }
-function avoidPass() {                      // ผลักกระทงที่ซ้อนกันออกด้านข้างเบา ๆ (เรียกทุก ~0.45 วิ ไม่ใช่ทุกเฟรม)
+function avoidPass() {                      // กระทงลอยผ่านกันได้ ไม่ผลัก: ใบที่ไกลกว่าจะค่อย ๆ จางเมื่อถูกใบใกล้ทับมาก แล้วกลับมาเมื่อพ้นกัน (เรียกทุก ~0.45 วิ)
   const L = [...items.values()].filter(it => it.placed && !it.drag && !it.hover && it.f > .3);
   const cap = W < 700 ? FLOW.nearCap[0] : FLOW.nearCap[1];   // โซนใกล้แน่นเกิน: ใบที่เกินลอยผ่านเร็วขึ้น (ต่อเนื่อง ไม่กระโดด)
   L.filter(it => it.d < FLOW.nearD).sort((a, b) => a.d - b.d).forEach((it, i) => { it.rush = i >= cap; });
   L.forEach(it => { if (it.d >= FLOW.nearD) it.rush = false; });
-  L.forEach(it => { it.axT = it.ax * .92; it.hit = false; });   // ไม่ซ้อนแล้วค่อย ๆ คลายกลับ
+  items.forEach(it => { it.ovT = 1; });
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
     const a = L[i], b = L[j];
-    const dx = (b.x - a.x) * W, dy = ((b.y * H - .05 * b.h) - (a.y * H - .05 * a.h));
-    const ox = (KW * (a.sc + b.sc) * .5 * .96) + FLOW.gap - Math.abs(dx);
-    const oy = ((a.h * a.sc + b.h * b.sc) * .5 * .9) + FLOW.gap - Math.abs(dy);
-    if (ox > 0 && oy > 0) {
-      const dir = dx > 0 ? 1 : dx < 0 ? -1 : (a.id < b.id ? 1 : -1), push = (ox * .5 + 4) / W;
-      a.axT -= dir * push; b.axT += dir * push; a.hit = b.hit = true;
+    const wa = KW * a.sc * .96, wb = KW * b.sc * .96, ha = a.h * a.sc * .9, hb = b.h * b.sc * .9;
+    const ox = Math.min((wa + wb) / 2 - Math.abs((b.x - a.x) * W), wa, wb);
+    const oy = Math.min((ha + hb) / 2 - Math.abs((b.y - a.y) * H), ha, hb);
+    if (ox > 0 && oy > 0 && ox * oy / Math.min(wa * ha, wb * hb) > (Math.min(a.d, b.d) > .6 ? FLOW.overlapFade + .25 : FLOW.overlapFade)) {
+      const far = a.d > b.d ? a : b;                          // ใบที่ลึกกว่าถอยหลบ (ถ้าเท่ากันเลือกตาม id คงที่)
+      const back = a.d === b.d ? (a.id < b.id ? b : a) : far;
+      back.ovT = 0;
     }
   }
-  L.forEach(it => { it.axT = clamp(it.axT, -.22, .22); });
 }
 function reanchor(it) {                     // หลังลากแล้วปล่อย: ลอยต่อจากจุดที่วางไว้ (ไม่ดีดกลับ)
   const now = flowClock(), d = dOfY(it.y);
@@ -1461,7 +1461,7 @@ function addItem(w, index, fresh, mine) {
 }
 function syncRiver() {
   const compact = window.innerWidth < 700 || window.innerHeight < 520;
-  const list = wishes.slice(0, compact ? 6 : 12);
+  const list = wishes.slice(0, compact ? FLOW.count[0] : FLOW.count[1]);
   const ids = new Set(list.map(w => w.id));
   measure();
   items.forEach((it, id) => { if (!ids.has(id) && !it.striking) { it.el.remove(); items.delete(id); } });
@@ -1569,7 +1569,7 @@ function tick(t) {
       if (!it.placed) return;
       if (it.drag || it.hover) { it.t0 += dt * 1000; return; }   // ค้างอยู่กับที่ (เวลาของมันหยุดด้วย)
       if (it.rush) it.t0 -= dt * 1000 * (FLOW.rush - 1);
-      it.ax += (it.axT - it.ax) * k;
+      it.ov += (it.ovT - it.ov) * Math.min(1, dt * 2.2);
       flowAt(it, now, lite); applyFx(it); place(it);
       if (it.hlWait) tryHighlight(it);
     });
