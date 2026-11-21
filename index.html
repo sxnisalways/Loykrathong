@@ -1280,7 +1280,7 @@ const FLOW = {
   opacityFar: .8,              // ความสว่างตอนไกลสุด (ใกล้ = 1)
   farZone: [.62, .99],         // ความลึกปลายทางของกลุ่ม A
   fade: .06,                   // ช่วงจางเข้า/จางออกของกลุ่ม B (สัดส่วนของรอบ)
-  sway: .03, tilt: 3.2, count: [10, 16], nearCap: [4, 6], overlapFade: .45, nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
+  sway: .03, tilt: 3.2, count: [8, 16], phoneKW: .295, phoneFar: .39, nearCap: [4, 6], overlapFade: .45, nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
   gap: 6, edge: 8,
   labelHide: [.72, .88]        // ป้ายชื่อเริ่มจางที่ depth นี้ และหายที่ depth นี้
 };
@@ -1290,7 +1290,8 @@ const isLite = () => reduceMotion.matches || +($("water").dataset.q || 0) >= 1; 
 let yN = FLOW.yNear, lastAvoid = 0;
 const yOfD = d => yN + (FLOW.yFar - yN) * d;
 const dOfY = y => clamp((yN - y) / (yN - FLOW.yFar), 0, 1);
-const scOfD = d => FLOW.scaleNear + (FLOW.scaleFar - FLOW.scaleNear) * d;
+let sFar = FLOW.scaleFar;
+const scOfD = d => FLOW.scaleNear + (sFar - FLOW.scaleNear) * d;
 const depthScale = y => scOfD(dOfY(y));    // ใช้กับกระทงที่ถืออยู่/ตอนส่งต่อจากมือ
 
 function fhash(str) {                        // hash แบบกระจายตัวดี (ใช้เฉพาะระบบลอย; ไม่แตะ hash เดิมที่ใช้กับภาพกระทง)
@@ -1415,7 +1416,8 @@ function reanchor(it) {                     // หลังลากแล้ว
 }
 function measure() {
   W = river.clientWidth || 320; H = river.clientHeight || 300;
-  KW = Math.round(clamp(W * .17, 92, 150));
+  KW = Math.round(W < 500 ? clamp(W * FLOW.phoneKW, 104, 150) : clamp(W * .17, 92, 150));   // มือถือแคบ: กระทงใหญ่กว่า (390px → ~115px)
+  sFar = W < 500 ? FLOW.phoneFar : FLOW.scaleFar;
   river.style.setProperty("--kw", KW + "px");
   const sky = $("fxSky"); if (sky) sky.style.setProperty("--rise", Math.round(sky.clientHeight * .95) + "px");
   let mh = KW * .82 + 26;
