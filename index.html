@@ -1251,119 +1251,153 @@ function hash(str) {
   return (h >>> 0) / 4294967295;
 }
 /* =========================================================
-   จัดวางกระทงบนแม่น้ำ: ใกล้–ไกล + กันทับซ้อน + ตำแหน่งคงที่
-   - ทุกใบไหลด้วยความเร็วเท่ากัน (เฟรมลอย D) ระยะห่างจึงคงที่ ไม่ทับกันทีหลัง
-   - ตำแหน่งตัวเลือกมาจาก hash(id) แบบ deterministic แล้วเลือกที่กล่องกระทง+ป้ายชื่อไม่ชนใบอื่น
-   - คำนวณเฉพาะตอนเพิ่ม/ลบ/ปรับขนาดจอ/ปล่อยหลังลาก ไม่ทุกเฟรม
+   Hybrid Depth Drift: กระทงลอยจากใกล้ไปไกลตามค่า depth (0 = ใกล้, 1 = ไกล)
+   - กลุ่ม A (FLOW.groupA, ค่าเริ่มต้น 60%): ลอยไปด้านหลังแล้วลอยวนอยู่ในโซนไกล ไม่หาย ไม่กลับมาใหญ่ทันที
+   - กลุ่ม B (ที่เหลือ 40%): ลอยไปด้านหลัง จางลงที่ปลายทาง แล้วกลับมาเริ่มใกล้ใหม่แบบจางเข้า (ไม่กระโดด)
+   - กลุ่ม/ความเร็ว/เลน/เฟส มาจาก hash(id) คงที่ ตำแหน่งคำนวณจากเวลา (analytic) ไม่สะสมค่า
+     จึงไม่เพี้ยนเมื่อแท็บอยู่เบื้องหลัง
+   - depth → ขนาด, ความโปร่ง, ตำแหน่งแนวตั้ง, ความเร็ว, ลำดับซ้อน (z-index) ต่อเนื่องทั้งหมด
+   - กันซ้อนกัน: เลือกเลนห่างใบอื่นตอนเกิด + ตรวจทุก ~0.45 วินาที (ไม่ใช่ทุกเฟรม) แล้วผลักออกด้านข้างเบา ๆ
    ========================================================= */
-const RV = {gap:6, edge:8, speed:.009, bands:[[.14,.34],[.34,.56],[.56,.78]], ks:[1, .9, .8, .7]};
-let D = 0, layoutSig = "";                 // D = ระยะที่น้ำไหลสะสม (สัดส่วนความกว้าง)
-// Depth-based scaling: ไกล 65–75% / กลาง 85–95% / ใกล้ 100–110% ของขนาดมาตรฐาน (KW) ต่อเนื่องไม่กระโดด
-const DEPTH = [[.14,.65],[.30,.75],[.36,.85],[.56,.95],[.62,1],[.78,1.1]];
-function depthScale(y) {
-  if (y <= DEPTH[0][0]) return DEPTH[0][1];
-  for (let i = 1; i < DEPTH.length; i++) if (y <= DEPTH[i][0]) { const a = DEPTH[i - 1], b = DEPTH[i]; return a[1] + (b[1] - a[1]) * (y - a[0]) / (b[0] - a[0]); }
-  return DEPTH[DEPTH.length - 1][1];
+const FLOW = {
+  groupA: .6,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
+  travel: [110, 190],          // วินาทีที่ใช้ลอยจากใกล้ไปไกล (สุ่มต่อกระทงจาก id) ยิ่งมากยิ่งช้า
+  yNear: .76, yFar: .14,       // ตำแหน่งแนวตั้งในแม่น้ำ (สัดส่วนความสูง) ใกล้ / ไกล
+  scaleNear: 1.06, scaleFar: .66,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
+  opacityFar: .8,              // ความสว่างตอนไกลสุด (ใกล้ = 1)
+  farZone: [.58, .98],         // ความลึกปลายทางของกลุ่ม A
+  fade: .06,                   // ช่วงจางเข้า/จางออกของกลุ่ม B (สัดส่วนของรอบ)
+  sway: .018, tilt: 3.2,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
+  gap: 6, edge: 8,
+  labelHide: [.72, .88]        // ป้ายชื่อเริ่มจางที่ depth นี้ และหายที่ depth นี้
+};
+const flowT0 = performance.now();
+const flowClock = () => reduceMotion.matches ? flowT0 : performance.now();
+const isLite = () => reduceMotion.matches || +($("water").dataset.q || 0) >= 1;   // เครื่องช้า/ลดการเคลื่อนไหว: ไม่แกว่ง ไม่เอียง
+let yN = FLOW.yNear, lastAvoid = 0;
+const yOfD = d => yN + (FLOW.yFar - yN) * d;
+const dOfY = y => clamp((yN - y) / (yN - FLOW.yFar), 0, 1);
+const scOfD = d => FLOW.scaleNear + (FLOW.scaleFar - FLOW.scaleNear) * d;
+const depthScale = y => scOfD(dOfY(y));    // ใช้กับกระทงที่ถืออยู่/ตอนส่งต่อจากมือ
+
+function fhash(str) {                        // hash แบบกระจายตัวดี (ใช้เฉพาะระบบลอย; ไม่แตะ hash เดิมที่ใช้กับภาพกระทง)
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h ^= h >>> 16; h = Math.imul(h, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
 }
-const halfW = () => (KW * .7) / W;
-const period = () => 1 + 2 * halfW();
-function xOf(ux) { const P = period(), h = halfW(); return (((ux + D + h) % P) + P) % P - h; }
-function boxAt(it, ux, y, k) {            // กล่องกระทง+ป้ายชื่อ (px) ตามขนาดจริงและสเกล
-  const s = depthScale(y) * k;
-  return {cx: ux * W, cy: y * H - it.h * .05, w: KW * s * .96, h: it.h * s * .95, vx: xOf(ux) * W};
+function initFlow(it) {
+  const h = k => fhash(it.id + k);
+  it.grp = h("grp") < FLOW.groupA ? "A" : "B";
+  it.Tc = FLOW.travel[0] + (FLOW.travel[1] - FLOW.travel[0]) * h("tc");
+  it.dFar = FLOW.farZone[0] + (FLOW.farZone[1] - FLOW.farZone[0]) * h("df");
+  it.Ts = 14 + 14 * h("ts"); it.Td = 38 + 40 * h("td"); it.Tr = 8 + 9 * h("tr");
+  it.ph = [h("p1") * 6.2832, h("p2") * 6.2832, h("p3") * 6.2832];
+  it.amp = .6 + .8 * h("am");
+  it.lane0 = .1 + .8 * h("x0"); it.lane = null; it.laneCyc = 0;
+  it.ax = 0; it.axT = 0; it.d = 0; it.sc = depthScale(it.y); it.rot = 0; it.f = 1;
+  it.op = -1; it.lab = -1; it.pe = true; it.keepFade0 = false;
+  it.bob = it.el.querySelector(".kr-bob"); it.nm = it.el.querySelector(".kr-name");
 }
-function overlapArea(a, b, PW) {
-  let dx = Math.abs(a.cx - b.cx) % PW; if (dx > PW / 2) dx = PW - dx;
-  const ox = (a.w + b.w) / 2 + RV.gap - dx, oy = (a.h + b.h) / 2 + RV.gap - Math.abs(a.cy - b.cy);
-  return ox > 0 && oy > 0 ? ox * oy : 0;
+function depthAtProgress(it, p) {
+  if (it.grp === "A") return it.dFar * (1 - Math.exp(-3 * p));
+  return 1 - Math.pow(1 - (p - Math.floor(p)), 1.3);
 }
-function scoreAt(it, ux, y, k, others) {  // -1 = หลุดขอบ, 0 = ว่าง, >0 = พื้นที่ทับ
-  const b = boxAt(it, ux, y, k);
-  if (b.vx - b.w / 2 < RV.edge || b.vx + b.w / 2 > W - RV.edge || b.cy - b.h / 2 < 6 || b.cy + b.h / 2 > H - 6) return -1;
-  const PW = period() * W; let sum = 0;
-  for (const o of others) sum += overlapArea(b, boxAt(o, o.ux, o.y, o.k || 1), PW);
-  return sum;
-}
-const otherItems = it => [...items.values()].filter(o => o !== it && o.placed);
-function slotFor(it, others) {             // ตำแหน่งแรกที่ว่างจากรายการตัวเลือกของ id นี้ (ไม่พอ → สแกนตาราง → ลดขนาด)
-  const id = it.id, bh = hash(id + "band"), b0 = bh < .25 ? 0 : bh < .7 ? 1 : 2;
-  const y0 = RV.bands[b0][0] + (RV.bands[b0][1] - RV.bands[b0][0]) * hash(id + "y0"), x0 = .06 + .88 * hash(id + "x0");
-  let best = null;
-  for (const k of RV.ks) {
-    for (let j = 0; j < 40; j++) {
-      const yr = RV.bands[j < 14 ? b0 : (b0 + 1 + (j & 1)) % 3];
-      const y = yr[0] + (yr[1] - yr[0]) * hash(id + "y" + j), ux = .06 + .88 * hash(id + "x" + j) - D;
-      const sc = scoreAt(it, ux, y, k, others);
-      if (sc < 0) continue;
-      if (sc === 0) return {ux, y, k};
-      if (!best || sc < best.sc) best = {ux, y, k, sc};
-    }
-    let g = null;                          // ไม่เจอจากตัวเลือก: หาช่องว่างบนตารางที่ใกล้จุดที่ชอบที่สุด
-    for (let y = .12; y <= .8; y += .035) for (let xv = .05; xv <= .95; xv += .035) {
-      const ux = xv - D;
-      if (scoreAt(it, ux, y, k, others) !== 0) continue;
-      const d = Math.hypot((xv - x0) * W, (y - y0) * H);
-      if (!g || d < g.d) g = {ux, y, k, d};
-    }
-    if (g) return g;
+function flowAt(it, now, lite) {            // คำนวณตำแหน่ง/ขนาดจากเวลาล้วน ๆ
+  const age = (now - it.t0) / 1000, p = age / it.Tc;
+  let d, f = 1, cyc = 0;
+  if (it.grp === "A") d = it.dFar * (1 - Math.exp(-3 * p));
+  else {
+    cyc = Math.floor(p); const q = p - cyc;
+    d = 1 - Math.pow(1 - q, 1.3);          // ใกล้เร็ว ไกลช้าลง
+    f = Math.min(it.keepFade0 && cyc === 0 ? 1 : q / FLOW.fade, (1 - q) / FLOW.fade, 1);
+    if (cyc > 0) it.keepFade0 = false;
   }
-  return best || {ux: .5 - D, y: .5, k: RV.ks[RV.ks.length - 1]};
-}
-function nearestFree(it, ux, y, others) {  // ที่ว่างใกล้ตำแหน่งนี้ที่สุด (ใช้ตอนปล่อยหลังลาก/ส่งต่อจากมือ)
-  for (const k of RV.ks) {
-    let best = null;
-    for (let dy = -.5; dy <= .5; dy += .03) for (let dx = -.6; dx <= .6; dx += .03) {
-      const y2 = y + dy, u2 = ux + dx;
-      if (y2 < .1 || y2 > .8) continue;
-      if (scoreAt(it, u2, y2, k, others) !== 0) continue;
-      const d = Math.hypot(dx * W, dy * H);
-      if (!best || d < best.d) best = {ux: u2, y: y2, k, d};
-    }
-    if (best) return best;
+  let sw = 0, rot = 0;
+  if (!lite) {
+    sw = FLOW.sway * it.amp * (.4 + .9 * d) * Math.sin(6.2832 * age / it.Ts + it.ph[0]);
+    d += (it.grp === "A" ? .028 : .012) * Math.min(1, p) * Math.sin(6.2832 * age / it.Td + it.ph[1]);   // วนเป็นวงรีเล็ก ๆ
+    rot = FLOW.tilt * Math.sin(6.2832 * age / it.Tr + it.ph[2]);
   }
-  return null;
+  d = clamp(d, 0, 1);
+  const lane = it.lane != null && it.laneCyc === cyc ? it.lane : (cyc === 0 ? it.lane0 : .1 + .8 * fhash(it.id + "L" + cyc));
+  const sc = scOfD(d), half = (KW * sc * .5 + FLOW.edge) / W;
+  it.d = d; it.sc = sc; it.rot = rot; it.f = Math.max(0, f);
+  it.x = clamp(.5 + (lane - .5) * (1 - .3 * d) + sw + it.ax, half, 1 - half);   // ไกลแคบเข้าหาแนวกลาง (perspective)
+  it.y = yOfD(d);
 }
-function startGlide(it, to, dur) {
-  it.glide = {t0: performance.now(), dur, ux0: it.ux, y0: it.y, k0: it.k || 1, ux1: to.ux, y1: to.y, k1: to.k};
+function applyFx(it) {                      // ความสว่าง/ป้ายชื่อ/การแตะ (เขียน DOM เฉพาะเมื่อค่าเปลี่ยน)
+  const op = (1 - (1 - FLOW.opacityFar) * it.d) * it.f;
+  if (Math.abs(op - it.op) > .01) { it.op = op; it.bob.style.opacity = op.toFixed(3); }
+  const lab = clamp((FLOW.labelHide[1] - it.d) / (FLOW.labelHide[1] - FLOW.labelHide[0]), 0, 1);
+  if (Math.abs(lab - it.lab) > .02) { it.lab = lab; if (it.nm) it.nm.style.opacity = lab.toFixed(2); }
+  const pe = it.f > .2;                     // ตอนจางหายอยู่ไม่รับการแตะ
+  if (pe !== it.pe) { it.pe = pe; it.el.style.pointerEvents = pe ? "" : "none"; }
 }
-function layoutRiver(all) {
-  const list = [...items.values()], keep = it => it.userMoved || it.striking;
-  const pending = list.filter(it => all ? !keep(it) : !it.placed).sort((a, b) =>
+function place(it) {
+  const s = it.sc;
+  it.el.style.transform = "translate3d(" + (it.x * W - it.w / 2).toFixed(1) + "px," + (it.y * H - it.h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ") rotate(" + it.rot.toFixed(2) + "deg)";
+  it.el.style.zIndex = Math.round(it.y * 100);
+  const sw = (.55 + .7 * Math.min(1, it.y)).toFixed(1);   // ไกลโยกน้อย ใกล้โยกมาก
+  if (it.sw !== sw) { it.sw = sw; it.el.style.setProperty("--sw", sw); }
+}
+function layoutRiver() {                    // กำหนดเลน/เวลาเริ่มให้กระทงใหม่ (ไม่ขยับใบเดิม)
+  const list = [...items.values()];
+  const pending = list.filter(it => !it.placed).sort((a, b) =>
     ((Date.parse(a.wish.created_at) || 0) - (Date.parse(b.wish.created_at) || 0)) || (a.id < b.id ? -1 : 1));
   if (!pending.length) return;
-  if (all) pending.forEach(it => { it.placed = false; it.glide = null; });
-  const placed = list.filter(it => it.placed);
+  const placed = list.filter(it => it.placed), now = flowClock();
   pending.forEach(it => {
-    const sl = slotFor(it, placed);
-    it.ux = sl.ux; it.y = sl.y; it.k = sl.k; it.x = xOf(it.ux); it.placed = true;
-    placed.push(it); place(it);
+    const p0 = it.fresh ? 0 : fhash(it.id + "age") * (it.grp === "A" ? 1.3 : .94);   // ตอนโหลด: กระจายกระทงไปตามเส้นทาง
+    it.t0 = now - p0 * it.Tc * 1000;
+    const d0 = depthAtProgress(it, p0);
+    let best = null;
+    for (let j = 0; j < 8; j++) {            // เลือกเลนที่ห่างใบอื่นมากที่สุด (ทั้งแนวนอนและความลึก)
+      const lane = j ? .1 + .8 * fhash(it.id + "x" + j) : it.lane0;
+      let m = 1e9;
+      placed.forEach(o => { m = Math.min(m, Math.hypot((lane - o.lane0) * W, (d0 - o.d) * H * .62)); });
+      if (!best || m > best.m) best = {lane, m};
+    }
+    it.lane0 = best.lane; it.placed = true;
+    flowAt(it, now, isLite()); applyFx(it); place(it);
+    placed.push(it);
   });
 }
-function settle(it) {                      // หลังปล่อยจากการลาก: ถ้าทับใบอื่น ขยับไปที่ว่างใกล้สุดเบา ๆ
-  const others = otherItems(it);
-  if (scoreAt(it, it.ux, it.y, it.k || 1, others) === 0) return;
-  const to = nearestFree(it, it.ux, it.y, others);
-  if (to) startGlide(it, to, 800);
+function avoidPass() {                      // ผลักกระทงที่ซ้อนกันออกด้านข้างเบา ๆ (เรียกทุก ~0.45 วิ ไม่ใช่ทุกเฟรม)
+  const L = [...items.values()].filter(it => it.placed && !it.drag && !it.hover && it.f > .3);
+  L.forEach(it => { it.axT = it.ax * .92; it.hit = false; });   // ไม่ซ้อนแล้วค่อย ๆ คลายกลับ
+  for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
+    const a = L[i], b = L[j];
+    const dx = (b.x - a.x) * W, dy = ((b.y * H - .05 * b.h) - (a.y * H - .05 * a.h));
+    const ox = (KW * (a.sc + b.sc) * .5 * .96) + FLOW.gap - Math.abs(dx);
+    const oy = ((a.h * a.sc + b.h * b.sc) * .5 * .9) + FLOW.gap - Math.abs(dy);
+    if (ox > 0 && oy > 0) {
+      const dir = dx > 0 ? 1 : dx < 0 ? -1 : (a.id < b.id ? 1 : -1), push = (ox * .5 + 4) / W;
+      a.axT -= dir * push; b.axT += dir * push; a.hit = b.hit = true;
+    }
+  }
+  L.forEach(it => { it.axT = clamp(it.axT, -.22, .22); });
+}
+function reanchor(it) {                     // หลังลากแล้วปล่อย: ลอยต่อจากจุดที่วางไว้ (ไม่ดีดกลับ)
+  const now = flowClock(), d = dOfY(it.y);
+  const p = it.grp === "A" ? -Math.log(1 - Math.min(.97, d / it.dFar)) / 3 : 1 - Math.pow(1 - Math.min(.9, d), 1 / 1.3);
+  it.t0 = now - p * it.Tc * 1000;
+  const age = p * it.Tc;
+  it.ph[0] = -6.2832 * age / it.Ts; it.ph[1] = -6.2832 * age / it.Td; it.ph[2] = -6.2832 * age / it.Tr;   // แกว่ง/เอียงเริ่มที่ศูนย์ ไม่กระชาก
+  it.lane = clamp(.5 + (it.x - .5) / (1 - .3 * d), .02, .98); it.laneCyc = 0; it.ax = 0; it.axT = 0; it.keepFade0 = true;
 }
 function measure() {
   W = river.clientWidth || 320; H = river.clientHeight || 300;
   KW = Math.round(clamp(W * .17, 92, 150));
   river.style.setProperty("--kw", KW + "px");
   const sky = $("fxSky"); if (sky) sky.style.setProperty("--rise", Math.round(sky.clientHeight * .95) + "px");
-  items.forEach(it => { it.w = KW; it.h = it.el.offsetHeight || KW * .6; });
-  const sig = W + "x" + H + "x" + KW, changed = sig !== layoutSig && layoutSig !== "";
-  layoutSig = sig;
-  if (changed) items.forEach(it => { if (it.userMoved || it.striking) it.ux = it.x - D; });
-  layoutRiver(changed);
-  items.forEach(place);
+  let mh = KW * .82 + 26;
+  items.forEach(it => { it.w = KW; it.h = it.el.offsetHeight || KW * .6; mh = Math.max(mh, it.h); });
+  yN = clamp((H - 12 - mh * FLOW.scaleNear * .5 + mh * .05) / H, .5, FLOW.yNear);   // กระทงใกล้สุดไม่หลุดขอบล่าง
+  layoutRiver();
+  const now = flowClock(), lite = isLite();
+  items.forEach(it => { if (it.placed && !it.drag) { flowAt(it, now, lite); applyFx(it); } if (it.placed) place(it); });
   if (typeof layoutHeld === "function" && !$("held").hidden) layoutHeld();
-}
-function place(it) {
-  const s = depthScale(it.y) * (it.k || 1);
-  it.el.style.transform = "translate3d(" + (it.x * W - it.w / 2).toFixed(1) + "px," + (it.y * H - it.h * .55).toFixed(1) + "px,0) scale(" + s.toFixed(3) + ")";
-  it.el.style.zIndex = Math.round(it.y * 100);
-  const sw = (.55 + .7 * Math.min(1, it.y)).toFixed(1);   // ไกลโยกน้อย ใกล้โยกมาก
-  if (it.sw !== sw) { it.sw = sw; it.el.style.setProperty("--sw", sw); }
 }
 function addItem(w, index, fresh, mine) {
   const spec = decode(w.flower), name = w.display_name || "ไม่ระบุชื่อ";
@@ -1375,27 +1409,23 @@ function addItem(w, index, fresh, mine) {
   el.setAttribute("aria-label", "อ่านคำอธิษฐานของ " + name);
   el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
   river.appendChild(el);
-  const it = {id:w.id, wish:w, el, x:.5, y:.5, ux:.5 - D, k:1, w:KW, h:0, drag:false, hover:false, moved:false, placed:false, userMoved:false};
+  const it = {id:w.id, wish:w, el, x:.5, y:.5, w:KW, h:0, drag:false, hover:false, moved:false, placed:false, fresh:!!(fresh || mine)};
   it.h = el.offsetHeight || KW * .6;
   items.set(w.id, it);
+  initFlow(it);
   if (mine && heldPos) {
-    // ปล่อยจากตำแหน่งที่ถืออยู่: เริ่มกึ่งกลางเดิม แล้วถ้าทับใบอื่นค่อยไหลไปที่ว่างใกล้สุด
-    it.ux = heldPos.x - D; it.y = heldPos.y; it.x = xOf(it.ux); place(it);
+    // ปล่อยจากตำแหน่งที่ถืออยู่: เริ่มกึ่งกลางเดิม แล้วลอยต่อตามเส้นทางของมันช้า ๆ
+    it.x = heldPos.x; it.y = heldPos.y; it.sc = depthScale(it.y); place(it);
     const sv = el.querySelector(".kr-bob > svg"), rc = river.getBoundingClientRect();
-    if (sv) { const r = sv.getBoundingClientRect(); it.y -= ((r.top + r.height / 2 - rc.top) - heldPos.cy) / H; place(it); }
-    const others = otherItems(it);
-    if (scoreAt(it, it.ux, it.y, 1, others) !== 0) { const to = nearestFree(it, it.ux, it.y, others); if (to) startGlide(it, to, 12000); }
-    it.placed = true; hideHold();
-  } else if (mine) {
-    const sl = slotFor(it, otherItems(it));
-    it.ux = sl.ux; it.k = sl.k; it.y = sl.y; it.x = xOf(it.ux); it.placed = true;
-    if (!reduceMotion.matches) { it.enter = {t0:performance.now(), y0:1.04, y1:sl.y, dur:2100}; it.y = it.enter.y0; }   // ลอยเข้ามาจากขอบน้ำด้านล่าง
+    if (sv) { const r = sv.getBoundingClientRect(); it.y -= ((r.top + r.height / 2 - rc.top) - heldPos.cy) / H; it.sc = depthScale(it.y); place(it); }
+    it.placed = true; reanchor(it);
+    flowAt(it, flowClock(), isLite()); applyFx(it); place(it);
+    hideHold();
   }
-  place(it);
+  if (!it.placed) place(it);
 
   el.addEventListener("pointerdown", e => {
     if (e.button > 0) return;
-    it.enter = null; it.glide = null;
     const rc = river.getBoundingClientRect();
     it.drag = true; it.moved = false; it.px = e.clientX; it.py = e.clientY;
     it.gx = (e.clientX - rc.left) / W - it.x; it.gy = (e.clientY - rc.top) / H - it.y;
@@ -1408,8 +1438,7 @@ function addItem(w, index, fresh, mine) {
       const rc = river.getBoundingClientRect();
       it.x = clamp((e.clientX - rc.left) / W - it.gx, .02, .98);
       it.y = clamp((e.clientY - rc.top) / H - it.gy, .06, .78);
-      it.ux = it.x - D; it.userMoved = true; it.placed = true;
-      place(it);
+      it.sc = depthScale(it.y); place(it);
     }
   });
   const end = e => {
@@ -1417,7 +1446,7 @@ function addItem(w, index, fresh, mine) {
     it.drag = false; el.classList.remove("is-drag");
     try { el.releasePointerCapture(e.pointerId); } catch (_) {}
     if (!it.moved && e.type === "pointerup") openWish(it.wish);
-    else if (it.moved) settle(it);
+    else if (it.moved) reanchor(it);
   };
   el.addEventListener("pointerup", end);
   el.addEventListener("pointercancel", end);
@@ -1529,22 +1558,13 @@ let last = 0;
 function tick(t) {
   const dt = Math.min(.1, (t - last) / 1000 || 0); last = t;
   if (riverVisible && !document.hidden && !reduceMotion.matches) {
-    D += RV.speed * dt;
+    const now = performance.now(), lite = isLite(), k = Math.min(1, dt * 1.4);
+    if (now - lastAvoid > 450) { lastAvoid = now; avoidPass(); }
     items.forEach(it => {
-      if (it.enter) {
-        const p = Math.min(1, (performance.now() - it.enter.t0) / it.enter.dur), e = 1 - Math.pow(1 - p, 3);
-        it.y = it.enter.y0 + (it.enter.y1 - it.enter.y0) * e;
-        if (p >= 1) it.enter = null;
-        it.x = xOf(it.ux); place(it); return;
-      }
-      if (it.drag || it.hover) { it.ux -= RV.speed * dt; if (it.glide) it.glide.t0 += dt * 1000; return; }   // ค้างอยู่กับที่
-      if (it.glide) {
-        const g = it.glide, p = Math.min(1, (performance.now() - g.t0) / g.dur), e = p * p * (3 - 2 * p);
-        it.ux = g.ux0 + (g.ux1 - g.ux0) * e; it.y = g.y0 + (g.y1 - g.y0) * e; it.k = g.k0 + (g.k1 - g.k0) * e;
-        if (p >= 1) it.glide = null;
-      }
-      it.x = xOf(it.ux);
-      place(it);
+      if (!it.placed) return;
+      if (it.drag || it.hover) { it.t0 += dt * 1000; return; }   // ค้างอยู่กับที่ (เวลาของมันหยุดด้วย)
+      it.ax += (it.axT - it.ax) * k;
+      flowAt(it, now, lite); applyFx(it); place(it);
       if (it.hlWait) tryHighlight(it);
     });
   }
