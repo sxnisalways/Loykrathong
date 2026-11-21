@@ -416,6 +416,41 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
   .fx,#fwCanvas{display:none!important}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* ---------- หัวใจ + กระทงของฉัน ---------- */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.mine-chip{min-height:0;display:inline-flex;align-items:center;gap:6px;padding:4px 13px;border-radius:99px;border:1px solid #f5c66b66;background:#04101f66;color:var(--gold);font-size:12.5px;font-weight:600;line-height:1.6;transition:border-color .15s,box-shadow .15s,background .15s}
+.mine-chip:hover{border-color:#f5c66b;box-shadow:0 0 14px #f5c66b38;background:#f5c66b14}
+.view-like{display:flex;align-items:center;gap:10px;margin-top:12px;min-height:38px}
+.like-btn{min-height:0;display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:99px;border:1px solid #f5c66b55;background:#04101f66;color:#ffeab5;font-size:15px;font-weight:600;line-height:1.4;transition:border-color .15s,background .15s,box-shadow .15s}
+.like-btn[hidden]{display:none}
+.like-btn:hover:not(:disabled){border-color:#f5c66b;background:#f5c66b14}
+.like-btn[aria-pressed="true"]{border-color:#ff9db4aa;background:#ff9db41a;color:#ffd0dc;box-shadow:0 0 14px #ff9db433}
+.like-btn:disabled{opacity:.6;cursor:default}
+.like-btn .heart{font-size:19px;line-height:1;display:inline-block}
+.like-btn.pop .heart{animation:heartPop .45s ease}
+.like-msg{font-size:12px;color:#ffb4a8}
+.like-msg:empty{display:none}
+@keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}
+.mine-dialog .mine-body{overflow-y:auto;flex:1;min-height:0;padding:0 20px 8px 24px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;position:relative;z-index:1}
+.mine-h{margin:14px 0 8px;font-family:var(--serif);font-size:16px;color:var(--gold);display:flex;align-items:baseline;gap:8px}
+.mine-h small{color:var(--muted);font-family:inherit;font-size:12px}
+.mine-card{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:center;width:100%;min-height:0;text-align:left;margin:0 0 10px;padding:10px 12px;border-radius:16px;background:linear-gradient(180deg,#0b2742cc,#071d33d9);border:1.5px solid #34607e;color:var(--cream);font-weight:400}
+button.mine-card{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
+.mine-card .thumb svg{width:100%;height:auto;display:block;overflow:visible}
+.mine-card .wish{margin:0 0 4px;font-size:14px;line-height:1.6;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mine-card .meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;color:var(--muted)}
+.mine-card .meta .hrt{color:#ffd0dc}
+.badge{display:inline-block;padding:1px 9px;border-radius:99px;font-size:11.5px;border:1px solid #f5c66b55;color:#ffeab5}
+.badge.past{border-color:#ffffff30;color:#bcd0da}
+.badge.bad{border-color:#ffb4a888;color:#ffb4a8}
+.mine-state{padding:22px 4px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
+.mine-state .secondary{margin-top:10px;min-height:44px}
+.mine-note{position:relative;z-index:1;margin:0;padding:8px 24px 10px;font-size:11.5px;line-height:1.6;color:#9fb9c8}
+.kr.hl .kr-name{background:var(--gold);color:#1b2a30;box-shadow:0 0 16px #f5c66bcc;transition:all .3s}
+.kr.hl .kr-svg{filter:drop-shadow(0 0 12px #ffd98acc)}
+@media(prefers-reduced-motion:reduce){.like-btn.pop .heart{animation:none}}
 </style>
 </head>
 <body>
@@ -479,7 +514,7 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
 <main>
   <p id="connectionStatus" class="connection-status" role="status" aria-live="polite">กำลังโหลดกระทงจากสายน้ำ…</p>
   <section id="feedSection">
-    <div class="section-head"><h2>คำอธิษฐานจากทุกคน</h2><span class="count-pill">ลอยแล้ว <b id="count">—</b> กระทง</span></div>
+    <div class="section-head"><h2>คำอธิษฐานจากทุกคน</h2><span class="count-pill">ลอยแล้ว <b id="count">—</b> กระทง</span><button class="mine-chip" id="mineBtn" type="button"><span aria-hidden="true">♡</span> กระทงของฉัน</button></div>
     <div class="feed" id="feed" aria-busy="true"></div>
     <div class="feed-tools"><button class="secondary" id="showMore" type="button" hidden>ดูเพิ่มเติม</button> <button class="secondary" id="refresh" type="button">โหลดข้อมูลใหม่</button></div>
   </section>
@@ -519,8 +554,19 @@ input:focus,textarea:focus{border-color:#f5c66b;box-shadow:0 0 0 3px #f5c66b2a}
       <p class="view-wish" id="viewWish"></p>
       <div class="view-by" id="viewBy"></div>
       <div class="view-date" id="viewDate"></div>
+      <div class="view-like"><button class="like-btn" id="likeBtn" type="button" aria-pressed="false" hidden><span class="heart" aria-hidden="true">♡</span><b id="likeN">0</b><span class="sr-only" id="likeLbl">กดหัวใจ</span></button><span class="like-msg" id="likeMsg" role="status" aria-live="polite"></span></div>
     </div>
     <div class="dlg-actions"><button class="secondary" id="viewClose" type="button">ปิด</button><button class="primary" id="viewMake" type="button">สร้างกระทงบ้าง</button></div>
+  </div>
+</div>
+
+<!-- My krathongs -->
+<div class="modal" id="mineModal" role="presentation">
+  <div class="dialog mine-dialog" id="mineDialog" role="dialog" aria-modal="true" aria-labelledby="mineTitle" tabindex="-1">
+    <div class="dlg-head"><h2 id="mineTitle">กระทงของฉัน</h2><p class="sub">กระทงที่ปล่อยจากเบราว์เซอร์นี้</p></div>
+    <div class="mine-body" id="mineBody" aria-live="polite"></div>
+    <p class="mine-note">กระทงของฉันผูกกับบัญชีแบบไม่ระบุตัวตนในเบราว์เซอร์นี้ หากล้างข้อมูลเว็บไซต์หรือเปลี่ยนอุปกรณ์ อาจเปิดดูกระทงเดิมไม่ได้</p>
+    <div class="dlg-actions"><button class="secondary" id="mineClose" type="button">ปิด</button></div>
   </div>
 </div>
 
@@ -1107,6 +1153,7 @@ function render() {
   }
   syncRiver();
   $("showMore").hidden = visibleCount >= list.length;
+  if (typeof scheduleLikes === "function") scheduleLikes();
 }
 async function api(query, options = {}) {
   const controller = new AbortController();
@@ -1489,6 +1536,7 @@ function tick(t) {
       }
       it.x = xOf(it.ux);
       place(it);
+      if (it.hlWait) tryHighlight(it);
     });
   }
   requestAnimationFrame(tick);
@@ -1614,7 +1662,10 @@ function openWish(w) {
   $("viewBy").textContent = "— " + (w.display_name || "ไม่ระบุชื่อ");
   $("viewDate").textContent = dateLabel(w.created_at);
   hideHint();
+  viewId = w.id; $("likeMsg").textContent = "";
+  renderLike();
   openModal($("wishModal"), $("wishDialog"));
+  if (likes.ok) refreshLikes([w.id]).then(() => { if (viewId === w.id) renderLike(); });
 }
 /* =========================================================
    7) เสียง: เพลงพื้นหลัง (loy-krathong.mp3) + เสียงตอนปล่อยกระทง
@@ -1853,7 +1904,7 @@ async function submitKrathong() {
   let saved = false;
   try {
     try {
-      await api("", {method:"POST", headers:{"Content-Type":"application/json", Prefer:"return=minimal"}, body:JSON.stringify(pendingSubmission.row)});
+      await postKrathong(pendingSubmission.row);
     } catch (error) {
       if (error.status !== 409 || error.code !== "23505") throw error;
       // A previous request may have committed even when its response was lost.
@@ -1890,6 +1941,237 @@ async function submitKrathong() {
     hideHold();
   } else $("heldErr").textContent = $("formStatus").textContent;
 }
+/* =========================================================
+   Anonymous Auth (Supabase GoTrue REST — เว็บนี้ไม่ใช้ไลบรารี) + เจ้าของกระทง
+   - มี session เก็บใน localStorage → ใช้ user เดิม ไม่สร้างบัญชีใหม่ทุกครั้งที่รีเฟรช
+   - สร้าง/รีเฟรช session ภายใน navigator.locks + promise เดียว (กันซ้ำทั้งในแท็บเดียวและหลายแท็บ)
+   - ล็อกอินไม่สำเร็จ → เว็บยังใช้งานได้ (สร้างกระทงแบบไม่มีเจ้าของ) แค่กดหัวใจ/กระทงของฉันไม่ได้
+   ========================================================= */
+var viewId = null;
+const REST = SUPABASE_URL + "/rest/v1", AUTH_URL = SUPABASE_URL + "/auth/v1", AUTH_KEY = "loy:auth";
+let authInflight = null, authBlockedUntil = 0, authLastError = null;
+function readAuth() {
+  try { const s = JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); return s && s.access_token && s.refresh_token && s.user && s.user.id ? s : null; } catch (_) { return null; }
+}
+function writeAuth(s) { try { if (s) localStorage.setItem(AUTH_KEY, JSON.stringify(s)); else localStorage.removeItem(AUTH_KEY); } catch (_) {} }
+const authFresh = s => !!s && s.expires_at * 1000 - Date.now() > 60000;
+function normSession(j) {
+  if (!j || !j.access_token || !j.refresh_token || !j.user || !j.user.id) throw Object.assign(new Error("bad auth response"), {status:0});
+  const exp = j.expires_at || Math.floor(Date.now() / 1000) + (j.expires_in || 3600);
+  return {access_token:j.access_token, refresh_token:j.refresh_token, expires_at:exp, user:{id:j.user.id, is_anonymous:j.user.is_anonymous !== false}};
+}
+async function authFetch(path, body) {
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(AUTH_URL + path, {method:"POST", headers:{apikey:SUPABASE_PUBLISHABLE_KEY, "Content-Type":"application/json"}, body:JSON.stringify(body), signal:controller.signal, cache:"no-store", credentials:"omit"});
+    if (!res.ok) throw Object.assign(new Error("auth HTTP " + res.status), {status:res.status});
+    return await res.json();
+  } finally { clearTimeout(timer); }
+}
+async function authStep() {                 // เรียกภายใน lock เท่านั้น
+  let s = readAuth();                       // อ่านใหม่เสมอ: แท็บอื่นอาจสร้าง/รีเฟรชไปแล้ว
+  if (authFresh(s)) return s;
+  if (s) {
+    try { s = normSession(await authFetch("/token?grant_type=refresh_token", {refresh_token:s.refresh_token})); writeAuth(s); return s; }
+    catch (e) {
+      if (!(e.status >= 400 && e.status < 500)) {          // เครือข่ายล้ม: ถ้าโทเค็นยังไม่หมดอายุจริง ใช้ต่อได้
+        if (s.expires_at * 1000 > Date.now()) return s;
+        throw e;
+      }
+      writeAuth(null);                                      // refresh token ใช้ไม่ได้แล้วจริง ๆ → ขอบัญชีใหม่
+    }
+  }
+  s = normSession(await authFetch("/signup", {data:{}}));  // = signInAnonymously()
+  writeAuth(s);
+  return s;
+}
+function ensureSession() {
+  const cur = readAuth();
+  if (authFresh(cur)) return Promise.resolve(cur);
+  if (authInflight) return authInflight;
+  if (authBlockedUntil > Date.now() && authLastError) return Promise.reject(authLastError);   // เพิ่งล้มเหลวแบบถาวร (เช่น ปิด Anonymous sign-ins) ไม่ยิงซ้ำรัว ๆ
+  const run = () => authStep();
+  authInflight = (navigator.locks && navigator.locks.request ? navigator.locks.request("loy-auth", run) : run())
+    .then(s => { authLastError = null; return s; },
+          e => { authLastError = e; authBlockedUntil = Date.now() + (e && e.status >= 400 && e.status < 500 ? 60000 : 8000); throw e; })
+    .finally(() => { authInflight = null; });
+  return authInflight;
+}
+const sessionOrNull = () => ensureSession().catch(() => null);
+
+async function rest(path, {method = "GET", body, headers = {}, auth = false} = {}) {
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const h = {apikey:SUPABASE_PUBLISHABLE_KEY, ...headers};
+    if (body !== undefined) h["Content-Type"] = "application/json";
+    if (auth) { const s = await ensureSession(); h.Authorization = "Bearer " + s.access_token; }
+    const res = await fetch(REST + path, {method, headers:h, body:body === undefined ? undefined : JSON.stringify(body), signal:controller.signal, cache:"no-store", credentials:"omit"});
+    if (!res.ok) {
+      let d = {}; try { d = await res.json(); } catch (_) {}
+      throw Object.assign(new Error("HTTP " + res.status), {status:res.status, code:d.code || ""});
+    }
+    return res;
+  } finally { clearTimeout(timer); }
+}
+
+// บันทึกกระทง: แนบ owner_id = ผู้ใช้ปัจจุบัน ถ้าระบบเจ้าของยังไม่พร้อม (ยังไม่รัน SQL/ล็อกอินไม่ได้) ก็ลอยแบบไม่มีเจ้าของ
+async function postKrathong(row) {
+  const post = (r, headers) => api("", {method:"POST", headers:{"Content-Type":"application/json", Prefer:"return=minimal", ...headers}, body:JSON.stringify(r)});
+  const s = await Promise.race([sessionOrNull(), new Promise(r => setTimeout(() => r(null), 4000))]);   // auth ช้าเกิน 4 วิ → ไม่รอ ปล่อยแบบไม่มีเจ้าของ
+  if (!s) return post(row);
+  try { return await post({...row, owner_id:s.user.id}, {Authorization:"Bearer " + s.access_token}); }
+  catch (e) {
+    if ((e.status === 400 || e.status === 401 || e.status === 403) && e.code !== "23505") return post(row);
+    throw e;
+  }
+}
+
+/* =========================================================
+   หัวใจ (krathong_likes) — จำนวนมาจากฐานข้อมูล (RPC แบบ batch) ไม่เก็บใน localStorage
+   ========================================================= */
+var likes = {ok:true, counts:new Map(), mine:new Set(), busy:new Set(), timer:0};
+function scheduleLikes() {
+  if (!likes.ok) return;
+  clearTimeout(likes.timer);
+  likes.timer = setTimeout(() => refreshLikes(wishes.filter(w => !w.blocked).map(w => w.id)).then(() => { if (viewId && $("wishModal").classList.contains("open")) renderLike(); }), 200);
+}
+async function refreshLikes(ids) {
+  ids = [...new Set(ids)].slice(0, 100);
+  if (!likes.ok || !ids.length) return;
+  try {
+    const rows = await (await rest("/rpc/krathong_like_counts", {method:"POST", body:{p_ids:ids}})).json();
+    const seen = new Set();
+    rows.forEach(r => { likes.counts.set(r.krathong_id, Number(r.like_count) || 0); seen.add(r.krathong_id); });
+    ids.forEach(id => { if (!seen.has(id)) likes.counts.set(id, 0); });
+  } catch (e) { if (e.status === 404) likes.ok = false; return; }   // ยังไม่ได้รัน SQL: ซ่อนหัวใจ ไม่กระทบส่วนอื่น
+  const s = readAuth() && authFresh(readAuth()) ? readAuth() : await sessionOrNull();
+  if (!s) return;
+  try {
+    const rows = await (await rest("/krathong_likes?select=krathong_id&krathong_id=in.(" + ids.join(",") + ")", {auth:true})).json();
+    const mineNow = new Set(rows.map(r => r.krathong_id));
+    ids.forEach(id => { if (mineNow.has(id)) likes.mine.add(id); else likes.mine.delete(id); });
+  } catch (_) {}
+}
+function renderLike(pop) {
+  const b = $("likeBtn");
+  b.hidden = !likes.ok || !viewId;
+  if (b.hidden) return;
+  const liked = likes.mine.has(viewId), n = likes.counts.get(viewId);
+  b.setAttribute("aria-pressed", String(liked));
+  b.querySelector(".heart").textContent = liked ? "♥" : "♡";
+  $("likeN").textContent = n == null ? "–" : String(n);
+  $("likeLbl").textContent = liked ? "ยกเลิกหัวใจ" : "กดหัวใจ";
+  b.disabled = likes.busy.has(viewId);
+  if (pop) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
+}
+async function toggleLike() {
+  const id = viewId;
+  if (!id || likes.busy.has(id)) return;
+  $("likeMsg").textContent = "";
+  likes.busy.add(id); renderLike();                         // ล็อกก่อน await กันกดซ้ำ
+  const s = await sessionOrNull();
+  if (!s) { likes.busy.delete(id); renderLike(); $("likeMsg").textContent = "ยืนยันตัวตนไม่สำเร็จ ลองใหม่อีกครั้ง"; return; }
+  const was = likes.mine.has(id), prevN = likes.counts.get(id) || 0;
+  if (was) likes.mine.delete(id); else likes.mine.add(id);
+  likes.counts.set(id, Math.max(0, prevN + (was ? -1 : 1)));
+  renderLike(!was);
+  try {
+    if (was) await rest("/krathong_likes?krathong_id=eq." + encodeURIComponent(id) + "&user_id=eq." + encodeURIComponent(s.user.id), {method:"DELETE", auth:true});
+    else {
+      try { await rest("/krathong_likes", {method:"POST", auth:true, headers:{Prefer:"return=minimal"}, body:{krathong_id:id, user_id:s.user.id}}); }
+      catch (e) { if (e.status !== 409) throw e; }          // กดไปแล้ว (เช่นจากอีกแท็บ) = ถือว่าสำเร็จ
+    }
+  } catch (e) {
+    if (was) likes.mine.add(id); else likes.mine.delete(id);   // rollback
+    likes.counts.set(id, prevN);
+    if (viewId === id) $("likeMsg").textContent = e.status === 429 ? "กดเร็วเกินไป รอสักครู่" : "บันทึกหัวใจไม่สำเร็จ ลองใหม่อีกครั้ง";
+  } finally {
+    likes.busy.delete(id);
+    await refreshLikes([id]);                                   // ยึดค่าจากฐานข้อมูลเป็นหลัก
+    if (viewId === id) renderLike();
+  }
+}
+$("likeBtn").onclick = toggleLike;
+
+/* =========================================================
+   กระทงของฉัน: อ่านผ่าน RPC my_krathongs (owner_id ถูกซ่อนจากการอ่านตรง)
+   ========================================================= */
+var mine = {rows:[], loading:false, done:false, err:"", before:null, gen:0};
+const MINE_PAGE = 20;
+function openMine() {
+  mine.rows = []; mine.done = false; mine.err = ""; mine.before = null; mine.gen++;
+  openModal($("mineModal"), $("mineDialog"));
+  loadMine();
+}
+async function loadMine() {
+  if (mine.loading) return;
+  const gen = mine.gen;
+  mine.loading = true; mine.err = ""; renderMine();
+  try {
+    try { await ensureSession(); }
+    catch (e) { throw Object.assign(new Error("auth"), {status:e && e.status >= 400 && e.status < 500 ? 401 : 0}); }
+    const rows = await (await rest("/rpc/my_krathongs", {method:"POST", auth:true, body:{p_limit:MINE_PAGE, p_before:mine.before}})).json();
+    if (gen !== mine.gen) return;
+    mine.rows.push(...rows);
+    if (rows.length) mine.before = rows[rows.length - 1].created_at;
+    mine.done = rows.length < MINE_PAGE;
+    rows.forEach(r => likes.counts.set(r.id, Number(r.like_count) || 0));
+  } catch (e) {
+    if (gen !== mine.gen) return;
+    mine.err = e.status === 404 ? "ระบบกระทงของฉันยังไม่พร้อมใช้งาน" :
+               e.status === 401 || e.status === 403 ? "ยืนยันตัวตนแบบไม่ระบุตัวตนไม่สำเร็จ ลองใหม่อีกครั้ง (หากยังไม่ได้ ผู้ดูแลอาจยังไม่ได้เปิดระบบนี้)" :
+               e.status ? readableError(e) : "เชื่อมต่อไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่";
+  } finally { if (gen === mine.gen) { mine.loading = false; renderMine(); } }
+}
+function mineCard(r, floating) {
+  const bad = r.blocked, n = likes.counts.has(r.id) ? likes.counts.get(r.id) : Number(r.like_count) || 0;
+  const badge = bad ? '<span class="badge bad">ถูกระงับ</span>' : floating ? '<span class="badge">กำลังลอยอยู่</span>' : '<span class="badge past">ลอยผ่านไปแล้ว</span>';
+  const inner = `<span class="thumb">${krathongSVG(decode(r.flower), {anim:false})}</span><span><p class="wish">${bad ? "ข้อความนี้ถูกระงับโดยระบบคำต้องห้าม" : escapeHTML(r.wish)}</p><span class="meta">${badge}<span>${escapeHTML(dateLabel(r.created_at))}</span><span class="hrt">♥ ${n}</span></span></span>`;
+  return floating ? `<button type="button" class="mine-card" data-go="${escapeHTML(r.id)}" aria-label="ไปที่กระทงบนแม่น้ำ">${inner}</button>` : `<div class="mine-card">${inner}</div>`;
+}
+function renderMine() {
+  const body = $("mineBody");
+  if (mine.loading && !mine.rows.length) { body.innerHTML = '<div class="mine-state">กำลังโหลดกระทงของคุณ…</div>'; return; }
+  if (mine.err && !mine.rows.length) { body.innerHTML = `<div class="mine-state">${escapeHTML(mine.err)}<br><button class="secondary" id="mineRetry" type="button">ลองใหม่</button></div>`; $("mineRetry").onclick = loadMine; return; }
+  if (!mine.rows.length) { body.innerHTML = '<div class="mine-state">ยังไม่มีกระทงที่ปล่อยจากเบราว์เซอร์นี้<br><button class="secondary" id="mineMake" type="button">สร้างกระทง</button></div>'; $("mineMake").onclick = () => { closeModal(); openCreate(); }; return; }
+  const isFloat = r => !r.blocked && items.has(r.id) && !items.get(r.id).striking;
+  const fl = mine.rows.filter(isFloat), hist = mine.rows.filter(r => !isFloat(r));
+  let h = "";
+  if (fl.length) h += `<div class="mine-h">กำลังลอยอยู่ <small>${fl.length} ใบ · แตะเพื่อไปดูบนแม่น้ำ</small></div>` + fl.map(r => mineCard(r, true)).join("");
+  if (hist.length) h += `<div class="mine-h">ประวัติ <small>${hist.length} ใบ</small></div>` + hist.map(r => mineCard(r, false)).join("");
+  if (mine.err) h += `<div class="mine-state">${escapeHTML(mine.err)}</div>`;
+  if (!mine.done) h += `<div class="mine-state"><button class="secondary" id="mineMore" type="button"${mine.loading ? " disabled" : ""}>${mine.loading ? "กำลังโหลด…" : "ดูเพิ่มเติม"}</button></div>`;
+  body.innerHTML = h;
+  if ($("mineMore")) $("mineMore").onclick = loadMine;
+}
+$("mineBody").addEventListener("click", e => {
+  const b = e.target.closest("[data-go]");
+  if (b) goToKrathong(b.dataset.go);
+});
+function tryHighlight(it) {                // ไฮไลต์เมื่อกระทงอยู่ในจอ (ไม่ขยับกระทง ไม่แตะระบบลาก)
+  if (reduceMotion.matches || (it.x > .1 && it.x < .9)) {
+    it.hlWait = 0; it.el.classList.add("hl"); setStatus("");
+    clearTimeout(it.hlTimer); it.hlTimer = setTimeout(() => it.el.classList.remove("hl"), 3800);
+    return true;
+  }
+  if (Date.now() - it.hlWait > 60000) it.hlWait = 0;
+  return false;
+}
+function goToKrathong(id) {
+  closeModal();
+  const it = items.get(id);
+  if (!it) return;
+  setTimeout(() => {
+    $("water").scrollIntoView({behavior:reduceMotion.matches ? "auto" : "smooth", block:"center"});
+    it.hlWait = Date.now();
+    if (!tryHighlight(it)) setStatus("กระทงของคุณลอยพ้นขอบจอ กำลังจะลอยกลับเข้ามา…");
+  }, 60);
+}
+$("mineBtn").onclick = openMine;
+$("mineClose").onclick = closeModal;
+window.addEventListener("online", () => { sessionOrNull(); });
+sessionOrNull();   // เปิดเว็บ: ตรวจ session ถ้ายังไม่มีให้ล็อกอินแบบ anonymous (ครั้งเดียว)
+
 loadKrathongs();
 setInterval(() => { if (!document.hidden && !saving) loadKrathongs(true); }, 20000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !saving) loadKrathongs(true); });
