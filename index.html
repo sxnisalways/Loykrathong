@@ -461,6 +461,17 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 .badge{display:inline-block;padding:1px 9px;border-radius:99px;font-size:11.5px;border:1px solid #f5c66b55;color:#ffeab5}
 .badge.past{border-color:#ffffff30;color:#bcd0da}
 .badge.bad{border-color:#ffb4a888;color:#ffb4a8}
+.mine-item{margin:0 0 10px}
+.mine-item .mine-card{margin:0}
+.mine-act{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:4px 8px;padding:5px 4px 0}
+.share-btn{min-height:36px;padding:4px 13px;border-radius:99px;background:transparent;border:1px solid #ffffff2e;color:var(--muted);font-size:12.5px;font-weight:500;line-height:1.5;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+.share-btn:hover,.share-btn:focus-visible{border-color:#f5c66b99;color:var(--gold);background:#f5c66b12}
+.share-msg{font-size:12px;color:#ffeab5;margin-right:auto}
+.share-msg.bad{color:#ffb4a8}
+.share-url{flex:1 0 100%;min-width:0;box-sizing:border-box;padding:6px 10px;border-radius:10px;border:1px solid #ffffff2e;background:#04101f99;color:var(--cream);font-size:13px}
+.view-note{margin:8px 0 0;text-align:center;font-size:13px;color:var(--muted)}
+#shareNote{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);z-index:40;max-width:min(92vw,420px);padding:10px 18px;border-radius:14px;background:#071d33f2;border:1px solid #f5c66b88;color:var(--cream);font-size:14px;line-height:1.6;text-align:center;box-shadow:0 8px 30px #000a;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s,transform .25s,visibility .25s}
+#shareNote.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
 .mine-state{padding:22px 4px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
 .mine-state .secondary{margin-top:10px;min-height:44px}
 .mine-note{position:relative;z-index:1;margin:0;padding:8px 24px 10px;font-size:11.5px;line-height:1.6;color:#9fb9c8}
@@ -623,11 +634,14 @@ body.viewing .moon{top:max(64px,9vh)}
       <p class="view-wish" id="viewWish"></p>
       <div class="view-by" id="viewBy"></div>
       <div class="view-date" id="viewDate"></div>
+      <p class="view-note" id="viewNote" hidden></p>
       <div class="view-like"><button class="like-btn" id="likeBtn" type="button" aria-pressed="false" hidden><span class="heart" aria-hidden="true">♡</span><b id="likeN">0</b><span class="sr-only" id="likeLbl">กดหัวใจ</span></button><span class="like-msg" id="likeMsg" role="status" aria-live="polite"></span></div>
     </div>
     <div class="dlg-actions"><button class="secondary" id="viewClose" type="button">ปิด</button><button class="primary" id="viewMake" type="button">สร้างกระทงบ้าง</button></div>
   </div>
 </div>
+
+<p id="shareNote" role="status" aria-live="polite"></p>
 
 <!-- My krathongs -->
 <div class="modal" id="mineModal" role="presentation">
@@ -1223,6 +1237,7 @@ function render() {
   $("showMore").hidden = visibleCount >= list.length;
   if (typeof scheduleLikes === "function") scheduleLikes();
 }
+const KID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 async function api(query, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
@@ -1776,6 +1791,7 @@ function openWish(w) {
   $("viewBy").textContent = "— " + (w.display_name || "ไม่ระบุชื่อ");
   $("viewDate").textContent = dateLabel(w.created_at);
   hideHint();
+  $("viewNote").hidden = true; $("viewNote").textContent = "";
   viewId = w.id; $("likeMsg").textContent = "";
   renderLike();
   openModal($("wishModal"), $("wishDialog"));
@@ -2242,7 +2258,10 @@ function mineCard(r, floating) {
   const bad = r.blocked, n = likes.counts.has(r.id) ? likes.counts.get(r.id) : Number(r.like_count) || 0;
   const badge = bad ? '<span class="badge bad">ถูกระงับ</span>' : floating ? '<span class="badge">กำลังลอยอยู่</span>' : '<span class="badge past">ลอยผ่านไปแล้ว</span>';
   const inner = `<span class="thumb">${krathongSVG(decode(r.flower), {anim:false})}</span><span><p class="wish">${bad ? "ข้อความนี้ถูกระงับโดยระบบคำต้องห้าม" : escapeHTML(r.wish)}</p><span class="meta">${badge}<span>${escapeHTML(dateLabel(r.created_at))}</span><span class="hrt">♥ ${n}</span></span></span>`;
-  return floating ? `<button type="button" class="mine-card" data-go="${escapeHTML(r.id)}" aria-label="ไปที่กระทงบนแม่น้ำ">${inner}</button>` : `<div class="mine-card">${inner}</div>`;
+  const card = floating ? `<button type="button" class="mine-card" data-go="${escapeHTML(r.id)}" aria-label="ไปที่กระทงบนแม่น้ำ">${inner}</button>` : `<div class="mine-card">${inner}</div>`;
+  if (bad || !KID_RE.test(String(r.id))) return card;
+  const canShare = typeof navigator.share === "function";
+  return `<div class="mine-item">${card}<div class="mine-act" data-id="${escapeHTML(r.id)}"><span class="share-msg" role="status" aria-live="polite"></span>${canShare ? '<button type="button" class="share-btn" data-share>แชร์</button>' : ""}<button type="button" class="share-btn" data-copy>คัดลอกลิงก์</button></div></div>`;
 }
 function renderMine() {
   const body = $("mineBody");
@@ -2477,7 +2496,105 @@ function exitView() {
   document.addEventListener("keydown", e => { if (e.key === "Escape" && VM.on && !activeModal) exitView(); }, true);   // ดักก่อน: ถ้ามีหน้าต่างเปิดอยู่ ให้ Escape ปิดหน้าต่างก่อน
 })();
 
-loadKrathongs();
+/* =========================================================
+   แชร์กระทง: ลิงก์ ?krathong=ID (ใช้ id จริงของกระทง ไม่มี owner_id)
+   - ปุ่มแชร์อยู่ในการ์ด "กระทงของฉัน" เท่านั้น
+   - เปิดลิงก์: ตรวจรูปแบบ uuid -> อ่านแถวเดียวด้วยสิทธิ์อ่านสาธารณะ (anon) -> ไม่เขียนอะไรลงฐานข้อมูล
+   ========================================================= */
+const SHARE_TEXT = "กระทงของฉันในเทศกาลลอยกระทง THE MOON IS SHINING";
+const SHARE_FALLBACK_ORIGIN = "https://loykrathong.riverlight.workers.dev";
+function shareUrl(id) {
+  const base = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : SHARE_FALLBACK_ORIGIN + "/";
+  return base + "?krathong=" + encodeURIComponent(id);
+}
+async function copyText(text) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (_) {}
+  const prev = document.activeElement;
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;font-size:16px";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return !!ok;
+  } catch (_) { return false; }
+  finally { try { if (prev && prev.focus) prev.focus({preventScroll:true}); } catch (_) {} }
+}
+function shareMsg(act, text, bad) {
+  const m = act.querySelector(".share-msg");
+  if (!m) return;
+  m.textContent = text; m.classList.toggle("bad", !!bad);
+  clearTimeout(m._t); m._t = setTimeout(() => { m.textContent = ""; }, 3500);
+}
+$("mineBody").addEventListener("click", async e => {
+  const b = e.target.closest("[data-share],[data-copy]");
+  if (!b) return;
+  const act = b.closest(".mine-act"), id = act && act.dataset.id;
+  if (!id || !KID_RE.test(id)) return;
+  const url = shareUrl(id);
+  if (b.hasAttribute("data-share")) {
+    try { await navigator.share({title:"THE MOON IS SHINING", text:SHARE_TEXT, url}); return; }
+    catch (err) { if (err && err.name === "AbortError") return; }     // ผู้ใช้ยกเลิก = ไม่ทำอะไร อย่างอื่น = ถอยไปคัดลอกลิงก์
+  }
+  if (await copyText(url)) { shareMsg(act, "คัดลอกลิงก์แล้ว"); return; }
+  shareMsg(act, "คัดลอกอัตโนมัติไม่ได้ กดค้างที่ลิงก์เพื่อคัดลอก", true);
+  if (act.isConnected && !act.querySelector(".share-url")) {
+    const inp = document.createElement("input");
+    inp.className = "share-url"; inp.readOnly = true; inp.value = url; inp.setAttribute("aria-label", "ลิงก์กระทง");
+    inp.addEventListener("focus", () => inp.select());
+    act.appendChild(inp);
+  }
+});
+
+function shareNote(text) {
+  const el = $("shareNote");
+  el.textContent = text; el.classList.add("show");
+  clearTimeout(shareNote.t); shareNote.t = setTimeout(() => el.classList.remove("show"), 7000);
+}
+function dropSharedParam() {
+  try {
+    const p = new URLSearchParams(location.search); p.delete("krathong");
+    const q = p.toString();
+    history.replaceState(history.state, "", location.pathname + (q ? "?" + q : "") + location.hash);
+  } catch (_) {}
+}
+async function openSharedLink() {
+  try {
+    let raw = null;
+    try { const p = new URLSearchParams(location.search); if (p.has("krathong")) raw = p.get("krathong"); } catch (_) {}
+    if (raw == null) return;
+    const id = raw.trim();
+    if (!KID_RE.test(id)) { shareNote("ลิงก์กระทงนี้ไม่ถูกต้อง"); dropSharedParam(); return; }
+    let row = null;
+    try {
+      const get = cols => api("?select=" + cols + "&id=eq." + id + "&limit=1").then(r => r.json());
+      let rows;
+      try { rows = await get(COLUMNS); }
+      catch (e) { if (e.status === 400 && COLUMNS.includes(",blocked")) rows = await get(COLUMNS.replace(",blocked", "")); else throw e; }
+      row = Array.isArray(rows) && rows.length ? rows[0] : null;
+    } catch (_) {
+      shareNote("เปิดกระทงจากลิงก์ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วรีเฟรชหน้าอีกครั้ง");
+      return;                                                  // คงลิงก์ไว้ให้รีเฟรชลองใหม่ได้
+    }
+    dropSharedParam();
+    if (!row || row.blocked || typeof row.wish !== "string" || String(row.id).toLowerCase() !== id.toLowerCase()) {
+      shareNote("ไม่พบกระทงใบนี้ อาจถูกลบไปแล้วหรือไม่สามารถแสดงได้");
+      return;
+    }
+    const it = items.get(row.id);
+    if (it && !it.striking) {                                  // ลอยอยู่ในแม่น้ำ: เลื่อนไปหา ไฮไลต์ แล้วเปิดคำอธิษฐาน
+      $("water").scrollIntoView({behavior:"auto", block:"center"});
+      it.hlWait = Date.now(); tryHighlight(it);
+      setTimeout(() => { if (!activeModal) openWish(row); }, 1000);
+    } else {                                                   // ลอยผ่านไปแล้ว: เปิดคำอธิษฐานพร้อมหมายเหตุ ไม่แตะระบบลอย
+      openWish(row);
+      $("viewNote").textContent = "กระทงใบนี้ลอยผ่านไปแล้ว"; $("viewNote").hidden = false;
+    }
+  } catch (_) { shareNote("เปิดกระทงจากลิงก์ไม่สำเร็จ"); }
+}
+
+loadKrathongs().then(openSharedLink, openSharedLink);
 setInterval(() => { if (!document.hidden && !saving) loadKrathongs(true); }, 20000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !saving) loadKrathongs(true); });
 window.addEventListener("online", () => { if (!saving) loadKrathongs(); });
