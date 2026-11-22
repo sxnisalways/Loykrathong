@@ -150,6 +150,7 @@ button:disabled{opacity:.6;cursor:wait}
 .kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%;will-change:transform}
 .kr:not(.mine) :is(.flame,.glow,.streak,.ripple),.kr.is-drag :is(.flame,.glow,.streak,.ripple){animation:none}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
+.kr-3d{aspect-ratio:200/164;object-fit:contain;-webkit-user-drag:none}   /* ต้นแบบ 3D (?3d=1): อัตราส่วนเท่า SVG เดิม จึงไม่ทำให้เลย์เอาต์/ป้ายชื่อเลื่อน */
 .kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:13px;font-weight:500;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
 .kr.mine .kr-name{background:var(--gold);color:#1b2a30;border-color:transparent;font-weight:700}
 @keyframes krIn{from{opacity:0}to{opacity:1}}
@@ -275,7 +276,8 @@ textarea{min-height:100px;resize:vertical;line-height:1.6}
 .held-kr{position:absolute;left:0;top:0;transform-origin:50% 50%;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;pointer-events:auto;animation:heldIn .8s ease both}
 .held-bob{animation:heldBob 4.6s ease-in-out infinite;transform-origin:50% 85%}
 .held-kr svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
-.held-kr.pop svg{animation:heldPop .6s ease both}
+.held-kr.pop svg,.held-kr.pop img{animation:heldPop .6s ease both}
+.held-kr img{display:block;width:100%;pointer-events:none}
 .held-ui{position:absolute;left:0;right:0;text-align:center;animation:heldIn .8s ease both}
 .held-hint{font-size:13px;line-height:1.5;color:#ffeab5;text-shadow:0 1px 8px #000d,0 0 12px #000a;animation:heldPulse 2.4s ease-in-out infinite}
 .held-err{font-size:12px;line-height:1.5;color:#ffb4a8;text-shadow:0 1px 6px #000d;margin-top:2px;overflow-wrap:anywhere;padding:0 16px}
@@ -299,7 +301,7 @@ body.holding .kr-rip{opacity:.6}
 @keyframes heldBob{0%,100%{transform:translateY(0) rotate(-.7deg)}50%{transform:translateY(-3px) rotate(.7deg)}}
 @keyframes heldPulse{0%,100%{opacity:.75}50%{opacity:1}}
 @keyframes heldPop{from{opacity:.55;filter:brightness(.8)}to{opacity:1;filter:none}}
-@media(prefers-reduced-motion:reduce){.held,.held-bob,.held-hint,.held-kr.pop svg,.held-kr,.held-glow,.held-rip:before,.held-rip:after{animation:none}.held-rip:before,.held-rip:after{opacity:.3}}
+@media(prefers-reduced-motion:reduce){.held,.held-bob,.held-hint,.held-kr.pop svg,.held-kr.pop img,.held-kr,.held-glow,.held-rip:before,.held-rip:after{animation:none}.held-rip:before,.held-rip:after{opacity:.3}}
 
 /* ---------- MODAL v2: กระจกน้ำเงิน + ลายไทยมุม + กรอบพรีวิว + การ์ดมน (เปลี่ยนเฉพาะหน้าตา ไม่แตะ ID/คลาสที่ JS ใช้) ---------- */
 .modal{background:radial-gradient(ellipse 80% 60% at 50% 0%,#0d2a4acc,#02070fe6 70%)}
@@ -862,8 +864,29 @@ function leafSVG(style, w, h, fid, LC, u, v) {
 }
 
 /* ---------- ประกอบกระทง ---------- */
+/* ---------- ต้นแบบกระทง 3D Stylized: เปิดเฉพาะเมื่อ URL มี ?3d=1 ----------
+   รูป PNG โปร่งใส 1 ใบ ใช้แทนรูปกระทงเดิม "เฉพาะส่วนแสดงผล" ของกระทงในแม่น้ำและกระทงที่ถืออยู่ (ใช้ object เดิม ไม่มี loop/ระบบใหม่)
+   ถ้าไม่มีไฟล์/โหลดไม่สำเร็จ = ใช้ SVG เดิมต่อไปอัตโนมัติ  ไฟล์: assets/krathong-lotus-3d.png (สเปกใน ASSET-SPEC-3D.md) */
+const K3D = {on:false, ok:false, src:"assets/krathong-lotus-3d.png"};
+try { K3D.on = new URLSearchParams(location.search).get("3d") === "1"; } catch (_) {}
+function k3dImg() { return '<img class="kr-svg kr-3d" src="' + K3D.src + '" alt="" decoding="async" draggable="false">'; }
+function k3dSwap() {                       // ไฟล์โหลดเสร็จหลังมีกระทงอยู่แล้ว: สลับเฉพาะรูปในกระทงเดิม ไม่สร้าง object ใหม่
+  items.forEach(it => {
+    const sv = it.el.querySelector(".kr-bob > svg.kr-svg");
+    if (sv) { sv.outerHTML = k3dImg(); it.svgEl = null; }
+  });
+  if (!$("held").hidden) renderHeld(false);
+}
+function k3dLoad() {
+  if (!K3D.on) return;
+  const im = new Image();
+  im.onload = () => { if (im.naturalWidth > 0) { K3D.ok = true; try { k3dSwap(); } catch (_) {} } };
+  im.onerror = () => { K3D.ok = false; };
+  im.src = K3D.src;
+}
 function krathongSVG(spec, opt) {
   opt = opt || {};
+  if (opt.k3d && K3D.on && K3D.ok) return k3dImg();
   const u = "k" + (++svgSeq), A = opt.anim !== false, LIT = opt.lit !== false;
   const F = FLAMES[spec.m - 1] || FLAMES[0];
   const B = BASES[spec.b - 1] || BASES[0];
@@ -1503,7 +1526,7 @@ function addItem(w, index, fresh, mine) {
   el.setAttribute("role", "button");
   el.tabIndex = 0;
   el.setAttribute("aria-label", "อ่านคำอธิษฐานของ " + name);
-  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
+  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true, k3d:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
   river.appendChild(el);
   const it = {id:w.id, wish:w, el, x:.5, y:.5, w:KW, h:0, drag:false, hover:false, moved:false, placed:false, fresh:!!(fresh || mine)};
   it.h = el.offsetHeight || KW * .6;
@@ -1512,7 +1535,7 @@ function addItem(w, index, fresh, mine) {
   if (mine && heldPos) {
     // ปล่อยจากตำแหน่งที่ถืออยู่: เริ่มกึ่งกลางเดิม แล้วลอยต่อตามเส้นทางของมันช้า ๆ
     it.zoom = reduceMotion.matches ? 1 : heldPos.zoom; it.x = heldPos.x; it.y = heldPos.y; it.sc = depthScale(it.y); place(it);
-    const sv = el.querySelector(".kr-bob > svg"), rc = river.getBoundingClientRect();
+    const sv = el.querySelector(".kr-bob > svg, .kr-bob > img.kr-3d"), rc = river.getBoundingClientRect();
     if (sv) { const r = sv.getBoundingClientRect(); it.y -= ((r.top + r.height / 2 - rc.top) - heldPos.cy) / H; it.sc = depthScale(it.y); place(it); }
     it.placed = true; reanchor(it);
     flowAt(it, flowClock(), isLite()); applyFx(it); place(it);
@@ -1954,7 +1977,7 @@ let heldState = "dark";   // dark = ยังไม่จุดเทียน, 
 const HELD_HINT = {dark:"แตะเพื่อจุดเทียน", lit:"แตะอีกครั้งเพื่อปล่อยกระทง"};
 function renderHeld(pop) {
   const kr = $("heldKr");
-  $("heldBob").innerHTML = krathongSVG(design, {anim:true, lit:heldState === "lit"});
+  $("heldBob").innerHTML = krathongSVG(design, {anim:true, lit:heldState === "lit", k3d:true});
   kr.classList.remove("pop"); if (pop) { void kr.offsetWidth; kr.classList.add("pop"); }
   kr.setAttribute("aria-label", HELD_HINT[heldState]);
   $("heldHint").textContent = HELD_HINT[heldState];
@@ -2594,6 +2617,7 @@ async function openSharedLink() {
   } catch (_) { shareNote("เปิดกระทงจากลิงก์ไม่สำเร็จ"); }
 }
 
+k3dLoad();
 loadKrathongs().then(openSharedLink, openSharedLink);
 setInterval(() => { if (!document.hidden && !saving) loadKrathongs(true); }, 20000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !saving) loadKrathongs(true); });
