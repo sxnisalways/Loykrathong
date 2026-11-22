@@ -594,11 +594,27 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
 .card-top [data-cback]{min-height:40px;border-color:#ffffff33;color:var(--cream)}
 /* ซ่อนข้อความความเป็นส่วนตัวซ้ำเฉพาะตอนดู Share Card (ถ้าเบราว์เซอร์ไม่รองรับ :has จะแสดงตามเดิม) */
 #mineDialog:has(#cardPanel:not([hidden])) .mine-note{display:none}
-/* Phase 3: สถิติ — ลดกรอบ ใช้พื้นผิว+ตัวเลข; กรอบเหลือเฉพาะการ์ดที่กดได้ */
-.ms-card{border:0;box-shadow:none;background:var(--color-surface);border-radius:var(--r-card)}
-.ms-top:not(:disabled){border:1px solid #f5c66b33}
-.ms-top:not(:disabled):hover{border-color:#f5c66b80}
+/* Phase 3: สถิติ — ไม่มีการ์ด: ตัวเลขใหญ่บนพื้นหลังฉาก คั่นด้วยเส้นบาง + กราฟเส้นบาง */
+.ms-grid{gap:26px 0}
+.ms-card{background:none;border:0;border-radius:0;box-shadow:none;padding:2px 12px 2px 0}
+.ms-card:nth-child(2),.ms-card:nth-child(4){border-left:1px solid var(--color-border-subtle);padding-left:22px}
+@media(min-width:900px){.ms-card:nth-child(3){border-left:1px solid var(--color-border-subtle);padding-left:22px}.ms-card{padding-right:18px}}
 .ms-k{font-family:var(--sans);font-weight:500;font-size:13px;color:var(--color-text-secondary)}
+.ms-v{font-size:clamp(38px,9vw,56px);line-height:1.1;margin:2px 0 4px;font-weight:600}
+.ms-v.ms-sm{font-size:clamp(22px,5.4vw,30px);line-height:1.3}
+.ms-top{min-height:0;border-radius:0}
+.ms-top:not(:disabled):hover #msTopN,.ms-top:not(:disabled):focus-visible #msTopN{text-decoration:underline;text-decoration-color:#f5c66b80;text-underline-offset:5px}
+.ms-tl{border:0!important;padding:10px 0 0!important;margin-top:4px}
+.ms-tl svg{height:92px;margin-top:10px;overflow:visible}
+.ms-line{fill:none;stroke:var(--gold);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.ms-area{fill:#f5c66b14;stroke:none}
+.ms-hit{fill:transparent}
+.ms-tl{position:relative}
+.ms-tl svg{border-bottom:1px solid var(--color-border-subtle)}
+.ms-axis{margin-top:6px}
+/* แก้รูปกระทงในหน้าต่างคำอธิษฐานถูกตัด: svg เต็มกรอบ 190px แล้ว viewBox จัดกลางทั้งใบ */
+.view-scene{position:relative}
+.view-scene svg{position:absolute;inset:0;width:100%;height:100%}
 /* Phase 5: ปุ่มมุมขวาบนของ hero เบาลง (ไม่แตะฉาก/ชื่อเรื่อง/CTA) */
 .top-link,.sound-btn{border-color:#ffffff26;background:#04101f4d}
 .moon-info b{font-size:clamp(13px,1.6vw,16px)}
@@ -2433,10 +2449,11 @@ function msRender(d) {
   $("msTopH").textContent = t ? "♥ " + msFmt(t.n) + " หัวใจ" : "รอหัวใจดวงแรก";
   const tl = Array.isArray(d.timeline) ? d.timeline.map(x => ({t:Date.parse(x.t), n:msNum(x.n)})).filter(x => Number.isFinite(x.t)) : [];
   const max = Math.max(1, ...tl.map(x => x.n)), w = 240 / Math.max(1, tl.length);
-  $("msChart").innerHTML = tl.map((x, i) => {
-    const h = x.n ? Math.max(4, Math.round(x.n / max * 60)) : 2;
-    return '<rect class="ms-bar' + (x.n ? "" : " z") + '" x="' + (i * w + w * .18).toFixed(1) + '" y="' + (64 - h) + '" width="' + (w * .64).toFixed(1) + '" height="' + h + '" rx="1.5"><title>' + escapeHTML(msTime(x.t) + " · " + x.n + " กระทง") + '</title></rect>';
-  }).join("");
+  const sx = i => ((i + .5) * w).toFixed(1), sy = n => (60 - (max ? n / max * 52 : 0)).toFixed(1);
+  const pts = tl.map((x, i) => sx(i) + " " + sy(x.n));
+  $("msChart").innerHTML = (tl.length ? '<path class="ms-area" d="M' + sx(0) + ' 64 L' + pts.join(" L") + ' L' + sx(tl.length - 1) + ' 64Z"/><path class="ms-line" d="M' + pts.join(" L") + '"/>' : "") + tl.map((x, i) =>
+    '<rect class="ms-hit" x="' + (i * w).toFixed(1) + '" y="0" width="' + w.toFixed(1) + '" height="64"><title>' + escapeHTML(msTime(x.t) + " · " + x.n + " กระทง") + '</title></rect>'
+  ).join("");
   $("msA0").textContent = tl.length ? msTime(tl[0].t) : ""; $("msA1").textContent = tl.length ? msTime(tl[tl.length - 1].t) : "";
   $("msChart").setAttribute("aria-label", "กราฟจำนวนกระทงรายชั่วโมง รวม " + tl.reduce((a, x) => a + x.n, 0) + " กระทงใน 24 ชั่วโมง");
 }
@@ -2881,9 +2898,14 @@ function cardDraw(id, key, art, d) {
   for (const ln of fit.lines) { c.fillText(ln, W / 2, y); y += fit.size * 1.6; }
   const [yN, yD, yS] = L.foot;                                                      // ท้ายการ์ด
   if (d.name) {
-    let ns = 36; c.font = "600 " + ns + "px " + serif;
-    while (ns > 20 && c.measureText("— " + d.name + " —").width > 880) { ns -= 2; c.font = "600 " + ns + "px " + serif; }
-    c.fillStyle = "#f5c66b"; c.fillText("— " + d.name + " —", W / 2, yN);
+    let ns = 36, tw;
+    const runs = ["—", d.name, "—"], mw = () => { const g = ns * .3; return runs.map(t => c.measureText(t).width).reduce((a, b) => a + b, 0) + g * 2; };
+    c.font = "600 " + ns + "px " + serif; tw = mw();
+    while (ns > 20 && tw > 880) { ns -= 2; c.font = "600 " + ns + "px " + serif; tw = mw(); }
+    c.fillStyle = "#f5c66b"; c.textAlign = "left";                                     // จัดกึ่งกลางเองทีละช่วง: Safari จัดข้อความผสมไทย/ขีดผิดตำแหน่ง
+    let nx = W / 2 - tw / 2;
+    for (const t of runs) { c.fillText(t, nx, yN); nx += c.measureText(t).width + ns * .3; }
+    c.textAlign = "center";
   }
   c.fillStyle = "#b9ccd8"; c.font = "400 28px " + sans; if (d.date) c.fillText(d.date, W / 2, d.name ? yD : yN);
   c.fillStyle = "#86a3b4"; c.font = "400 24px " + sans; c.fillText(CARD_SITE, W / 2, yS);
