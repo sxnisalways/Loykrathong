@@ -866,8 +866,8 @@ function leafSVG(style, w, h, fid, LC, u, v) {
 /* ---------- ประกอบกระทง ---------- */
 /* ---------- ต้นแบบกระทง 3D Stylized: เปิดเฉพาะเมื่อ URL มี ?3d=1 ----------
    รูป PNG โปร่งใส 1 ใบ ใช้แทนรูปกระทงเดิม "เฉพาะส่วนแสดงผล" ของกระทงในแม่น้ำและกระทงที่ถืออยู่ (ใช้ object เดิม ไม่มี loop/ระบบใหม่)
-   ถ้าไม่มีไฟล์/โหลดไม่สำเร็จ = ใช้ SVG เดิมต่อไปอัตโนมัติ  ไฟล์: assets/krathong-lotus-3d.png (สเปกใน ASSET-SPEC-3D.md) */
-const K3D = {on:false, ok:false, src:"assets/krathong-lotus-3d.png"};
+   ถ้าไม่มีไฟล์/โหลดไม่สำเร็จ = ใช้ SVG เดิมต่อไปอัตโนมัติ  ไฟล์: krathong-lotus-3d.png (วางข้าง index.html) (สเปกใน ASSET-SPEC-3D.md) */
+const K3D = {on:false, ok:false, src:"krathong-lotus-3d.png"};
 try { K3D.on = new URLSearchParams(location.search).get("3d") === "1"; } catch (_) {}
 function k3dImg() { return '<img class="kr-svg kr-3d" src="' + K3D.src + '" alt="" decoding="async" draggable="false">'; }
 function k3dSwap() {                       // ไฟล์โหลดเสร็จหลังมีกระทงอยู่แล้ว: สลับเฉพาะรูปในกระทงเดิม ไม่สร้าง object ใหม่
