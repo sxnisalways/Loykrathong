@@ -54,9 +54,9 @@ button:disabled{opacity:.6;cursor:wait}
 @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.85}}
 .moon{position:absolute;z-index:-4;right:var(--moon-right);top:74px;width:var(--moon-size);aspect-ratio:1;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#fffbe8 0,#ffe9ae 55%,#f7d083 100%);
-  box-shadow:0 0 0 10px #ffe9ae14,0 0 40px 12px #ffdf8b55,0 0 140px 50px #ffdf8b26}
+  box-shadow:0 0 0 10px rgba(255,233,174,calc(.08*var(--glow,1))),0 0 40px 12px rgba(255,223,139,calc(.333*var(--glow,1))),0 0 140px 50px rgba(255,223,139,calc(.15*var(--glow,1)))}
 .moon.pulse{animation:moonPulse 2.4s ease-out}
-@keyframes moonPulse{0%,100%{box-shadow:0 0 0 10px #ffe9ae14,0 0 40px 12px #ffdf8b55,0 0 140px 50px #ffdf8b26}30%{box-shadow:0 0 0 14px #ffe9ae26,0 0 62px 22px #ffdf8b88,0 0 190px 70px #ffdf8b3d}}
+@keyframes moonPulse{0%,100%{box-shadow:0 0 0 10px rgba(255,233,174,calc(.08*var(--glow,1))),0 0 40px 12px rgba(255,223,139,calc(.333*var(--glow,1))),0 0 140px 50px rgba(255,223,139,calc(.15*var(--glow,1)))}30%{box-shadow:0 0 0 14px rgba(255,233,174,calc(.15*var(--glow,1))),0 0 62px 22px rgba(255,223,139,calc(.533*var(--glow,1))),0 0 190px 70px rgba(255,223,139,calc(.24*var(--glow,1)))}}
 .moon:after{content:"";position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle at 62% 58%,#d9b36a44 0 9%,transparent 10%),radial-gradient(circle at 34% 66%,#d9b36a33 0 6%,transparent 7%),radial-gradient(circle at 55% 28%,#d9b36a2a 0 5%,transparent 6%)}
 .skyline{position:absolute;z-index:-3;left:0;width:100%;bottom:var(--water-h);height:clamp(40px,7vw,80px);display:block;pointer-events:none}
@@ -467,6 +467,37 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 .kr.hl .kr-name{background:var(--gold);color:#1b2a30;box-shadow:0 0 16px #f5c66bcc;transition:all .3s}
 .kr.hl .kr-svg{filter:drop-shadow(0 0 12px #ffd98acc)}
 @media(prefers-reduced-motion:reduce){.like-btn.pop .heart{animation:none}}
+/* เฟสพระจันทร์จริง + โหมดรับชม */
+.moon-shade{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block;pointer-events:none}
+.moon-reflect{opacity:var(--glow,1)}
+.moon-info{position:absolute;z-index:2;right:max(12px,calc(var(--moon-right) - 16px));top:calc(74px + var(--moon-size) + 16px);max-width:min(250px,60vw);text-align:right;font-size:12px;line-height:1.5;color:var(--cream)}
+.moon-info[hidden]{display:none}
+.mi-main{display:block;width:100%;min-height:0;padding:6px 10px;border:1px solid #f5c66b40;border-radius:14px;background:#04101fa6;color:inherit;font:inherit;text-align:right;cursor:pointer}
+.mi-main b{display:block;font-family:var(--serif);font-size:13px;color:var(--gold);font-weight:600}
+.mi-main span{display:block;color:var(--muted);font-size:11.5px}
+.mi-more{display:none;margin-top:6px;padding:8px 12px;border:1px solid #f5c66b30;border-radius:14px;background:#04101fcc;text-align:left}
+.moon-info.open .mi-more{display:block}
+.mi-more div{margin:2px 0;color:#dbe7ec}
+.mi-more b{color:var(--gold);font-weight:600}
+.mi-note,.mi-stale{color:var(--muted);font-size:11px;line-height:1.5}
+.mi-stale{color:#f2cf86}
+.mi-stale[hidden]{display:none}
+@media(max-width:1199px){.moon-info{top:auto;bottom:12px;right:max(12px,env(safe-area-inset-right));display:flex;flex-direction:column-reverse;align-items:flex-end;font-size:11px}.moon-info .mi-more{width:min(250px,calc(100vw - 24px));margin:0 0 6px}.mi-main{width:auto;padding:4px 10px}.mi-main b{font-size:12px}.mi-main span{font-size:10.5px}}
+.view-btn .ico{display:inline-block;width:1.1em;height:1.1em;vertical-align:-.15em}
+.view-btn .ico svg{display:block;width:100%;height:100%}
+body.viewing{overflow:hidden}
+body.viewing{--water-h:56vh;--moon-size:clamp(84px,17vmin,150px)}
+@supports(height:1svh){body.viewing{--water-h:56svh}}
+body.viewing main,body.viewing footer,body.viewing .hero-inner,body.viewing .top .logo,body.viewing .top-link,body.viewing .fab,body.viewing .hint,body.viewing .river-label{display:none!important}
+body.viewing #hero{min-height:0;height:100vh;padding-bottom:0}
+@supports(height:1svh){body.viewing #hero{height:100svh}}
+body.viewing .top{justify-content:flex-end}
+body.viewing .moon{top:max(64px,9vh)}
+body.viewing .moon-info{position:absolute;display:block;left:50%;right:auto;top:auto;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(94vw,640px);max-width:none;text-align:center;font-size:12.5px;pointer-events:none}
+body.viewing .mi-main{width:100%;text-align:center;border-color:transparent;background:#04101f8c;border-radius:14px 14px 0 0;padding:6px 12px 2px}
+body.viewing .mi-more{display:flex;flex-wrap:wrap;justify-content:center;gap:0 16px;width:auto;margin:0;padding:2px 12px 8px;border-color:transparent;border-radius:0 0 14px 14px;background:#04101f8c;text-align:center}
+body.viewing .mi-note{flex-basis:100%}
+@media(prefers-reduced-motion:reduce){.moon-info *{transition:none!important}}
 /* สถิติแห่งแสงจันทร์ */
 .ms{margin-top:8px}
 .ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -498,7 +529,8 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 
 <div class="hero" id="hero">
   <div class="sky" aria-hidden="true"><div class="stars" id="stars"></div></div>
-  <div class="moon" aria-hidden="true"></div>
+  <div class="moon" aria-hidden="true"><svg class="moon-shade" id="moonShade" viewBox="-50 -50 100 100" style="display:none"><defs><filter id="mmBlur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".7"/></filter><mask id="mmMask" maskUnits="userSpaceOnUse" x="-50" y="-50" width="100" height="100"><rect x="-50" y="-50" width="100" height="100" fill="#fff"/><path id="mmLit" fill="#000" filter="url(#mmBlur)"/></mask></defs><circle r="50" fill="#030812" fill-opacity=".9" mask="url(#mmMask)"/></svg></div>
+  <div class="moon-info" id="moonInfo" hidden><button class="mi-main" id="miBtn" type="button" aria-expanded="false" aria-controls="miMore"><b id="miTh"></b><span id="miEn"></span></button><div class="mi-more" id="miMore"><div>วันนี้ <b id="miDate"></b></div><div>เดือนดับครั้งถัดไป <b id="miNew">—</b></div><div>วันเพ็ญครั้งถัดไป <b id="miFull">—</b></div><div class="mi-note">แสดงเฉพาะเฟสพระจันทร์ตามดาราศาสตร์ ยังไม่ได้แสดงวันขึ้น–แรมตามปฏิทินไทย</div><div class="mi-stale" id="miStale" hidden></div></div></div>
   <div class="fx fx-sky" id="fxSky" aria-hidden="true"></div>
   <svg class="skyline" viewBox="0 0 1200 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path fill="#040d1b" d="M0 100V86C70 76 120 90 190 82S290 76 360 84 520 90 600 88 800 84 880 84 1010 76 1090 84 1160 80 1200 86V100Z"/></svg>
   <svg class="temple" viewBox="0 0 480 300" aria-hidden="true"><defs>
@@ -510,6 +542,7 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
   <header class="top">
     <div class="logo"><span class="mark" id="logoMark" role="img" aria-label="ลอยกระทง"></span></div>
     <div class="top-actions">
+      <button class="sound-btn view-btn" id="viewBtn" type="button" aria-pressed="false" aria-label="เข้าโหมดรับชมเทศกาล"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span><span class="txt">รับชม</span></button>
       <button class="sound-btn" id="soundBtn" type="button" aria-pressed="false" aria-label="เปิดเพลงและเสียง"><span class="ico" aria-hidden="true">🔇</span><span class="txt">เปิดเสียง</span></button>
       <a class="top-link" href="#feedSection">คำอธิษฐาน</a>
     </div>
@@ -2328,6 +2361,145 @@ function statsTick() { if (MS.seen && !document.hidden) loadStats(false); }
   if ("IntersectionObserver" in window) new IntersectionObserver(es => go(es.some(e => e.isIntersecting)), {rootMargin:"200px"}).observe(sec);
   else go(true);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) statsTick(); });
+})();
+
+
+/* ---------- เฟสพระจันทร์จริง (USNO) ---------- */
+const MOON = {tz:"Asia/Bangkok", coords:"13.75,100.5", key:"loy:moon:v1", timeout:8000, retryMs:30 * 60000, data:null, shown:null, busy:false, lastFail:0, raf:0};
+const MOON_TH = {"New Moon":"เดือนดับ", "Waxing Crescent":"เสี้ยวข้างขึ้น", "First Quarter":"ครึ่งดวงข้างขึ้น", "Waxing Gibbous":"เกือบเต็มดวงข้างขึ้น", "Full Moon":"วันเพ็ญ", "Waning Gibbous":"เกือบเต็มดวงข้างแรม", "Last Quarter":"ครึ่งดวงข้างแรม", "Waning Crescent":"เสี้ยวข้างแรม"};
+const bkkDay = (t = Date.now()) => new Intl.DateTimeFormat("en-CA", {timeZone:MOON.tz, year:"numeric", month:"2-digit", day:"2-digit"}).format(t);   // YYYY-MM-DD ตามเวลาไทย
+const bkkDateText = t => new Date(t).toLocaleDateString("th-TH", {timeZone:MOON.tz, day:"numeric", month:"long", year:"numeric"});
+const bkkDateTimeText = t => new Date(t).toLocaleString("th-TH", {timeZone:MOON.tz, day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"}) + " น.";
+function moonCacheRead() { try { const v = JSON.parse(localStorage.getItem(MOON.key) || "null"); return v && typeof v === "object" ? v : null; } catch (_) { return null; } }
+function moonCacheWrite(v) { try { localStorage.setItem(MOON.key, JSON.stringify(v)); } catch (_) {} }
+async function moonGet(url) {
+  const c = new AbortController(), timer = setTimeout(() => c.abort(), MOON.timeout);
+  try { const r = await fetch(url, {signal:c.signal, credentials:"omit"}); if (!r.ok) throw new Error("HTTP " + r.status); const j = await r.json(); if (!j || j.error) throw new Error("api error"); return j; }
+  finally { clearTimeout(timer); }
+}
+function moonParseCur(j) {
+  const d = j && j.properties && j.properties.data;
+  const phase = d && typeof d.curphase === "string" ? d.curphase.trim() : "";
+  const f = d ? parseFloat(String(d.fracillum).replace("%", "")) : NaN;
+  if (!MOON_TH[phase] || !Number.isFinite(f) || f < 0 || f > 100) return null;
+  return {phase, frac:f / 100};
+}
+function moonParsePhases(j) {
+  if (!j || !Array.isArray(j.phasedata)) return null;
+  const list = j.phasedata.map(p => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(p.time || ""));
+    return {phase:String(p.phase || ""), t:m ? Date.UTC(+p.year, +p.month - 1, +p.day, +m[1], +m[2]) : NaN};   // USNO ให้เวลาเป็น UT
+  }).filter(x => MOON_TH[x.phase] && Number.isFinite(x.t)).sort((a, b) => a.t - b.t);
+  return list.length ? list : null;
+}
+function moonWaxing(cur, list) {
+  if (/^(Waxing|First)/.test(cur.phase)) return true;
+  if (/^(Waning|Last)/.test(cur.phase)) return false;
+  const nx = (list || []).find(x => x.t > Date.now());                    // เดือนดับ/วันเพ็ญ: ดูเฟสหลักถัดไป
+  if (nx) return /^(First|Full)/.test(nx.phase);
+  return true;
+}
+function moonPath(k) {                                                    // ส่วนสว่าง (ด้านขวา) ในวงกลมรัศมี 50
+  k = clamp(k, 0, 1); const r = Math.abs(1 - 2 * k) * 50;
+  return "M0 -50A50 50 0 0 1 0 50A" + r.toFixed(2) + " 50 0 0 " + (k < .5 ? 0 : 1) + " 0 -50Z";
+}
+function moonDraw(k, waxing) {
+  $("mmLit").setAttribute("d", moonPath(k));
+  $("mmLit").setAttribute("transform", waxing ? "" : "scale(-1 1)");
+  $("hero").style.setProperty("--glow", (.3 + .7 * k).toFixed(3));
+}
+function moonTo(k, waxing) {                                              // เปลี่ยนเฟสแบบนุ่ม ๆ ครั้งเดียว (ไม่มีลูปค้าง)
+  const from = MOON.shown && MOON.shown.w === waxing ? MOON.shown.k : 1;
+  cancelAnimationFrame(MOON.raf);
+  MOON.shown = {k, w:waxing};
+  if (reduceMotion.matches || Math.abs(from - k) < .002) { moonDraw(k, waxing); return; }
+  const t0 = performance.now(), D = 1100;
+  const step = now => { const p = clamp((now - t0) / D, 0, 1), e = p * p * (3 - 2 * p); moonDraw(from + (k - from) * e, waxing); if (p < 1) MOON.raf = requestAnimationFrame(step); };
+  moonDraw(from, waxing); MOON.raf = requestAnimationFrame(step);
+}
+function moonRender() {
+  const d = MOON.data, info = $("moonInfo"), shade = $("moonShade");
+  if (!d || !d.cur) { info.hidden = true; shade.style.display = "none"; $("hero").style.removeProperty("--glow"); return; }   // ไม่มีข้อมูลที่ยืนยันได้: ซ่อน (พระจันทร์เต็มดวงเดิม)
+  const c = d.cur, waxing = moonWaxing(c, d.phases);
+  shade.style.display = ""; moonTo(c.frac, waxing);
+  $("miTh").textContent = MOON_TH[c.phase];
+  $("miEn").textContent = c.phase + " · ความสว่าง " + Math.round(c.frac * 100) + "%";
+  $("miDate").textContent = bkkDateText(Date.now());
+  const now = Date.now(), nx = ph => ((d.phases || []).find(x => x.phase === ph && x.t > now) || {}).t;
+  const tn = nx("New Moon"), tf = nx("Full Moon");
+  $("miNew").textContent = tn ? bkkDateTimeText(tn) : "—";
+  $("miFull").textContent = tf ? bkkDateTimeText(tf) : "—";
+  const stale = $("miStale"), today = bkkDay();
+  stale.hidden = c.day === today;
+  if (c.day !== today) stale.textContent = "ไม่สามารถอัปเดตได้ แสดงข้อมูลล่าสุดของวันที่ " + bkkDateText(Date.parse(c.day + "T12:00:00+07:00"));
+  info.hidden = false;
+}
+async function moonRefresh(force) {
+  if (MOON.busy) return;
+  const day = bkkDay(), cache = moonCacheRead();
+  const has = cache && cache.cur && cache.cur.day === day && cache.phases && cache.phases.saved && cache.phases.saved >= Date.parse(day + "T00:00:00+07:00");
+  MOON.data = cache ? {cur:cache.cur || null, phases:cache.phases ? cache.phases.list : null} : null;
+  if (MOON.data && MOON.data.cur && MOON.data.cur.day === day) moonRender();
+  if (has && !force) return;
+  if (!force && Date.now() - MOON.lastFail < MOON.retryMs) { if (MOON.data && MOON.data.cur) moonRender(); return; }
+  MOON.busy = true;
+  const base = "https://aa.usno.navy.mil/api/";
+  const [a, b] = await Promise.allSettled([moonGet(base + "rstt/oneday?date=" + day + "&coords=" + MOON.coords + "&tz=7"), moonGet(base + "moon/phases/date?date=" + day + "&nump=8")]);
+  MOON.busy = false;
+  const cur = a.status === "fulfilled" ? moonParseCur(a.value) : null, list = b.status === "fulfilled" ? moonParsePhases(b.value) : null;
+  const next = {cur:cache && cache.cur || null, phases:cache && cache.phases || null};
+  if (cur) next.cur = {phase:cur.phase, frac:cur.frac, day};
+  if (list) next.phases = {list, saved:Date.now()};
+  if (!cur || !list) MOON.lastFail = Date.now();
+  if (cur || list) moonCacheWrite(next);
+  MOON.data = {cur:next.cur, phases:next.phases ? next.phases.list : null};
+  moonRender();
+}
+function moonSchedule() {                                                 // เปลี่ยนวันตอนเที่ยงคืนเวลาไทย
+  const ms = 86400000 - ((Date.now() + 7 * 3600000) % 86400000) + 5000;
+  setTimeout(() => { moonRefresh(true); moonSchedule(); }, ms);
+}
+(function initMoon() {
+  if (!$("moonInfo")) return;
+  let day = bkkDay();
+  $("miBtn").addEventListener("click", () => { if (document.body.classList.contains("viewing")) return; const o = $("moonInfo").classList.toggle("open"); $("miBtn").setAttribute("aria-expanded", String(o)); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && bkkDay() !== day) { day = bkkDay(); moonRefresh(true); } });
+  moonRefresh(false); moonSchedule();
+})();
+
+/* ---------- โหมดรับชมเทศกาล ---------- */
+const VM = {on:false, fs:false, y:0};
+const vmFsEl = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+function vmResync() { requestAnimationFrame(() => requestAnimationFrame(() => { if (typeof syncRiver === "function") syncRiver(); })); setTimeout(() => { if (typeof syncRiver === "function") syncRiver(); }, 450); }
+function vmLabel() {
+  const b = $("viewBtn");
+  b.setAttribute("aria-pressed", String(VM.on));
+  b.setAttribute("aria-label", VM.on ? "ออกจากโหมดรับชมเทศกาล" : "เข้าโหมดรับชมเทศกาล");
+  const t = b.querySelector(".txt"); if (t) t.textContent = VM.on ? "ออก" : "รับชม";
+}
+function enterView() {
+  if (VM.on || activeModal || document.body.classList.contains("holding")) return;
+  VM.on = true; VM.y = window.scrollY;
+  document.body.classList.add("viewing");
+  const el = document.documentElement, rq = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (rq && document.fullscreenEnabled !== false) {                       // ต้องเรียกทันทีจากการแตะ; ไม่รองรับ (เช่น iPhone Safari) → ใช้ CSS full-view
+    try { const p = rq.call(el); VM.fs = true; if (p && p.catch) p.catch(() => { VM.fs = false; }); } catch (_) { VM.fs = false; }
+  }
+  window.scrollTo({top:0, behavior:"instant"}); vmLabel(); vmResync();
+}
+function exitView() {
+  if (!VM.on) return;
+  VM.on = false; document.body.classList.remove("viewing");
+  if (vmFsEl()) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (_) {} }
+  VM.fs = false; vmLabel(); window.scrollTo({top:VM.y, behavior:"instant"}); vmResync();
+  $("viewBtn").focus({preventScroll:true});
+}
+(function initView() {
+  const b = $("viewBtn"); if (!b) return;
+  b.addEventListener("click", () => (VM.on ? exitView() : enterView()));
+  const fsch = () => { if (VM.on && VM.fs && !vmFsEl()) exitView(); };
+  document.addEventListener("fullscreenchange", fsch); document.addEventListener("webkitfullscreenchange", fsch);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && VM.on && !activeModal) exitView(); }, true);   // ดักก่อน: ถ้ามีหน้าต่างเปิดอยู่ ให้ Escape ปิดหน้าต่างก่อน
 })();
 
 loadKrathongs();
