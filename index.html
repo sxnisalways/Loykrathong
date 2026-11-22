@@ -474,6 +474,16 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 .view-note{margin:8px 0 0;text-align:center;font-size:13px;color:var(--muted)}
 #shareNote{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);z-index:40;max-width:min(92vw,420px);padding:10px 18px;border-radius:14px;background:#071d33f2;border:1px solid #f5c66b88;color:var(--cream);font-size:14px;line-height:1.6;text-align:center;box-shadow:0 8px 30px #000a;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s,transform .25s,visibility .25s}
 #shareNote.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.card-top{display:flex;align-items:center;gap:12px;margin:14px 0 8px}
+.card-top h3{margin:0;font-family:var(--serif);font-size:16px;color:var(--gold)}
+.card-grid{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;padding-bottom:6px}
+.card-fig{margin:0;flex:1 1 230px;max-width:340px}
+.card-fig img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid #f5c66b40;box-shadow:0 8px 28px #0008;background:#071a30}
+.card-fig figcaption{margin:7px 0;text-align:center;font-size:12px;color:var(--muted)}
+.card-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.card-btn{border-color:#f5c66b88;color:var(--gold)}
+.card-msg{min-height:1.5em;margin:10px 0 0;text-align:center;font-size:13px;color:#ffeab5}
+.card-msg.bad{color:#ffb4a8}
 .mine-state{padding:22px 4px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
 .mine-state .secondary{margin-top:10px;min-height:44px}
 .mine-note{position:relative;z-index:1;margin:0;padding:8px 24px 10px;font-size:11.5px;line-height:1.6;color:#9fb9c8}
@@ -650,6 +660,7 @@ body.viewing .moon{top:max(64px,9vh)}
   <div class="dialog mine-dialog" id="mineDialog" role="dialog" aria-modal="true" aria-labelledby="mineTitle" tabindex="-1">
     <div class="dlg-head"><h2 id="mineTitle">กระทงของฉัน</h2><p class="sub">กระทงที่ปล่อยจากเบราว์เซอร์นี้</p></div>
     <div class="mine-body" id="mineBody" aria-live="polite"></div>
+    <div class="mine-body" id="cardPanel" hidden></div>
     <p class="mine-note">กระทงของฉันผูกกับบัญชีแบบไม่ระบุตัวตนในเบราว์เซอร์นี้ หากล้างข้อมูลเว็บไซต์หรือเปลี่ยนอุปกรณ์ อาจเปิดดูกระทงเดิมไม่ได้</p>
     <div class="dlg-actions"><button class="secondary" id="mineClose" type="button">ปิด</button></div>
   </div>
@@ -2284,7 +2295,7 @@ function mineCard(r, floating) {
   const card = floating ? `<button type="button" class="mine-card" data-go="${escapeHTML(r.id)}" aria-label="ไปที่กระทงบนแม่น้ำ">${inner}</button>` : `<div class="mine-card">${inner}</div>`;
   if (bad || !KID_RE.test(String(r.id))) return card;
   const canShare = typeof navigator.share === "function";
-  return `<div class="mine-item">${card}<div class="mine-act" data-id="${escapeHTML(r.id)}"><span class="share-msg" role="status" aria-live="polite"></span>${canShare ? '<button type="button" class="share-btn" data-share>แชร์</button>' : ""}<button type="button" class="share-btn" data-copy>คัดลอกลิงก์</button></div></div>`;
+  return `<div class="mine-item">${card}<div class="mine-act" data-id="${escapeHTML(r.id)}"><span class="share-msg" role="status" aria-live="polite"></span><button type="button" class="share-btn" data-card>สร้าง Share Card</button>${canShare ? '<button type="button" class="share-btn" data-share>แชร์</button>' : ""}<button type="button" class="share-btn" data-copy>คัดลอกลิงก์</button></div></div>`;
 }
 function renderMine() {
   const body = $("mineBody");
@@ -2616,6 +2627,282 @@ async function openSharedLink() {
     }
   } catch (_) { shareNote("เปิดกระทงจากลิงก์ไม่สำเร็จ"); }
 }
+
+/* =========================================================
+   Krathong Share Card (MOONLIGHT): สร้างรูปการ์ดจากกระทงของฉัน 4:5 และ 9:16
+   - วาดด้วย Canvas 2D เมื่อผู้ใช้กดปุ่มเท่านั้น (ไม่มี loop / ไม่ใช้ไลบรารี / ไม่เรียกเซิร์ฟเวอร์)
+   - ใช้ krathongSVG(decode(flower), {anim:false}) เป็นรูปกระทง (ไม่เกี่ยวกับต้นแบบ 3D)
+   - ปุ่มแชร์/คัดลอกลิงก์เดิมไม่ถูกแตะ
+   ========================================================= */
+const CARD = {W:1080, gen:0, items:null,
+  fmts:{portrait:{h:1350, label:"4:5", file:"moon-krathong-4x5.png"}, story:{h:1920, label:"9:16 สตอรี่", file:"moon-krathong-9x16.png"}}};
+const CARD_SITE = "loykrathong.riverlight.workers.dev";
+const CARD_PAD = {x:-30, y:-36, w:260, h:232};     // ขยาย viewBox กันแสงเรืองรอบเปลวถูกตัดขอบเมื่อเป็นรูป
+const CARD_BASE_Y = 134;                            // เส้นน้ำของกระทง (หน่วย viewBox 164)
+function cardFam(v, fb) { try { return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || fb; } catch (_) { return fb; } }
+const cardSerif = () => cardFam("--serif", '"Noto Serif Thai","Sarabun","Thonburi",Georgia,serif');
+const cardSans = () => cardFam("--sans", '"Anuphan","Noto Sans Thai","Sarabun","Thonburi",system-ui,sans-serif');
+function cardRand(seed) {
+  let h = 1779033703 ^ seed.length;
+  for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  let a = h >>> 0;
+  return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function cardDate(v) {
+  const d = new Date(v);
+  if (!v || !Number.isFinite(d.getTime())) return "";
+  try { return new Intl.DateTimeFormat("en-GB", {day:"2-digit", month:"2-digit", year:"numeric", timeZone:"Asia/Bangkok"}).format(d); } catch (_) {}
+  const z = n => String(n).padStart(2, "0");
+  return z(d.getDate()) + "/" + z(d.getMonth() + 1) + "/" + d.getFullYear();
+}
+async function cardFonts(texts) {            // ส่งข้อความจริงเข้าไปด้วย เพื่อให้ Google Fonts โหลดชุดอักษรไทยที่ใช้
+  try {
+    if (!document.fonts || !document.fonts.load) return;
+    const t = texts.join(" ");
+    const jobs = ['700 40px "Noto Serif Thai"', '600 40px "Noto Serif Thai"', '400 40px "Anuphan"', '500 40px "Anuphan"'].map(f => document.fonts.load(f, t));
+    await Promise.race([Promise.allSettled(jobs), new Promise(r => setTimeout(r, 3000))]);
+  } catch (_) {}
+}
+function cardClusters(s) {
+  try { if (Intl.Segmenter) return Array.from(new Intl.Segmenter(undefined, {granularity:"grapheme"}).segment(s), x => x.segment); } catch (_) {}
+  return s.match(/[\s\S][ัิ-ฺ็-๎‍️]*/g) || [];
+}
+function cardTokens(s) {
+  let t = null;
+  try { if (Intl.Segmenter) t = Array.from(new Intl.Segmenter("th", {granularity:"word"}).segment(s), x => x.segment); } catch (_) {}
+  if (!t) t = s.match(/\s+|[฀-๿]+|[^\s฀-๿]+/g) || [s];
+  const out = [];
+  for (const x of t) { if (out.length && /^[ๆฯ,.!?;:)\]}»”’…]/.test(x)) out[out.length - 1] += x; else out.push(x); }
+  return out;
+}
+function cardWrap(ctx, text, maxW) {           // ตัดบรรทัดตามคำ; คำที่ยาวเกินบรรทัดตัดตามกลุ่มอักขระ (ไม่แยกสระ/วรรณยุกต์); ไม่ตัดข้อความทิ้ง
+  const lines = [];
+  for (const para of text.split("\n")) {
+    if (!para.trim()) { lines.push(""); continue; }
+    let line = "";
+    const push = () => { lines.push(line.replace(/\s+$/, "")); line = ""; };
+    for (let tok of cardTokens(para)) {
+      if (!line) tok = tok.replace(/^\s+/, "");
+      if (!tok) continue;
+      if (ctx.measureText(line + tok).width <= maxW) { line += tok; continue; }
+      const sp = line.search(/\s\S*$/);                       // ถ้ามีช่องว่างใกล้ท้ายบรรทัด ให้ตัดที่ช่องว่าง (ไม่ฉีกคำกลางคัน)
+      if (sp > 0 && ctx.measureText(line.slice(sp)).width < maxW * .4) {
+        const rest = line.slice(sp).replace(/^\s+/, "");
+        line = line.slice(0, sp); push(); line = rest;
+        if (ctx.measureText(line + tok).width <= maxW) { line += tok; continue; }
+      }
+      if (line) push();
+      tok = tok.replace(/^\s+/, "");
+      if (ctx.measureText(tok).width <= maxW) { line = tok; continue; }
+      for (const c of cardClusters(tok)) { if (line && ctx.measureText(line + c).width > maxW) push(); line += c; }
+    }
+    if (line) push();
+  }
+  return lines;
+}
+function cardFit(ctx, text, maxW, maxH, sizes, fam, wt, lh) {   // เลือกขนาดใหญ่สุดที่ข้อความทั้งหมดพอดีกรอบ
+  let last = null;
+  for (const s of sizes) {
+    ctx.font = wt + " " + s + "px " + fam;
+    const lines = cardWrap(ctx, text, maxW);
+    last = {size:s, lines, h:lines.length * s * lh, ok:false};
+    if (last.h <= maxH) { last.ok = true; return last; }
+  }
+  return last;
+}
+function cardArt(spec) {
+  return new Promise((resolve, reject) => {
+    let url;
+    try {
+      const P = CARD_PAD;
+      const svg = krathongSVG(spec, {anim:false}).replace('viewBox="0 0 200 164"', `viewBox="${P.x} ${P.y} ${P.w} ${P.h}" width="${P.w * 4}" height="${P.h * 4}"`);
+      url = URL.createObjectURL(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}));
+    } catch (e) { reject(e); return; }
+    const img = new Image();
+    img.onload = () => img.naturalWidth > 0 ? resolve({img, url}) : (URL.revokeObjectURL(url), reject(new Error("art")));
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("art")); };
+    img.src = url;
+  });
+}
+function cardRR(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function cardSpaced(c, text, cx, y, gap) {      // เว้นระยะตัวอักษรเอง (ไม่พึ่ง ctx.letterSpacing) ใช้กับข้อความอังกฤษเท่านั้น
+  const chars = Array.from(text), ws = chars.map(ch => c.measureText(ch).width);
+  let x = cx - (ws.reduce((a, b) => a + b, 0) + gap * (chars.length - 1)) / 2;
+  c.textAlign = "left";
+  chars.forEach((ch, i) => { c.fillText(ch, x, y); x += ws[i] + gap; });
+  c.textAlign = "center";
+}
+function cardScene(c, W, H, hz, moon, rnd) {
+  let g = c.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#030a16"); g.addColorStop(.5, "#071a30"); g.addColorStop(1, "#040d1a");
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  for (let i = 0, n = Math.round(W * hz / 8500); i < n; i++) {                       // ดาว
+    c.fillStyle = "rgba(255,244,216," + (.25 + rnd() * .6).toFixed(2) + ")";
+    c.beginPath(); c.arc(rnd() * W, rnd() * hz * .96, .7 + rnd() * 1.6, 0, 7); c.fill();
+  }
+  g = c.createRadialGradient(moon.x, moon.y, moon.r * .5, moon.x, moon.y, moon.r * 5);     // แสงจันทร์
+  g.addColorStop(0, "rgba(255,226,150,.34)"); g.addColorStop(1, "rgba(255,226,150,0)");
+  c.fillStyle = g; c.fillRect(moon.x - moon.r * 5, moon.y - moon.r * 5, moon.r * 10, moon.r * 10);
+  g = c.createRadialGradient(moon.x - moon.r * .3, moon.y - moon.r * .3, moon.r * .1, moon.x, moon.y, moon.r);
+  g.addColorStop(0, "#fffbe6"); g.addColorStop(.7, "#fbe6a8"); g.addColorStop(1, "#ecc872");
+  c.fillStyle = g; c.beginPath(); c.arc(moon.x, moon.y, moon.r, 0, 7); c.fill();
+  c.fillStyle = "rgba(190,140,60,.14)";
+  [[-.3, -.1, .2], [.25, .25, .3], [.1, -.4, .12], [-.1, .45, .1]].forEach(k => { c.beginPath(); c.arc(moon.x + k[0] * moon.r, moon.y + k[1] * moon.r, k[2] * moon.r, 0, 7); c.fill(); });
+  g = c.createLinearGradient(0, hz, 0, H);                                           // น้ำ
+  g.addColorStop(0, "#0d3050"); g.addColorStop(.3, "#08233f"); g.addColorStop(1, "#030c1a");
+  c.fillStyle = g; c.fillRect(0, hz, W, H - hz);
+  g = c.createLinearGradient(0, hz - 3, 0, hz + 40);
+  g.addColorStop(0, "rgba(245,198,107,.35)"); g.addColorStop(1, "rgba(245,198,107,0)");
+  c.fillStyle = g; c.fillRect(0, hz - 2, W, 42);
+  for (let i = 0; i < 16; i++) {                                                     // เงาจันทร์บนน้ำ
+    const y = hz + 22 + i * 30, w = 26 + i * 9 + rnd() * 16;
+    c.fillStyle = "rgba(255,233,174," + Math.max(.03, .2 - i * .011).toFixed(3) + ")";
+    cardRR(c, moon.x - w / 2 + (rnd() - .5) * 18, y, w, 3.4, 1.7); c.fill();
+  }
+  for (let i = 0; i < 26; i++) {                                                     // ประกายทองบางเบา
+    const y = hz + 30 + rnd() * (H - hz - 60), w = 40 + rnd() * 130;
+    c.fillStyle = "rgba(245,198,107," + (.04 + rnd() * .07).toFixed(3) + ")";
+    cardRR(c, rnd() * (W - w), y, w, 2.4, 1.2); c.fill();
+  }
+}
+function cardDraw(id, key, art, d) {
+  const W = CARD.W, H = CARD.fmts[key].h, story = key === "story";
+  const L = story
+    ? {hz:760, moon:{x:905, y:420, r:58}, tY:300, pY:352, kw:580, ky:500, panel:{x:70, y:1030, w:940, h:550}, wMax:46, foot:[1470, 1514, 1556], inFoot:true, textB:1390}
+    : {hz:470, moon:{x:905, y:215, r:54}, tY:120, pY:168, kw:520, ky:250, panel:{x:70, y:720, w:940, h:410}, wMax:52, foot:[1196, 1242, 1296], inFoot:false, textB:1130};
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const c = cv.getContext("2d");
+  const serif = cardSerif(), sans = cardSans();
+  cardScene(c, W, H, L.hz, L.moon, cardRand(id + key));
+  c.textAlign = "center"; c.textBaseline = "alphabetic"; c.direction = "ltr";
+  if (art) {                                                                        // กระทง + เงาสะท้อน
+    const s = L.kw / 200, P = CARD_PAD, ax = (W - L.kw) / 2 + P.x * s, ay = L.ky + P.y * s, aw = P.w * s, ah = P.h * s, baseY = L.ky + CARD_BASE_Y * s;
+    const R = Math.round((baseY - L.ky) * .5), off = document.createElement("canvas");
+    off.width = Math.ceil(aw); off.height = R;
+    const o = off.getContext("2d");
+    o.setTransform(1, 0, 0, -1, -ax, baseY); o.drawImage(art, ax, ay, aw, ah);
+    o.setTransform(1, 0, 0, 1, 0, 0); o.globalCompositeOperation = "destination-in";
+    const g = o.createLinearGradient(0, 0, 0, R); g.addColorStop(0, "rgba(0,0,0,.5)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    o.fillStyle = g; o.fillRect(0, 0, off.width, R);
+    c.drawImage(off, ax, baseY + 4, aw, R * .62);
+    off.width = off.height = 0;
+    c.strokeStyle = "rgba(245,198,107,.28)"; c.lineWidth = 2;
+    [[.50, .06], [.40, .045], [.30, .03]].forEach(k => { c.globalAlpha = k[1] * 5; c.beginPath(); c.ellipse(W / 2, baseY + 8, L.kw * k[0] + 40, 14 + (k[0] - .3) * 26, 0, 0, 7); c.stroke(); });
+    c.globalAlpha = 1;
+    c.drawImage(art, ax, ay, aw, ah);
+  }
+  c.fillStyle = "#f5c66b"; c.font = "700 38px " + serif;                              // หัวเรื่อง
+  cardSpaced(c, "THE MOON IS SHINING", W / 2, L.tY, 8);
+  c.fillStyle = "rgba(255,244,216,.72)"; c.font = "400 25px " + sans;
+  cardSpaced(c, "A wish beneath the moonlight", W / 2, L.pY, 3);
+  const p = L.panel;                                                                // แผงคำอธิษฐาน
+  cardRR(c, p.x, p.y, p.w, p.h, 30); c.fillStyle = "rgba(4,14,28,.64)"; c.fill();
+  c.lineWidth = 2; c.strokeStyle = "rgba(245,198,107,.45)"; c.stroke();
+  let g2 = c.createLinearGradient(W / 2 - 70, 0, W / 2 + 70, 0);
+  g2.addColorStop(0, "rgba(245,198,107,0)"); g2.addColorStop(.5, "rgba(245,198,107,.95)"); g2.addColorStop(1, "rgba(245,198,107,0)");
+  c.fillStyle = g2; c.fillRect(W / 2 - 70, p.y - 1, 140, 3);
+  const padX = 56, tTop = p.y + 54, tH = L.textB - tTop - 20, sizes = [];
+  for (let s = L.wMax; s >= 20; s -= 2) sizes.push(s);
+  const fit = cardFit(c, d.wish, p.w - padX * 2, tH, sizes, sans, 500, 1.6);
+  c.font = "500 " + fit.size + "px " + sans; c.fillStyle = "#fff4d8"; c.textAlign = "center";
+  let y = tTop + Math.max(0, (tH - fit.h) / 2) + fit.size * 1.15;
+  for (const ln of fit.lines) { c.fillText(ln, W / 2, y); y += fit.size * 1.6; }
+  const [yN, yD, yS] = L.foot;                                                      // ท้ายการ์ด
+  if (d.name) {
+    let ns = 36; c.font = "600 " + ns + "px " + serif;
+    while (ns > 20 && c.measureText("— " + d.name + " —").width > 880) { ns -= 2; c.font = "600 " + ns + "px " + serif; }
+    c.fillStyle = "#f5c66b"; c.fillText("— " + d.name + " —", W / 2, yN);
+  }
+  c.fillStyle = "#b9ccd8"; c.font = "400 28px " + sans; if (d.date) c.fillText(d.date, W / 2, d.name ? yD : yN);
+  c.fillStyle = "#86a3b4"; c.font = "400 24px " + sans; c.fillText(CARD_SITE, W / 2, yS);
+  return {canvas:cv, meta:{size:fit.size, lines:fit.lines, fitOk:fit.ok}};
+}
+async function cardBlob(cv) {
+  const b = await new Promise(res => { try { cv.toBlob(x => res(x), "image/png"); } catch (_) { res(null); } });
+  if (b) return b;
+  const bin = atob(cv.toDataURL("image/png").split(",")[1]), a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new Blob([a], {type:"image/png"});
+}
+async function cardMake(row, cancelled) {
+  const spec = decode(row.flower);
+  const d = {wish:String(row.wish == null ? "" : row.wish).replace(/\r\n?/g, "\n").trim(), name:String(row.display_name || "").trim(), date:cardDate(row.created_at)};
+  await cardFonts([d.wish, d.name, d.date, "THE MOON IS SHINING A wish beneath the moonlight " + CARD_SITE]);
+  let art = null;
+  const out = {warn:[]};
+  try { art = await cardArt(spec); } catch (_) { out.warn.push("art"); }
+  try {
+    for (const key of ["portrait", "story"]) {
+      if (cancelled && cancelled()) break;
+      const r = cardDraw(String(row.id), key, art && art.img, d);
+      const blob = await cardBlob(r.canvas);
+      r.canvas.width = r.canvas.height = 0;
+      let file = null;
+      try { file = new File([blob], CARD.fmts[key].file, {type:"image/png"}); } catch (_) {}
+      out[key] = {blob, file, url:URL.createObjectURL(blob), meta:r.meta};
+      await new Promise(res => setTimeout(res, 0));
+    }
+  } finally { if (art) try { URL.revokeObjectURL(art.url); } catch (_) {} }
+  return out;
+}
+function cardFree(items) { if (!items) return; for (const k of ["portrait", "story"]) if (items[k]) { try { URL.revokeObjectURL(items[k].url); } catch (_) {} } }
+function cardReset() {                                      // กลับไปหน้ารายการ + คืน URL ชั่วคราวทั้งหมด
+  CARD.gen++; cardFree(CARD.items); CARD.items = null;
+  const box = $("cardPanel"); box.hidden = true; box.innerHTML = "";
+  $("mineBody").hidden = false;
+}
+const CARD_TOP = '<div class="card-top"><button type="button" class="share-btn" data-cback>‹ กลับ</button><h3>Share Card</h3></div>';
+function cardMsg(text, bad) { const m = $("cardMsg"); if (!m) return; m.textContent = text; m.classList.toggle("bad", !!bad); }
+function cardRender(items) {
+  const canF = f => { try { return !!(f && navigator.share && navigator.canShare && navigator.canShare({files:[f]})); } catch (_) { return false; } };
+  let h = CARD_TOP + (items.warn.length ? '<p class="card-msg bad">แสดงรูปกระทงไม่ได้ จึงสร้างการ์ดแบบไม่มีรูปกระทง</p>' : "") + '<div class="card-grid">';
+  for (const key of ["portrait", "story"]) {
+    const f = CARD.fmts[key], it = items[key];
+    if (!it) continue;
+    h += `<figure class="card-fig"><img src="${it.url}" alt="Share Card ${f.label}" width="${CARD.W}" height="${f.h}"><figcaption>${f.label} · ${CARD.W}×${f.h}</figcaption><div class="card-btns"><button type="button" class="share-btn card-btn" data-cdl="${key}">บันทึกรูป</button>${canF(it.file) ? `<button type="button" class="share-btn card-btn" data-csh="${key}">แชร์รูป</button>` : ""}</div></figure>`;
+  }
+  $("cardPanel").innerHTML = h + '</div><p class="card-msg" id="cardMsg" role="status" aria-live="polite"></p>';
+  const b = $("cardPanel").querySelector("[data-cback]"); if (b) b.focus({preventScroll:true});
+}
+async function cardOpen(id) {
+  const row = mine.rows.find(r => r.id === id);
+  if (!row || row.blocked) return;
+  cardFree(CARD.items); CARD.items = null;
+  const gen = ++CARD.gen, box = $("cardPanel");
+  $("mineBody").hidden = true; box.hidden = false; box.scrollTop = 0;
+  box.innerHTML = CARD_TOP + '<div class="mine-state" role="status">กำลังสร้างรูป…</div>';
+  try {
+    const res = await cardMake(row, () => gen !== CARD.gen);
+    if (gen !== CARD.gen) { cardFree(res); return; }
+    CARD.items = res; cardRender(res);
+  } catch (_) {
+    if (gen !== CARD.gen) return;
+    box.innerHTML = CARD_TOP + '<div class="mine-state">สร้าง Share Card ไม่สำเร็จ กรุณากด “กลับ” แล้วลองใหม่ (ลิงก์แชร์และการคัดลอกลิงก์ยังใช้ได้ตามปกติ)</div>';
+  }
+}
+$("mineBody").addEventListener("click", e => {
+  const b = e.target.closest("[data-card]");
+  if (!b) return;
+  const act = b.closest(".mine-act");
+  if (act && act.dataset.id) cardOpen(act.dataset.id);
+});
+$("cardPanel").addEventListener("click", async e => {
+  if (e.target.closest("[data-cback]")) { cardReset(); return; }
+  const dl = e.target.closest("[data-cdl]"), sh = e.target.closest("[data-csh]");
+  const key = dl ? dl.dataset.cdl : sh ? sh.dataset.csh : null, it = key && CARD.items && CARD.items[key];
+  if (!it) return;
+  if (dl) {
+    const a = document.createElement("a");
+    if (!("download" in a)) { cardMsg("เบราว์เซอร์นี้บันทึกอัตโนมัติไม่ได้ กดค้างที่รูปแล้วเลือกบันทึกรูป", true); return; }
+    a.href = it.url; a.download = CARD.fmts[key].file; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    cardMsg("กำลังบันทึกรูป… หากไม่ขึ้น ให้กดค้างที่รูปแล้วเลือกบันทึกรูป");
+    return;
+  }
+  try { await navigator.share({files:[it.file]}); }                  // รูปอย่างเดียว (ตามที่ผู้ใช้เลือก)
+  catch (err) { if (!(err && err.name === "AbortError")) cardMsg("แชร์รูปไม่สำเร็จ ลองกด “บันทึกรูป” แทน", true); }
+});
+try { new MutationObserver(() => { if (!$("mineModal").classList.contains("open")) cardReset(); }).observe($("mineModal"), {attributes:true, attributeFilter:["class"]}); } catch (_) {}
 
 k3dLoad();
 loadKrathongs().then(openSharedLink, openSharedLink);
