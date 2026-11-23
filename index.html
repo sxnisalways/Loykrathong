@@ -1018,8 +1018,11 @@ function krathongSVG(spec, opt) {
     const back = [], front = [];
     for (let i = 0; i < n; i++) {
       const t = off + Math.PI * 2 * i / n, c = Math.cos(t), s = Math.sin(t);
-      const hh = h * (1 + .1 * Math.abs(s)) * (1 + (jr(i, seed, 2) - .5) * .04), ww = w * (1 + (jr(i, seed, 3) - .5) * .04);
-      const tilt = -c * 15 + (jr(i, seed, 4) - .5) * 3, y = yc + ry * s;   // ใบด้านซ้าย/ขวาเอียงเข้าหากลางวง (โค้งรับกัน ไม่บานออก)
+      // แบ่งตามตำแหน่ง: ข้าง = โค้งเข้ากลาง / หน้า = เตี้ย กางออก ไม่บังดอกไม้ / หลัง = สูงกว่าเล็กน้อยเป็นฉากหลัง
+      const sideW = c * c, fr = Math.max(s, 0), bk = Math.max(-s, 0);
+      const hk = (1 - .22 * fr * (1 - sideW)) * (1 + .08 * bk), wk = 1 + .08 * fr * (1 - sideW);
+      const hh = h * hk * (1 + (jr(i, seed, 2) - .5) * .08), ww = w * wk * (1 + (jr(i, seed, 3) - .5) * .06);
+      const tilt = -c * 18 * sideW + c * 9 * fr * (1 - sideW) - c * 8 * bk * (1 - sideW) + (jr(i, seed, 4) - .5) * 7, y = yc + ry * s + 2 * fr * (1 - sideW);
       const g = `<g transform="translate(${r1(cx + rx * c)} ${r1(y)}) rotate(${r1(tilt)})">${leafSVG(style, r1(ww), r1(hh), s < -.1 ? "lfd" : "lf", LC, u, jr(i, seed, 5))}</g>`;
       (s < -.02 ? back : front).push({y, m:g});
     }
@@ -1058,8 +1061,8 @@ function krathongSVG(spec, opt) {
   const LS = {1:[14, 44, 36, 11, 38, 31], 2:[14, 44, 34, 11, 38, 30], 3:[14, 44, 35, 11, 38, 30], 4:[18, 28, 35, 13, 25, 30]}[style];
   let outer, inner;
   if (style === 5) {
-    outer = {back:pleats(76, 14, 104, 22, -4, 13, true), front:pleats(76, 14, 104, 28, -4, 13, false) + lipFront(77, 14, 104, 6, 13)};
-    inner = {back:pleats(58, 11, 94, 20, -3, 10, true), front:pleats(58, 11, 94, 24, -3, 10, false)};
+    outer = {back:pleats(76, 14, 104, 22, -4, 13, true), front:pleats(76, 14, 104, 22, -4, 13, false) + lipFront(77, 14, 104, 6, 13)};
+    inner = {back:pleats(58, 11, 94, 20, -3, 10, true), front:pleats(58, 11, 94, 19, -3, 10, false)};
   } else {
     const o1 = ringLeaves(LS[0], 76, 14, 104, LS[2], LS[1], Math.PI / 2, 11), i1 = ringLeaves(LS[3], 58, 11, 94, LS[5], LS[4], Math.PI / 2 + Math.PI / LS[3], 12);
     outer = {back:wallBack(76, 14, 104, 24, "lfd") + o1.back, front:o1.front + lipFront(77, 14, 104, 7, 22)};
