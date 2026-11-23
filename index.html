@@ -455,6 +455,11 @@ body.focus-create .krathongs{opacity:.55;filter:saturate(.75);pointer-events:non
 .like-btn:hover:not(:disabled){border-color:#f5c66b;background:#f5c66b14}
 .like-btn[aria-pressed="true"]{border-color:#ff9db4aa;background:#ff9db41a;color:#ffd0dc;box-shadow:0 0 14px #ff9db433}
 .like-btn:disabled{opacity:.6;cursor:default}
+.like-btn.mini{padding:3px 11px;gap:5px;font-size:13px;margin-top:10px}
+.like-btn.mini .heart{font-size:16px}
+.wish-card[data-id]{cursor:pointer;transition:background .2s}
+.wish-card[data-id]:hover{background:linear-gradient(100deg,#164a7a3a 0%,#0b274a2c 52%,#06152800 100%)}
+.wish-card[data-id]:focus-visible{outline:2px solid #f5c66b99;outline-offset:2px}
 .like-btn .heart{font-size:19px;line-height:1;display:inline-block}
 .like-btn.pop .heart{animation:heartPop .45s ease}
 .like-msg{font-size:12px;color:#ffb4a8}
@@ -1374,7 +1379,7 @@ function render() {
       let el = old.get(w.id);
       if (!el) {
         const t = document.createElement("template");
-        t.innerHTML = `<article class="wish-card" data-id="${escapeHTML(w.id)}"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">${shownName(w.display_name) ? "— " + escapeHTML(shownName(w.display_name)) : ""}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`;
+        t.innerHTML = `<article class="wish-card" data-id="${escapeHTML(w.id)}" tabindex="0"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">${shownName(w.display_name) ? "— " + escapeHTML(shownName(w.display_name)) : ""}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div><button type="button" class="like-btn mini" data-like="${escapeHTML(w.id)}" aria-pressed="false" hidden><span class="heart" aria-hidden="true">♡</span><b>–</b><span class="sr-only">กดหัวใจ</span></button></div></article>`;
         el = t.content.firstElementChild;
       }
       frag.push(el);
@@ -1384,6 +1389,7 @@ function render() {
   }
   syncRiver();
   $("showMore").hidden = visibleCount >= list.length;
+  if (typeof renderFeedLikes === "function") renderFeedLikes();
   if (typeof scheduleLikes === "function") scheduleLikes();
 }
 const KID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -2327,7 +2333,7 @@ var likes = {ok:true, counts:new Map(), mine:new Set(), busy:new Set(), timer:0}
 function scheduleLikes() {
   if (!likes.ok) return;
   clearTimeout(likes.timer);
-  likes.timer = setTimeout(() => refreshLikes(wishes.filter(w => !w.blocked).map(w => w.id)).then(() => { if (viewId && $("wishModal").classList.contains("open")) renderLike(); }), 200);
+  likes.timer = setTimeout(() => refreshLikes(wishes.filter(w => !w.blocked).map(w => w.id)).then(() => { renderFeedLikes(); if (viewId && $("wishModal").classList.contains("open")) renderLike(); }), 200);
 }
 async function refreshLikes(ids) {
   ids = [...new Set(ids)].slice(0, 100);
@@ -2358,17 +2364,31 @@ function renderLike(pop) {
   b.disabled = likes.busy.has(viewId);
   if (pop) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
 }
-async function toggleLike() {
-  const id = viewId;
+function renderFeedLikes() {                 // หัวใจบนการ์ดคำอธิษฐานด้านล่าง (ใช้ข้อมูลชุดเดียวกับหน้าอ่าน)
+  document.querySelectorAll("#feed .like-btn[data-like]").forEach(b => {
+    const id = b.dataset.like;
+    b.hidden = !likes.ok;
+    if (b.hidden) return;
+    const liked = likes.mine.has(id), n = likes.counts.get(id);
+    b.setAttribute("aria-pressed", String(liked));
+    b.querySelector(".heart").textContent = liked ? "♥" : "♡";
+    b.querySelector("b").textContent = n == null ? "–" : String(n);
+    b.querySelector(".sr-only").textContent = liked ? "ยกเลิกหัวใจ" : "กดหัวใจ";
+    b.disabled = likes.busy.has(id);
+  });
+}
+const paintLike = pop => { renderLike(pop); renderFeedLikes(); };
+async function toggleLike(forId) {
+  const id = typeof forId === "string" ? forId : viewId;
   if (!id || likes.busy.has(id)) return;
-  $("likeMsg").textContent = "";
-  likes.busy.add(id); renderLike();                         // ล็อกก่อน await กันกดซ้ำ
+  if (viewId === id) $("likeMsg").textContent = "";
+  likes.busy.add(id); paintLike();                         // ล็อกก่อน await กันกดซ้ำ
   const s = await sessionOrNull();
-  if (!s) { likes.busy.delete(id); renderLike(); $("likeMsg").textContent = "ยืนยันตัวตนไม่สำเร็จ ลองใหม่อีกครั้ง"; return; }
+  if (!s) { likes.busy.delete(id); paintLike(); if (viewId === id) $("likeMsg").textContent = "ยืนยันตัวตนไม่สำเร็จ ลองใหม่อีกครั้ง"; return; }
   const was = likes.mine.has(id), prevN = likes.counts.get(id) || 0;
   if (was) likes.mine.delete(id); else likes.mine.add(id);
   likes.counts.set(id, Math.max(0, prevN + (was ? -1 : 1)));
-  renderLike(!was);
+  paintLike(!was);
   try {
     if (was) await rest("/krathong_likes?krathong_id=eq." + encodeURIComponent(id) + "&user_id=eq." + encodeURIComponent(s.user.id), {method:"DELETE", auth:true});
     else {
@@ -2382,10 +2402,24 @@ async function toggleLike() {
   } finally {
     likes.busy.delete(id); statsDirty();
     await refreshLikes([id]);                                   // ยึดค่าจากฐานข้อมูลเป็นหลัก
-    if (viewId === id) renderLike();
+    paintLike();
   }
 }
-$("likeBtn").onclick = toggleLike;
+$("likeBtn").onclick = () => toggleLike();
+$("feed").addEventListener("click", e => {
+  const lb = e.target.closest(".like-btn[data-like]");
+  if (lb) { e.stopPropagation(); toggleLike(lb.dataset.like); return; }
+  const card = e.target.closest(".wish-card[data-id]");
+  if (!card || (window.getSelection && String(window.getSelection()).length)) return;   // กำลังลากเลือกข้อความ = ไม่เปิด
+  const w = wishes.find(x => x.id === card.dataset.id);
+  if (w) openWish(w);
+});
+$("feed").addEventListener("keydown", e => {
+  if ((e.key !== "Enter" && e.key !== " ") || !e.target.classList || !e.target.classList.contains("wish-card")) return;
+  e.preventDefault();
+  const w = wishes.find(x => x.id === e.target.dataset.id);
+  if (w) openWish(w);
+});
 
 /* =========================================================
    กระทงของฉัน: อ่านผ่าน RPC my_krathongs (owner_id ถูกซ่อนจากการอ่านตรง)
