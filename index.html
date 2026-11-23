@@ -148,7 +148,7 @@ button:disabled{opacity:.6;cursor:wait}
 .bolt-ring{position:absolute;z-index:150;width:70px;height:26px;border:1.5px solid #cfe5ffcc;border-radius:50%;pointer-events:none}
 .kr.is-drag .kr-bob{animation-play-state:paused;transform:translateY(-6px) scale(1.06)}
 .kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%;will-change:transform}
-.water:is([data-q="1"],[data-q="2"]) .kr:not(.mine) :is(.flame,.glow,.streak,.ripple),.kr.is-drag :is(.flame,.glow,.streak,.ripple){animation:none}
+.water[data-q="2"] .kr:not(.mine) :is(.flame,.glow,.streak,.ripple),.kr.is-drag :is(.flame,.glow,.streak,.ripple){animation:none}
 .water.off .kr :is(.flame,.glow,.streak,.ripple){animation-play-state:paused}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
 .kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:13px;font-weight:500;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
@@ -1489,7 +1489,7 @@ function hash(str) {
    - กันซ้อนกัน: เลือกเลนห่างใบอื่นตอนเกิด + ตรวจทุก ~0.45 วินาที (ไม่ใช่ทุกเฟรม) แล้วผลักออกด้านข้างเบา ๆ
    ========================================================= */
 const FLOW = {
-  groupA: .7,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
+  groupA: .55,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
   travel: [50, 100],          // วินาทีที่ใช้ลอยจากใกล้ไปไกล (สุ่มต่อกระทงจาก id) ยิ่งมากยิ่งช้า
   yNear: .76, yFar: .11,       // ตำแหน่งแนวตั้งในแม่น้ำ (สัดส่วนความสูง) ใกล้ / ไกล
   scaleNear: 1, scaleFar: .35,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
@@ -1521,7 +1521,7 @@ function initFlow(it) {
   it.grp = h("grp") < FLOW.groupA ? "A" : "B";
   it.Tc = FLOW.travel[0] + (FLOW.travel[1] - FLOW.travel[0]) * h("tc");
   it.dFar = FLOW.farZone[0] + (FLOW.farZone[1] - FLOW.farZone[0]) * h("df");
-  it.Ts = 14 + 14 * h("ts"); it.Td = 38 + 40 * h("td"); it.Tr = 8 + 9 * h("tr");
+  it.Tw = 55 + 50 * h("tw"); it.Ts = 14 + 14 * h("ts"); it.Td = 38 + 40 * h("td"); it.Tr = 8 + 9 * h("tr");
   it.ph = [h("p1") * 6.2832, h("p2") * 6.2832, h("p3") * 6.2832];
   it.amp = .6 + .8 * h("am");
   it.lane0 = .1 + .8 * h("x0"); it.lane = null; it.laneCyc = 0;
@@ -1544,10 +1544,11 @@ function flowAt(it, now, lite) {            // คำนวณตำแหน่
     if (cyc > 0) it.keepFade0 = false;
   }
   let sw = 0, rot = 0;
-  if (!lite) {
+  if (!reduceMotion.matches) {                 // โหมดลดคุณภาพ (lite) ยังโยก/เอียงต่อ เพราะเป็นแค่การคำนวณ ไม่เพิ่ม DOM; ปิดเฉพาะ Reduce Motion
     sw = FLOW.sway * it.amp * (.4 + .9 * d) * Math.sin(6.2832 * age / it.Ts + it.ph[0]);
     d += (it.grp === "A" ? .028 : .012) * Math.min(1, p) * Math.sin(6.2832 * age / it.Td + it.ph[1]);   // วนเป็นวงรีเล็ก ๆ
     rot = FLOW.tilt * Math.sin(6.2832 * age / it.Tr + it.ph[2]);
+    if (it.grp === "A") sw += .05 * (.5 + .5 * d) * Math.sin(6.2832 * age / it.Tw + it.ph[1] * 1.7);   // กระทงที่ลอยไปไกลแล้ว ยังไหลเอื่อย ๆ ไม่ค้างอยู่กับที่
   }
   d = clamp(d, 0, 1);
   const lane = it.lane != null && it.laneCyc === cyc ? it.lane : (cyc === 0 ? it.lane0 : .1 + .8 * fhash(it.id + "L" + cyc));
