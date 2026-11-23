@@ -1492,11 +1492,11 @@ const FLOW = {
   groupA: .55,                  // สัดส่วนกลุ่ม A (ลอยไปไกลแล้วอยู่ที่นั่น); ที่เหลือคือกลุ่ม B (ลอยวน)
   travel: [50, 100],          // วินาทีที่ใช้ลอยจากใกล้ไปไกล (สุ่มต่อกระทงจาก id) ยิ่งมากยิ่งช้า
   yNear: .76, yFar: .11,       // ตำแหน่งแนวตั้งในแม่น้ำ (สัดส่วนความสูง) ใกล้ / ไกล
-  scaleNear: 1, scaleFar: .35,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
+  scaleNear: 1, scaleFar: .42,   // ขนาด: ใกล้ 100–110%, ไกล 65–70%
   opacityFar: .8,              // ความสว่างตอนไกลสุด (ใกล้ = 1)
   farZone: [.62, .99],         // ความลึกปลายทางของกลุ่ม A
   fade: .06,                   // ช่วงจางเข้า/จางออกของกลุ่ม B (สัดส่วนของรอบ)
-  sway: .03, tilt: 3.2, count: [8, 16], phoneKW: .295, phoneFar: .39, nearCap: [4, 6], overlapFade: .45, nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
+  sway: .03, tilt: 3.2, count: [8, 16], phoneKW: .295, phoneFar: .44, nearCap: [4, 6], overlapFade: .45, nearD: .3, rush: 1.6,       // แกว่งแนวนอน (สัดส่วนความกว้าง) และเอียง (องศา)
   gap: 6, edge: 8,
   labelHide: [.72, .88]        // ป้ายชื่อเริ่มจางที่ depth นี้ และหายที่ depth นี้
 };
@@ -1633,7 +1633,7 @@ function reanchor(it) {                     // หลังลากแล้ว
 }
 function measure() {
   W = river.clientWidth || 320; H = river.clientHeight || 300;
-  KW = Math.round(W < 500 ? clamp(W * FLOW.phoneKW, 104, 150) : clamp(W * .17, 92, 150));   // มือถือแคบ: กระทงใหญ่กว่า (390px → ~115px)
+  KW = Math.round(W < 500 ? clamp(W * FLOW.phoneKW, 104, 150) : clamp(W * .195, 92, 172));   // มือถือแคบ: กระทงใหญ่กว่า (390px → ~115px)
   sFar = W < 500 ? FLOW.phoneFar : FLOW.scaleFar;
   river.style.setProperty("--kw", KW + "px");
   const sky = $("fxSky"); if (sky) sky.style.setProperty("--rise", Math.round(sky.clientHeight * .95) + "px");
