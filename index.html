@@ -1018,18 +1018,53 @@ function krathongSVG(spec, opt) {
     const back = [], front = [];
     for (let i = 0; i < n; i++) {
       const t = off + Math.PI * 2 * i / n, c = Math.cos(t), s = Math.sin(t);
-      const hh = h * (1 - .12 * s) * (1 + (jr(i, seed, 2) - .5) * .1), ww = w * (1 + (jr(i, seed, 3) - .5) * .1);
-      const tilt = c * 30 + (jr(i, seed, 4) - .5) * 6, y = yc + ry * s;
+      const hh = h * (1 + .1 * Math.abs(s)) * (1 + (jr(i, seed, 2) - .5) * .04), ww = w * (1 + (jr(i, seed, 3) - .5) * .04);
+      const tilt = -c * 15 + (jr(i, seed, 4) - .5) * 3, y = yc + ry * s;   // ใบด้านซ้าย/ขวาเอียงเข้าหากลางวง (โค้งรับกัน ไม่บานออก)
       const g = `<g transform="translate(${r1(cx + rx * c)} ${r1(y)}) rotate(${r1(tilt)})">${leafSVG(style, r1(ww), r1(hh), s < -.1 ? "lfd" : "lf", LC, u, jr(i, seed, 5))}</g>`;
       (s < -.02 ? back : front).push({y, m:g});
     }
     const join = a => a.sort((p, q) => p.y - q.y).map(o => o.m).join("");
     return {back:join(back), front:join(front)};
   };
+  // --- วงใบตองสำเร็จรูป: ผนังใบ + ขอบพับต่อเนื่อง (ไม่ใช่ใบแปะลอยทีละใบ) ---
+  const arcPts = (rx, ry, yc, a, b, n) => { const q = []; for (let i = 0; i <= n; i++) { const t = a + (b - a) * i / n; q.push(r1(cx + rx * Math.cos(t)) + " " + r1(yc + ry * Math.sin(t))); } return q; };
+  const wallBack = (rx, ry, yc, H, fid) => {      // ผนังด้านในครึ่งหลัง: เติมช่องว่างระหว่างใบ
+    const d = "M" + arcPts(rx, ry, yc - H, Math.PI, 2 * Math.PI, 18).join("L") + "L" + arcPts(rx, ry, yc, 2 * Math.PI, Math.PI, 18).join("L") + "Z";
+    return `<path d="${d}" fill="url(#${u}${fid})"/><path d="${d}" fill="url(#${u}ao)"/>`;
+  };
+  const lipFront = (rx, ry, yc, th, n) => {       // ขอบพับครึ่งหน้า ปิดโคนใบให้เป็นวงเดียวกัน
+    const d = "M" + arcPts(rx, ry, yc - 1, 0, Math.PI, 24).join("L") + "L" + arcPts(rx + 1, ry + 1, yc + th, Math.PI, 0, 24).join("L") + "Z";
+    let seg = "";
+    for (let i = 1; i < n; i++) { const t = Math.PI * i / n, c0 = Math.cos(t), s0 = Math.sin(t);
+      seg += `M${r1(cx + rx * c0)} ${r1(yc - 1 + ry * s0)}L${r1(cx + (rx + 1) * c0)} ${r1(yc + th + (ry + 1) * s0)}`; }
+    return `<path d="${d}" fill="url(#${u}lf)" stroke="${LC.dk}" stroke-width="1.1" stroke-linejoin="round"/><path d="${d}" fill="url(#${u}ao)" fill-opacity=".6"/><path d="${seg}" stroke="${LC.dk}" stroke-opacity=".5" stroke-width=".8"/>
+      <path d="${"M" + arcPts(rx - 1, ry - .5, yc + 1, .12, Math.PI - .12, 20).join("L")}" fill="none" stroke="#f4ffd0" stroke-opacity=".4" stroke-width=".9"/>`;
+  };
+  const pleats = (rx, ry, yc, H, flare, n, back) => {   // พัดจีบ: แถบจีบต่อเนื่อง สลับสว่าง/เข้ม ขอบบนโค้งเป็นพัด
+    const a0 = back ? Math.PI : 0, a1 = back ? 2 * Math.PI : Math.PI;
+    let o = "";
+    for (let i = 0; i < n; i++) {
+      const t0 = a0 + (a1 - a0) * i / n, t1 = a0 + (a1 - a0) * (i + 1) / n, tm = (t0 + t1) / 2;
+      const P = (t, R, y) => r1(cx + R * Math.cos(t)) + " " + r1(y + ry * Math.sin(t));
+      const hh = H * (1 + .06 * Math.sin(i * 2.1));
+      const d = `M${P(t0, rx, yc)}L${P(t0, rx + flare, yc - hh)}C${P(t0 + (t1 - t0) * .1, rx + flare + 3, yc - hh - 12)} ${P(t1 - (t1 - t0) * .1, rx + flare + 3, yc - hh - 12)} ${P(t1, rx + flare, yc - hh)}L${P(t1, rx, yc)}Z`;
+      const g = back ? (i % 2 ? "lfd" : "lf") : (i % 2 ? "lf" : "lfl");
+      const mid = `M${P(tm, rx, yc)}L${P(tm, rx + flare + 1, yc - hh - 7)}`;
+      o += `<path d="${d}" fill="url(#${u}${g})"/><path d="${d}" fill="url(#${u}sh)" fill-opacity="${i % 2 ? .9 : .5}"/><path d="${d}" fill="url(#${u}ao)" fill-opacity="${back ? .7 : .4}"/><path d="${d}" fill="none" stroke="${LC.dk}" stroke-width="1" stroke-linejoin="round"/><path d="${mid}" stroke="${LC.dk}" stroke-opacity=".28" stroke-width=".7"/>`;
+    }
+    return o;
+  };
   // [จำนวนใบนอก, กว้าง, สูง, จำนวนใบใน, กว้าง, สูง]
-  const LS = {1:[12, 40, 36, 10, 34, 31], 2:[12, 40, 34, 10, 34, 30], 3:[12, 40, 35, 10, 34, 30], 4:[16, 24, 35, 12, 22, 30], 5:[11, 36, 31, 9, 31, 27]}[style] || [12, 40, 36, 10, 34, 31];
-  const outer = ringLeaves(LS[0], 76, 14, 104, LS[2], LS[1], Math.PI / 2, 11);
-  const inner = ringLeaves(LS[3], 58, 11, 94, LS[5], LS[4], Math.PI / 2 + Math.PI / LS[3], 12);
+  const LS = {1:[14, 44, 36, 11, 38, 31], 2:[14, 44, 34, 11, 38, 30], 3:[14, 44, 35, 11, 38, 30], 4:[18, 28, 35, 13, 25, 30]}[style];
+  let outer, inner;
+  if (style === 5) {
+    outer = {back:pleats(76, 14, 104, 22, -4, 13, true), front:pleats(76, 14, 104, 28, -4, 13, false) + lipFront(77, 14, 104, 6, 13)};
+    inner = {back:pleats(58, 11, 94, 20, -3, 10, true), front:pleats(58, 11, 94, 24, -3, 10, false)};
+  } else {
+    const o1 = ringLeaves(LS[0], 76, 14, 104, LS[2], LS[1], Math.PI / 2, 11), i1 = ringLeaves(LS[3], 58, 11, 94, LS[5], LS[4], Math.PI / 2 + Math.PI / LS[3], 12);
+    outer = {back:wallBack(76, 14, 104, 24, "lfd") + o1.back, front:o1.front + lipFront(77, 14, 104, 7, 22)};
+    inner = {back:wallBack(58, 11, 94, 20, "lfd") + i1.back, front:i1.front + lipFront(58, 11, 94, 5, 16)};
+  }
 
   // --- ดอกไม้: ดอกเด่นตรงกลาง + วงดอกไม้รอบ ---
   const items = [];
@@ -1324,7 +1359,7 @@ function render() {
       let el = old.get(w.id);
       if (!el) {
         const t = document.createElement("template");
-        t.innerHTML = `<article class="wish-card" data-id="${escapeHTML(w.id)}"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">— ${escapeHTML(w.display_name || "ไม่ระบุชื่อ")}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`;
+        t.innerHTML = `<article class="wish-card" data-id="${escapeHTML(w.id)}"><div class="thumb">${krathongSVG(decode(w.flower), {anim:false})}</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>${escapeHTML(w.wish)}</p><div class="foot"><span class="by">${shownName(w.display_name) ? "— " + escapeHTML(shownName(w.display_name)) : ""}</span><span class="when">${escapeHTML(dateLabel(w.created_at))}</span></div></div></article>`;
         el = t.content.firstElementChild;
       }
       frag.push(el);
@@ -1594,15 +1629,17 @@ function measure() {
   items.forEach(it => { if (it.placed && !it.drag) { flowAt(it, now, lite); applyFx(it); } if (it.placed) place(it); });
   if (typeof layoutHeld === "function" && !$("held").hidden) layoutHeld();
 }
+const NONAME = "ไม่ระบุชื่อ";
+const shownName = n => { n = String(n == null ? "" : n).trim(); return n === NONAME ? "" : n; };   // ไม่ใส่ชื่อ = ปล่อยว่าง (ฐานข้อมูลยังเก็บค่าเดิมเพื่อไม่แตะ schema)
 function addItem(w, index, fresh, mine) {
-  const spec = decode(w.flower), name = w.display_name || "ไม่ระบุชื่อ";
+  const spec = decode(w.flower), name = shownName(w.display_name);
   const h1 = hash(w.id), h2 = hash(w.id + "b");
   const el = document.createElement("div");
   el.className = "kr" + (mine ? " mine" : "");
   el.setAttribute("role", "button");
   el.tabIndex = 0;
-  el.setAttribute("aria-label", "อ่านคำอธิษฐานของ " + name);
-  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}<span class="kr-name">${escapeHTML(name)}</span></div>`;
+  el.setAttribute("aria-label", name ? "อ่านคำอธิษฐานของ " + name : "อ่านคำอธิษฐาน");
+  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}${name ? `<span class="kr-name">${escapeHTML(name)}</span>` : ""}</div>`;
   river.appendChild(el);
   const it = {id:w.id, wish:w, el, x:.5, y:.5, w:KW, h:0, drag:false, hover:false, moved:false, placed:false, fresh:!!(fresh || mine)};
   it.h = el.offsetHeight || KW * .6;
@@ -1887,7 +1924,7 @@ function openWish(w) {
   if (w && w.blocked) return;
   $("viewScene").innerHTML = krathongSVG(decode(w.flower), {anim:true});
   $("viewWish").textContent = w.wish || "";
-  $("viewBy").textContent = "— " + (w.display_name || "ไม่ระบุชื่อ");
+  $("viewBy").textContent = shownName(w.display_name) ? "— " + shownName(w.display_name) : "";
   $("viewDate").textContent = dateLabel(w.created_at);
   hideHint();
   $("viewNote").hidden = true; $("viewNote").textContent = "";
@@ -2422,7 +2459,7 @@ function msRender(d) {
   MS.top = t;
   $("msTop").disabled = !t;
   if (t && CODE_RE.test(String(t.flower))) { try { $("msTopT").innerHTML = krathongSVG(decode(t.flower), {anim:false}); } catch (_) { $("msTopT").innerHTML = ""; } } else $("msTopT").innerHTML = "";
-  $("msTopN").textContent = t ? (t.display_name || "ไม่ระบุชื่อ") : "ยังไม่มีหัวใจ";
+  $("msTopN").textContent = t ? shownName(t.display_name) : "ยังไม่มีหัวใจ";
   $("msTopH").textContent = t ? "♥ " + msFmt(t.n) + " หัวใจ" : "รอหัวใจดวงแรก";
   const tl = Array.isArray(d.timeline) ? d.timeline.map(x => ({t:Date.parse(x.t), n:msNum(x.n)})).filter(x => Number.isFinite(x.t)) : [];
   const max = Math.max(1, ...tl.map(x => x.n)), w = 240 / Math.max(1, tl.length);
@@ -2897,7 +2934,7 @@ async function cardBlob(cv) {
 }
 async function cardMake(row, cancelled) {
   const spec = decode(row.flower);
-  const d = {wish:String(row.wish == null ? "" : row.wish).replace(/\r\n?/g, "\n").trim(), name:String(row.display_name || "").trim(), date:cardDate(row.created_at)};
+  const d = {wish:String(row.wish == null ? "" : row.wish).replace(/\r\n?/g, "\n").trim(), name:shownName(row.display_name), date:cardDate(row.created_at)};
   await cardFonts([d.wish, d.name, d.date, "THE MOON IS SHINING A wish beneath the moonlight " + CARD_SITE]);
   let art = null;
   const out = {warn:[]};
