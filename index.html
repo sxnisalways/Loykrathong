@@ -148,21 +148,33 @@ button:disabled{opacity:.6;cursor:wait}
 .bolt-ring{position:absolute;z-index:150;width:70px;height:26px;border:1.5px solid #cfe5ffcc;border-radius:50%;pointer-events:none}
 .kr.is-drag .kr-bob{animation-play-state:paused;transform:translateY(-6px) scale(1.06)}
 .kr-bob{animation:bob 5s ease-in-out infinite;transform-origin:50% 85%;will-change:transform}
-.kr:not(.mine) :is(.flame,.glow,.streak,.ripple),.kr.is-drag :is(.flame,.glow,.streak,.ripple){animation:none}
+.water:is([data-q="1"],[data-q="2"]) .kr:not(.mine) :is(.flame,.glow,.streak,.ripple),.kr.is-drag :is(.flame,.glow,.streak,.ripple){animation:none}
+.water.off .kr :is(.flame,.glow,.streak,.ripple){animation-play-state:paused}
 .kr-svg{display:block;width:100%;height:auto;overflow:visible;pointer-events:none}
 .kr-name{display:block;margin:-10px auto 0;width:max-content;max-width:100%;font-size:13px;font-weight:500;line-height:1.5;padding:2px 9px;border-radius:99px;background:#02121fcc;color:#ffeab5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #f5c66b33}
 .kr.mine .kr-name{background:var(--gold);color:#1b2a30;border-color:transparent;font-weight:700}
 @keyframes krIn{from{opacity:0}to{opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(calc(-1.8deg*var(--sw,1)))}25%{transform:translateY(calc(-3px*var(--sw,1))) rotate(calc(.6deg*var(--sw,1)))}50%{transform:translateY(calc(-5px*var(--sw,1))) rotate(calc(2deg*var(--sw,1)))}75%{transform:translateY(calc(-2px*var(--sw,1))) rotate(calc(-.4deg*var(--sw,1)))}}
-.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker 1.7s ease-in-out infinite}
-@keyframes flicker{0%,100%{transform:scale(1,1) skewX(0)}20%{transform:scale(.94,1.07) skewX(-2.5deg)}45%{transform:scale(1.05,.93) skewX(2deg)}70%{transform:scale(.97,1.05) skewX(-1deg)}}
-.glow{transform-box:fill-box;transform-origin:50% 50%;animation:glowp 2.6s ease-in-out infinite}
-@keyframes glowp{0%,100%{opacity:.7;transform:scale(.95)}50%{opacity:1;transform:scale(1.06)}}
-.streak{transform-box:fill-box;transform-origin:50% 50%;animation:streak 2.8s ease-in-out infinite}
+.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker 2.7s ease-in-out var(--fd,0s) infinite,flameSway 4.1s ease-in-out var(--fd,0s) infinite}
+@keyframes flameSway{0%,100%{rotate:-1.2deg}38%{rotate:1.8deg}71%{rotate:-.4deg}}
+@keyframes flicker{0%,100%{transform:scale(1,1) skewX(0)}13%{transform:scale(.96,1.05) skewX(-1.5deg)}31%{transform:scale(1.04,.95) skewX(1.8deg)}47%{transform:scale(.98,1.06) skewX(-.6deg)}68%{transform:scale(1.03,.96) skewX(1.2deg)}84%{transform:scale(.95,1.04) skewX(-1.8deg)}}
+.glow{transform-box:fill-box;transform-origin:50% 50%;animation:glowp 3.6s ease-in-out var(--fd,0s) infinite}
+@keyframes glowp{0%,100%{opacity:.76;transform:scale(.97)}35%{opacity:.96;transform:scale(1.04)}62%{opacity:.84;transform:scale(1)}}
+.streak{transform-box:fill-box;transform-origin:50% 50%;animation:streak 3.4s ease-in-out infinite}
 @keyframes streak{0%,100%{transform:scaleX(.82);opacity:.55}50%{transform:scaleX(1.08);opacity:1}}
 .ripple{transform-box:fill-box;transform-origin:50% 50%;animation:ripple 3.6s ease-out infinite}
 @keyframes ripple{0%{transform:scale(.88);opacity:.55}100%{transform:scale(1.22);opacity:0}}
 
+/* ประกายรอบกระทงของฉัน + จังหวะเริ่มต้นฉากแบบค่อยเป็นค่อยไป */
+.kr-spark{position:absolute;inset:-14% -12% 6% -12%;pointer-events:none}
+.kr-spark i{position:absolute;width:var(--ss);height:var(--ss);border-radius:50%;background:#fff3c8;box-shadow:0 0 5px 1px #ffd98a99;opacity:0;animation:krSpark var(--sd) ease-in-out var(--sl) infinite}
+@keyframes krSpark{0%,100%{opacity:0;transform:translateY(0) scale(.5)}40%{opacity:.8;transform:translateY(calc(var(--sy)*.5)) scale(1)}70%{opacity:.35}}
+.kr.is-drag .kr-spark i{animation-play-state:paused}
+@keyframes fxIn{from{opacity:0}to{opacity:1}}
+#waterGL{animation:fxIn 1.6s ease-out both}
+.fx-fireflies{animation:fxIn 2.4s ease-out .9s both}
+.fx-sky{animation:fxIn 2.8s ease-out 1.6s both}
+.kr.mine .kr-spark{animation:fxIn 2.4s ease-out 2.4s both}
 /* ---------- เอฟเฟกต์ฉาก (ไม่รับการแตะ อยู่หลังเนื้อหา) ---------- */
 .fx{position:absolute;pointer-events:none;overflow:hidden}
 .fx-sky{left:0;right:0;top:0;bottom:var(--water-h);z-index:-3;--rise:300px}
@@ -1634,6 +1646,16 @@ function measure() {
 }
 const NONAME = "ไม่ระบุชื่อ";
 const shownName = n => { n = String(n == null ? "" : n).trim(); return n === NONAME ? "" : n; };   // ไม่ใส่ชื่อ = ปล่อยว่าง (ฐานข้อมูลยังเก็บค่าเดิมเพื่อไม่แตะ schema)
+// ประกายเล็ก ๆ รอบกระทงของฉัน (ผูกกับกระทงตัวเอง ไม่รับการแตะ)
+function sparkles(seed) {
+  let o = "";
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + hash(seed + "a" + i) * .8, rr = .62 + hash(seed + "r" + i) * .3;
+    const x = 50 + Math.cos(a) * rr * 62, y = 40 + Math.sin(a) * rr * 52;
+    o += `<i style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--ss:${(2 + hash(seed + "s" + i) * 1.6).toFixed(1)}px;--sd:${(5 + hash(seed + "d" + i) * 4).toFixed(1)}s;--sl:-${(hash(seed + "l" + i) * 9).toFixed(1)}s;--sy:${-(6 + hash(seed + "y" + i) * 10).toFixed(0)}px"></i>`;
+  }
+  return `<div class="kr-spark" aria-hidden="true">${o}</div>`;
+}
 function addItem(w, index, fresh, mine) {
   const spec = decode(w.flower), name = shownName(w.display_name);
   const h1 = hash(w.id), h2 = hash(w.id + "b");
@@ -1641,8 +1663,9 @@ function addItem(w, index, fresh, mine) {
   el.className = "kr" + (mine ? " mine" : "");
   el.setAttribute("role", "button");
   el.tabIndex = 0;
+  el.style.setProperty("--fd", (-h2 * 4).toFixed(2) + "s");   // เปลวเทียนแต่ละกระทงไม่กะพริบพร้อมกัน
   el.setAttribute("aria-label", name ? "อ่านคำอธิษฐานของ " + name : "อ่านคำอธิษฐาน");
-  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}${name ? `<span class="kr-name">${escapeHTML(name)}</span>` : ""}</div>`;
+  el.innerHTML = `<div class="kr-rip" aria-hidden="true"><i></i><i></i><i></i></div><div class="kr-bob" style="animation-duration:${(4.2 + h2 * 2.6).toFixed(2)}s;animation-delay:${(-h1 * 5).toFixed(2)}s">${krathongSVG(spec, {anim:true})}${name ? `<span class="kr-name">${escapeHTML(name)}</span>` : ""}</div>${mine ? sparkles(h1) : ""}`;
   river.appendChild(el);
   const it = {id:w.id, wish:w, el, x:.5, y:.5, w:KW, h:0, drag:false, hover:false, moved:false, placed:false, fresh:!!(fresh || mine)};
   it.h = el.offsetHeight || KW * .6;
@@ -1809,7 +1832,7 @@ function tick(t) {
 }
 requestAnimationFrame(tick);
 if ("IntersectionObserver" in window) {
-  new IntersectionObserver(([e]) => { riverVisible = e.isIntersecting; }, {threshold:0}).observe($("water"));
+  new IntersectionObserver(([e]) => { riverVisible = e.isIntersecting; $("water").classList.toggle("off", !riverVisible); }, {threshold:0}).observe($("water"));
   new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; $("hero").classList.toggle("fx-paused", !heroVisible); }, {threshold:0}).observe($("hero"));
   new IntersectionObserver(([e]) => { $("openFab").classList.toggle("show", !e.isIntersecting); }, {threshold:0}).observe($("open"));
 } else $("openFab").classList.add("show");
@@ -3037,7 +3060,7 @@ varying vec2 vUv; uniform vec2 uRes; uniform float uT; uniform vec2 uMoon; unifo
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*noise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return s;}
-float hgt(vec2 q,float t){return fbm(q*1.5+vec2(t*.05,t*.03))+.5*fbm(q*vec2(3.4,2.8)+vec2(-t*.07,t*.05));}
+float hgt(vec2 q,float t){return fbm(q*1.5+vec2(t*.05,t*.03))+.5*fbm(q*vec2(3.4,2.8)+vec2(-t*.07,t*.05))+.28*noise(q*vec2(1.1,4.6)+vec2(t*.036,-t*.058));}
 void main(){
   float d=vUv.y, asp=uRes.x/uRes.y;
   float z=1./(.10+d*.95);
@@ -3048,6 +3071,7 @@ void main(){
   vec3 top=vec3(.10,.34,.46), mid=vec3(.04,.176,.286), deep=vec3(.012,.055,.105);
   vec3 col=mix(mix(top,mid,smoothstep(0.,.42,d)),deep,smoothstep(.42,1.,d));
   float sky=pow(1.-d,3.);
+  col+=vec3(.05,.034,.012)*pow(1.-d,4.);   // แสงจันทร์อุ่นเรื่อ ๆ ที่ขอบฟ้า
   col+=vec3(.09,.13,.16)*sky*(.55+.9*h0);
   col*=1.+.5*(h0-.55)*(.35+.65*d);
   col+=vec3(.02,.05,.07)*clamp(n.x*.5+n.y*.35,0.,1.)*(.4+d);
@@ -3065,9 +3089,9 @@ void main(){
     rbr+=(ring-.5)*2.*env*k.w;
     float below=(vUv.y-k.y)/k.z;
     float dxs=(vUv.x-k.x)*asp/k.z;
-    float flick=.7+.3*noise(vec2(dxs*5.,vUv.y*60.-uT*.9));
-    float cg=exp(-dxs*dxs*5.)*smoothstep(.05,.25,below)*exp(-below*1.7)*flick;
-    col+=vec3(1.,.72,.38)*cg*.16*k.w;
+    float flick=.5+.5*noise(vec2(dxs*4.+h0*1.4,vUv.y*46.-uT*.55));
+    float cg=exp(-dxs*dxs*6.5)*smoothstep(.04,.22,below)*exp(-below*1.2)*flick;
+    col+=vec3(1.,.72,.38)*cg*.2*k.w;
     float gl=uG[i];
     if(gl>.01){
       col+=vec3(1.,.78,.45)*exp(-rr*rr*.5)*gl*.2;
