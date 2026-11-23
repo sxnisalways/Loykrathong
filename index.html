@@ -1254,89 +1254,64 @@ function shootingStar() {
   setTimeout(() => { shootingStar(); scheduleShoot(false); }, first ? 5000 + Math.random() * 3000 : 12000 + Math.random() * 6000);
 })(true);
 
-/* แสงอธิษฐานตอนปล่อยกระทงสำเร็จ: ริบบิ้นแสงโทนออโรร่า (เขียวมิ้นต์ ฟ้าน้ำทะเล ม่วง ชมพู) ค่อย ๆ พลิ้วจากกระทง
-   ขึ้นไปหาดวงจันทร์ใช้เวลาราว 3 วินาที เปลี่ยนเป็นสีทองนวลเมื่อใกล้ถึง แล้วจางหาย เกิดประกายรอบดวงจันทร์
-   จากนั้นกลับสู่ฉากปกติ (canvas ชั่วคราว ไม่รับการแตะ) */
+/* พลุเบา ๆ ตอนปล่อยกระทงสำเร็จ: 3 ดอก สีทอง/ขาวนวล ไม่มีโทนฟ้า-เขียว ใช้ canvas ชั่วคราว (fwCanvas) ไม่รับการแตะ
+   เสร็จภายใน ~3 วินาทีแล้วล้างจอ ปิดเมื่อเปิด Reduce Motion */
 let wishRunning = false;
-const WISH_LIGHT = false;   // ปิดละอองแสงตอนปล่อยกระทงไว้ก่อน (เปลี่ยนเป็น true เพื่อเปิดกลับ)
+const WISH_LIGHT = true;
 function wishLight() {
   if (!WISH_LIGHT || wishRunning || reduceMotion.matches) return;
-  const cv = $("fwCanvas"), ctx = cv.getContext && cv.getContext("2d"), moonEl = document.querySelector(".moon");
-  if (!ctx || !moonEl) return;
+  const cv = $("fwCanvas"), ctx = cv.getContext && cv.getContext("2d");
+  if (!ctx) return;
   wishRunning = true;
   const waitFrom = performance.now();
   (function waitForKrathong() {
     const it = items.get(justLaunchedId), mine = wishes.find(w => w.id === justLaunchedId);
-    if (mine && mine.blocked) { wishRunning = false; return; }          // กระทงที่ถูกบล็อกจะโดนฟ้าผ่าแทน ไม่ส่งแสงอธิษฐาน
-    if (it) return run(it);
+    if (mine && mine.blocked) { wishRunning = false; return; }          // กระทงที่ถูกบล็อกจะโดนฟ้าผ่าแทน ไม่มีพลุ
+    if (it) return run();
     if (performance.now() - waitFrom > 6000) { wishRunning = false; return; }
     setTimeout(waitForKrathong, 120);
   })();
-  function run(it) {
+  function run() {
     const dpr = Math.min(2, window.devicePixelRatio || 1), w = window.innerWidth, h = window.innerHeight;
     cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const TOTAL = w < 700 ? 34 : 52, EMIT = 1700, HUES = [44, 48, 40, 52, 200];
-    const ribbons = [], sparks = [], sparkCols = ["#fff4cf", "#ffe49a", "#ffd36b", "#ffffff"];
-    let emitted = 0, prev = performance.now(), t0 = prev, arrivals = 0, cancelled = false, scrolledAway = false;
-    const startY = window.scrollY;
-    const stop = () => { cancelled = true; };
-    ["wheel", "touchstart", "keydown", "pointerdown"].forEach(ev => window.addEventListener(ev, stop, {passive:true, once:true}));
-    const moonC = () => { const r = moonEl.getBoundingClientRect(); return {x:r.left + r.width / 2 + window.scrollX, y:r.top + r.height / 2 + window.scrollY, r:r.width / 2}; };
-    const krC = () => { const r = it.el.getBoundingClientRect(); return {x:r.left + r.width / 2 + window.scrollX, y:r.top + r.height * .45 + window.scrollY}; };
-    const ease = u => .5 - .5 * Math.cos(Math.PI * u);
-    const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    const N = w < 700 ? 22 : 34, HUES = [42, 46, 38, 50], bursts = [], parts = [];
+    const spots = [[.5, .26, 0], [.28, .34, .55], [.72, .3, 1.05]];   // ตำแหน่ง (สัดส่วนจอ) และเวลาเริ่ม (วินาที)
+    let t0 = performance.now(), prev = t0, nextB = 0;
     function frame(now) {
       const dt = Math.min(.05, (now - prev) / 1000); prev = now;
-      const el = now - t0, sx = window.scrollX, sy = window.scrollY, M = moonC();
+      const el = (now - t0) / 1000;
       ctx.clearRect(0, 0, w, h);
-      while (emitted < TOTAL && el >= emitted * (EMIT / TOTAL)) {
-        const k = krC();
-        ribbons.push({sx:k.x + (Math.random() - .5) * 60, sy:k.y + (Math.random() - .5) * 10, ox:(Math.random() - .5) * 1.3, oy:(Math.random() - .5) * 1.3,
-          dur:2.6 + Math.random() * .8, age:0, amp:(14 + Math.random() * 40) * (Math.random() < .5 ? 1 : -1), amp2:4 + Math.random() * 10, ph:Math.random() * 6.28,
-          sz:1.6 + Math.random() * 2.6, hue:HUES[Math.floor(Math.random() * HUES.length)], tw:Math.random() * 6.28, done:false, x:0, y:0});
-        emitted++;
-      }
-      // ถ้าดวงจันทร์อยู่นอกจอ ค่อย ๆ เลื่อนหน้าขึ้นไปให้เห็น แล้วกลับที่เดิมตอนจบ (ยกเลิกทันทีถ้าผู้ใช้เลื่อนเอง)
-      if (!scrolledAway && !cancelled && el > 1100) {
-        const mr = moonEl.getBoundingClientRect();
-        if (mr.bottom < 30 || mr.top > h - 30) { scrolledAway = true; window.scrollTo({top:Math.max(0, M.y - h * .32), behavior:"smooth"}); }
-      }
-      ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
-      for (let i = ribbons.length - 1; i >= 0; i--) {
-        const q = ribbons[i];
-        q.age += dt; const u = Math.min(1, q.age / q.dur), e = ease(u);
-        const tx = M.x + q.ox * M.r * .8, ty = M.y + q.oy * M.r * .8, dx = tx - q.sx, dy = ty - q.sy, len = Math.hypot(dx, dy) || 1;
-        const sway = (Math.sin(u * 6.28 * 1.1 + q.ph) * q.amp + Math.sin(u * 6.28 * 2.6 + q.ph * 1.7) * q.amp2) * Math.sin(Math.PI * u);
-        const x = q.sx + dx * e + (-dy / len) * sway, y = q.sy + dy * e + (dx / len) * sway - Math.sin(Math.PI * u) * 10;
-        if (u >= 1) {
-          arrivals++;
-          if (arrivals === 1) { moonEl.classList.remove("pulse"); void moonEl.offsetWidth; moonEl.classList.add("pulse"); setTimeout(() => moonEl.classList.remove("pulse"), 2600); }
-          const n = arrivals === 1 ? 4 : (Math.random() < .35 ? 1 : 0);
-          for (let j = 0; j < n; j++) sparks.push({a:Math.random() * 6.28, d:1.05 + Math.random() * .75, age:0, life:.9 + Math.random() * .7, sz:3 + Math.random() * 4, c:sparkCols[Math.floor(Math.random() * 4)]});
-          ribbons.splice(i, 1); continue;
+      while (nextB < spots.length && el >= spots[nextB][2]) {
+        const [fx, fy] = spots[nextB++], cx = w * fx + (Math.random() - .5) * w * .06, cy = h * fy + (Math.random() - .5) * h * .04;
+        bursts.push({x:cx, y:cy, age:0});
+        for (let i = 0; i < N; i++) {
+          const a = (i / N) * 6.2832 + Math.random() * .3, sp = (w < 700 ? 70 : 105) * (.55 + Math.random() * .5);
+          parts.push({x:cx, y:cy, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp, age:0, life:1.1 + Math.random() * .7, hue:HUES[i % 4], white:Math.random() < .3});
         }
-        const a = Math.min(1, u / .12) * (1 - smooth(.8, 1, u)) * (.7 + .3 * Math.sin(now / 140 + q.tw)), r = q.sz * (1 - .35 * u) * 4.2;
-        const px = x - sx, py = y - sy, col = "hsla(" + q.hue + ",100%,";
-        const g = ctx.createRadialGradient(px, py, 0, px, py, r);
-        g.addColorStop(0, col + "92%," + (a * .95).toFixed(3) + ")"); g.addColorStop(.35, col + "75%," + (a * .38).toFixed(3) + ")"); g.addColorStop(1, col + "65%,0)");
-        ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, r, 0, 6.2832); ctx.fill();
       }
-      // ประกายเล็ก ๆ รอบดวงจันทร์ (รูปดาวสี่แฉกจาง ๆ)
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const k = sparks[i]; k.age += dt;
-        if (k.age >= k.life) { sparks.splice(i, 1); continue; }
-        const x = M.x + Math.cos(k.a) * M.r * k.d - sx, y = M.y + Math.sin(k.a) * M.r * k.d - sy, t = Math.sin(Math.PI * k.age / k.life), r = k.sz * (.6 + .6 * t);
-        ctx.globalAlpha = t * .9; ctx.strokeStyle = k.c; ctx.fillStyle = k.c; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke();
-        ctx.beginPath(); ctx.arc(x, y, 1.3, 0, 6.2832); ctx.fill();
+      ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+      for (let i = bursts.length - 1; i >= 0; i--) {                    // แสงวาบกลางดอกพลุ
+        const f = bursts[i]; f.age += dt;
+        if (f.age > .45) { bursts.splice(i, 1); continue; }
+        const u = f.age / .45, r = 26 + 40 * u, g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+        g.addColorStop(0, "hsla(46,100%,88%," + (.32 * (1 - u)).toFixed(3) + ")"); g.addColorStop(1, "hsla(44,100%,70%,0)");
+        ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, 6.2832); ctx.fill();
       }
-      if (ribbons.length || sparks.length || emitted < TOTAL) requestAnimationFrame(frame);
-      else {
-        ctx.clearRect(0, 0, w, h); ctx.globalAlpha = 1; wishRunning = false;
-        ["wheel", "touchstart", "keydown", "pointerdown"].forEach(ev => window.removeEventListener(ev, stop));
-        if (scrolledAway && !cancelled) window.scrollTo({top:startY, behavior:"smooth"});
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const q = parts[i]; q.age += dt;
+        if (q.age >= q.life) { parts.splice(i, 1); continue; }
+        const ox = q.x, oy = q.y;
+        q.vx *= 1 - 1.6 * dt; q.vy = q.vy * (1 - 1.6 * dt) + 38 * dt;   // แรงต้านอากาศ + แรงโน้มถ่วงเบา ๆ
+        q.x += q.vx * dt; q.y += q.vy * dt;
+        const u = q.age / q.life, a = (1 - u) * (1 - u) * (.7 + .3 * Math.sin(now / 60 + i));
+        ctx.globalAlpha = Math.max(0, a);
+        ctx.strokeStyle = q.white ? "hsl(48,90%,92%)" : "hsl(" + q.hue + ",100%,68%)";
+        ctx.lineWidth = 1.7 * (1 - .5 * u);
+        ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(q.x, q.y); ctx.stroke();
       }
+      if (parts.length || nextB < spots.length) requestAnimationFrame(frame);
+      else { ctx.clearRect(0, 0, w, h); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; wishRunning = false; }
     }
     requestAnimationFrame(frame);
   }
