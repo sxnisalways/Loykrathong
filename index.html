@@ -628,7 +628,10 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
 /* ---------- กำแพงคำอธิษฐาน (ww-*) ---------- */
 .dialog.ww{width:min(100%,1000px)}
 .ww-body{padding-top:6px}
-.ww-grid{column-width:210px;column-gap:14px}
+.ww-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:720px){.ww-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ww-grid .wish-card .foot{align-items:center;margin-top:10px}
+.ww-grid .like-btn.mini{margin-top:0}
 .ww-card{break-inside:avoid;display:block;margin:0 0 14px;padding:16px 16px 13px;border-radius:16px;border:1px solid #f5c66b40;background:linear-gradient(160deg,#12345a99,#0a1f3bcc 70%);box-shadow:0 0 22px #f5c66b12,inset 0 1px 0 #ffffff12;position:relative}
 .ww-card:before{content:"✦";position:absolute;top:9px;right:12px;font-size:11px;color:#f5c66b99;line-height:1}
 .ww-wish{margin:0;font-size:15.5px;line-height:1.8;color:var(--cream);white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
@@ -701,7 +704,7 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
 <main>
   <p id="connectionStatus" class="connection-status" role="status" aria-live="polite">กำลังโหลดกระทงจากสายน้ำ…</p>
   <section id="statsSection" class="ms" aria-labelledby="msTitle">
-    <div class="section-head"><h2 id="msTitle">สถิติแห่งแสงจันทร์</h2></div>
+    <div class="section-head"><h2 id="msTitle">สถิติแห่งแสงจันทร์</h2><button class="mine-chip" id="mineBtn" type="button"><span aria-hidden="true">♡</span> กระทงของฉัน</button></div>
     <div class="ms-grid" id="msGrid" aria-busy="true">
       <div class="ms-card"><span class="ms-k">กระทงและคำอธิษฐาน</span><b class="ms-v" id="msK">—</b><small>ที่ลอยอยู่ในสายน้ำ</small></div>
       <div class="ms-card"><span class="ms-k">หัวใจทั้งหมด</span><b class="ms-v" id="msH">—</b><small>ที่ทุกคนส่งให้กัน</small></div>
@@ -711,8 +714,7 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
     <p class="ms-err" id="msErr" role="status" hidden>โหลดสถิติไม่สำเร็จ <button type="button" id="msRetry">ลองอีกครั้ง</button></p>
   </section>
   <section id="feedSection">
-    <div class="section-head"><h2>กระทงจากทุกคน</h2><span class="count-pill">ลอยแล้ว <b id="count">—</b> กระทง</span><button class="mine-chip" id="mineBtn" type="button"><span aria-hidden="true">♡</span> กระทงของฉัน</button></div>
-    <div class="feed" id="feed" aria-busy="true"></div>
+        <div class="feed" id="feed" aria-busy="true"></div>
     <div class="feed-tools"><button class="secondary" id="showMore" type="button" hidden>ดูเพิ่มเติม</button> <button class="secondary" id="refresh" type="button">โหลดข้อมูลใหม่</button></div>
   </section>
   <footer>สร้างพื้นที่เล็ก ๆ สำหรับแบ่งปันความหวัง<br>โปรดไม่ใส่ข้อมูลส่วนตัวหรือข้อความที่ระบุตัวตนได้</footer>
@@ -2355,7 +2357,7 @@ function renderLike(pop) {
   if (pop) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
 }
 function renderFeedLikes() {                 // หัวใจบนการ์ดคำอธิษฐานด้านล่าง (ใช้ข้อมูลชุดเดียวกับหน้าอ่าน)
-  document.querySelectorAll("#feed .like-btn[data-like]").forEach(b => {
+  document.querySelectorAll(".like-btn[data-like]").forEach(b => {
     const id = b.dataset.like;
     b.hidden = !likes.ok;
     if (b.hidden) return;
@@ -2495,19 +2497,27 @@ sessionOrNull();   // เปิดเว็บ: ตรวจ session ถ้า�
 
 
 /* ---------- กำแพงคำอธิษฐาน: ใช้ข้อมูล wishes เดิม ไม่มี request ใหม่ กรอง blocked/ว่างออก ไม่แสดงชื่อ ---------- */
-const WW = {shown:0, step:48, list:[]};
+const WW = {shown:0, step:24, list:[]};
 function wwCollect() {
   return wishes.filter(w => !w.blocked && typeof w.wish === "string" && w.wish.trim() && w.wish.trim() !== "—");
 }
+const WWC = new Map();   // เก็บการ์ดที่สร้างแล้ว (SVG กระทงหนัก ไม่สร้างซ้ำเมื่อเปิด-ปิดกำแพง)
 function wwCard(w) {
-  const d = dateLabel(w.created_at);
-  return '<article class="ww-card"><p class="ww-wish">' + escapeHTML(w.wish.trim()) + '</p>' + (d ? '<time class="ww-date" datetime="' + escapeHTML(String(w.created_at)) + '">' + escapeHTML(d) + '</time>' : "") + '</article>';
+  let el = WWC.get(w.id);
+  if (el) return el;
+  const d = dateLabel(w.created_at), id = escapeHTML(w.id);
+  const t = document.createElement("template");
+  t.innerHTML = '<article class="wish-card"><div class="thumb">' + krathongSVG(decode(w.flower), {anim:false}) + '</div><div class="wbody"><div class="wlabel">คำอธิษฐาน</div><p>' + escapeHTML(w.wish.trim()) + '</p><div class="foot">' + (d ? '<time class="when" datetime="' + escapeHTML(String(w.created_at)) + '">' + escapeHTML(d) + '</time>' : '<span></span>') + '<button type="button" class="like-btn mini" data-like="' + id + '" aria-pressed="false" hidden><span class="heart" aria-hidden="true">♡</span><b>–</b><span class="sr-only">กดหัวใจ</span></button></div></div></article>';
+  el = t.content.firstElementChild;
+  WWC.set(w.id, el);
+  return el;
 }
 function wwRender(more) {
   const grid = $("wwGrid"), st = $("wwState");
-  if (!more) { WW.list = wwCollect(); WW.shown = 0; grid.innerHTML = ""; }
+  if (!more) { WW.list = wwCollect(); WW.shown = 0; grid.textContent = ""; }
   const next = WW.list.slice(WW.shown, WW.shown + WW.step);
-  if (next.length) grid.insertAdjacentHTML("beforeend", next.map(wwCard).join(""));
+  if (next.length) grid.append(...next.map(wwCard));
+  renderFeedLikes();
   WW.shown += next.length;
   $("wwMore").hidden = WW.shown >= WW.list.length;
   if (!WW.list.length) {
@@ -2519,6 +2529,7 @@ function wwRender(more) {
 $("wallBtn").addEventListener("click", () => { wwRender(false); openModal($("wallModal")); $("wwBody").scrollTop = 0; });
 $("wwClose").addEventListener("click", closeModal);
 $("wwMore").addEventListener("click", () => wwRender(true));
+$("wwGrid").addEventListener("click", e => { const lb = e.target.closest(".like-btn[data-like]"); if (lb) toggleLike(lb.dataset.like); });
 $("wwRefresh").addEventListener("click", async () => {
   const b = $("wwRefresh"); b.disabled = true;
   try { await loadKrathongs(true); } finally { b.disabled = false; }
