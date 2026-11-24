@@ -517,7 +517,7 @@ button.mine-card:hover{border-color:#f5c66b;box-shadow:0 0 16px #f5c66b30}
 body.viewing{overflow:hidden}
 body.viewing{--water-h:56vh;--moon-size:clamp(84px,17vmin,150px)}
 @supports(height:1svh){body.viewing{--water-h:56svh}}
-body.viewing main,body.viewing footer,body.viewing .hero-inner,body.viewing .top-link,body.viewing .fab,body.viewing .hint{display:none!important}
+body.viewing main,body.viewing footer,body.viewing .hero-inner,body.viewing .top-link,body.viewing #wallBtn,body.viewing .fab,body.viewing .hint{display:none!important}
 body.viewing #hero{min-height:0;height:100vh;padding-bottom:0}
 @supports(height:1svh){body.viewing #hero{height:100svh}}
 body.viewing .moon{top:max(64px,9vh)}
@@ -536,9 +536,6 @@ body.viewing .moon{top:max(64px,9vh)}
 .ms-top .thumb{flex:0 0 clamp(52px,14vw,64px);width:clamp(52px,14vw,64px)}
 .ms-top .thumb svg{width:100%;height:auto;display:block}
 .ms-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
-.ms-tl{grid-column:1/-1}
-.ms-tl svg{display:block;width:100%;height:72px;margin-top:6px}
-.ms-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:11.5px}
 .ms-bar{fill:#f5c66b;opacity:.85}
 .ms-bar.z{fill:#f5c66b55}
 .ms-err{margin:10px 0 0;color:#f2cf86;font-size:13px}
@@ -619,14 +616,6 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
 .ms-v.ms-sm{font-size:clamp(22px,5.4vw,30px);line-height:1.3}
 .ms-top{min-height:0;border-radius:0}
 .ms-top:not(:disabled):hover #msTopN,.ms-top:not(:disabled):focus-visible #msTopN{text-decoration:underline;text-decoration-color:#f5c66b80;text-underline-offset:5px}
-.ms-tl{border:0!important;padding:10px 0 0!important;margin-top:4px}
-.ms-tl svg{height:92px;margin-top:10px;overflow:visible}
-.ms-line{fill:none;stroke:var(--gold);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.ms-area{fill:#f5c66b14;stroke:none}
-.ms-hit{fill:transparent}
-.ms-tl{position:relative}
-.ms-tl svg{border-bottom:1px solid var(--color-border-subtle)}
-.ms-axis{margin-top:6px}
 /* แก้รูปกระทงในหน้าต่างคำอธิษฐานถูกตัด: svg เต็มกรอบ 190px แล้ว viewBox จัดกลางทั้งใบ */
 .view-scene{position:relative}
 .view-scene svg{position:absolute;inset:0;width:100%;height:100%}
@@ -634,6 +623,20 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
 .top-link,.sound-btn{border-color:#ffffff26;background:#04101f4d}
 .moon-info b{font-size:clamp(13px,1.6vw,16px)}
 .moon-info span{font-size:clamp(11.5px,1.3vw,13px);color:#dbe7ec}
+/* รายการคำอธิษฐานด้านล่างถูกแทนด้วยกำแพงคำอธิษฐาน: ซ่อนไว้ (โค้ดเดิมยังอยู่ ไม่ลบ) */
+#feed,#showMore{display:none!important}
+/* ---------- กำแพงคำอธิษฐาน (ww-*) ---------- */
+.dialog.ww{width:min(100%,1000px)}
+.ww-body{padding-top:6px}
+.ww-grid{column-width:210px;column-gap:14px}
+.ww-card{break-inside:avoid;display:block;margin:0 0 14px;padding:16px 16px 13px;border-radius:16px;border:1px solid #f5c66b40;background:linear-gradient(160deg,#12345a99,#0a1f3bcc 70%);box-shadow:0 0 22px #f5c66b12,inset 0 1px 0 #ffffff12;position:relative}
+.ww-card:before{content:"✦";position:absolute;top:9px;right:12px;font-size:11px;color:#f5c66b99;line-height:1}
+.ww-wish{margin:0;font-size:15.5px;line-height:1.8;color:var(--cream);white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.ww-date{display:block;margin-top:10px;font-size:12px;color:#9fb9c8}
+.ww-state{text-align:center;color:#c9d9e2;line-height:1.8;padding:34px 12px;margin:0}
+.ww-state b{display:block;font-family:var(--serif);font-size:18px;color:var(--gold);margin-bottom:4px}
+.ww-more{display:block;margin:4px auto 14px;min-width:160px}
+@media(max-width:560px){.top-actions{flex-wrap:wrap;justify-content:flex-end}}
 /* ================= END VISUAL REFINEMENT ================= */
 </style>
 </head>
@@ -655,7 +658,7 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
     <div class="top-actions">
       <button class="sound-btn view-btn" id="viewBtn" type="button" aria-pressed="false" aria-label="เข้าโหมดรับชมเทศกาล"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span><span class="txt">รับชม</span></button>
       <button class="sound-btn" id="soundBtn" type="button" aria-pressed="false" aria-label="เปิดเพลงและเสียง"><span class="ico" aria-hidden="true">🔇</span><span class="txt">เปิดเสียง</span></button>
-      <a class="top-link" href="#feedSection">คำอธิษฐาน</a>
+      <button class="sound-btn" id="wallBtn" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span><span class="txt">กำแพงคำอธิษฐาน</span></button>
     </div>
   </header>
   <audio id="bgm" src="loy-krathong.mp3" loop preload="none"></audio>
@@ -704,12 +707,11 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
       <div class="ms-card"><span class="ms-k">หัวใจทั้งหมด</span><b class="ms-v" id="msH">—</b><small>ที่ทุกคนส่งให้กัน</small></div>
       <div class="ms-card"><span class="ms-k">ฐานยอดนิยม</span><b class="ms-v ms-sm" id="msB">—</b><small id="msBn">&nbsp;</small></div>
       <button class="ms-card ms-top" id="msTop" type="button" disabled><span class="thumb" id="msTopT" aria-hidden="true"></span><span class="ms-tx"><span class="ms-k">กระทงยอดหัวใจ</span><b class="ms-v ms-sm" id="msTopN">—</b><small id="msTopH">&nbsp;</small></span></button>
-      <div class="ms-card ms-tl"><span class="ms-k">กระทงที่ลอยใน 24 ชั่วโมงที่ผ่านมา</span><svg id="msChart" viewBox="0 0 240 64" preserveAspectRatio="none" role="img" aria-label="กราฟจำนวนกระทงรายชั่วโมง"></svg><div class="ms-axis"><span id="msA0"></span><span id="msA1"></span></div></div>
     </div>
     <p class="ms-err" id="msErr" role="status" hidden>โหลดสถิติไม่สำเร็จ <button type="button" id="msRetry">ลองอีกครั้ง</button></p>
   </section>
   <section id="feedSection">
-    <div class="section-head"><h2>คำอธิษฐานจากทุกคน</h2><span class="count-pill">ลอยแล้ว <b id="count">—</b> กระทง</span><button class="mine-chip" id="mineBtn" type="button"><span aria-hidden="true">♡</span> กระทงของฉัน</button></div>
+    <div class="section-head"><h2>กระทงจากทุกคน</h2><span class="count-pill">ลอยแล้ว <b id="count">—</b> กระทง</span><button class="mine-chip" id="mineBtn" type="button"><span aria-hidden="true">♡</span> กระทงของฉัน</button></div>
     <div class="feed" id="feed" aria-busy="true"></div>
     <div class="feed-tools"><button class="secondary" id="showMore" type="button" hidden>ดูเพิ่มเติม</button> <button class="secondary" id="refresh" type="button">โหลดข้อมูลใหม่</button></div>
   </section>
@@ -753,6 +755,19 @@ input,textarea{border:1px solid #ffffff2a;background:#04101f80}
       <div class="view-like"><button class="like-btn" id="likeBtn" type="button" aria-pressed="false" hidden><span class="heart" aria-hidden="true">♡</span><b id="likeN">0</b><span class="sr-only" id="likeLbl">กดหัวใจ</span></button><span class="like-msg" id="likeMsg" role="status" aria-live="polite"></span></div>
     </div>
     <div class="dlg-actions"><button class="secondary" id="viewClose" type="button">ปิด</button><button class="primary" id="viewMake" type="button">สร้างกระทงบ้าง</button></div>
+  </div>
+</div>
+
+<!-- กำแพงคำอธิษฐาน (Wish Wall) -->
+<div class="modal" id="wallModal" role="presentation">
+  <div class="dialog ww" id="wallDialog" role="dialog" aria-modal="true" aria-labelledby="wwTitle" tabindex="-1">
+    <div class="dlg-head"><h2 id="wwTitle">กำแพงคำอธิษฐาน</h2><p class="sub" id="wwSub">คำอธิษฐานที่ลอยอยู่ในสายน้ำคืนนี้</p></div>
+    <div class="dlg-body ww-body" id="wwBody">
+      <div class="ww-grid" id="wwGrid"></div>
+      <p class="ww-state" id="wwState" role="status" hidden></p>
+      <button class="secondary ww-more" id="wwMore" type="button" hidden>แสดงเพิ่ม</button>
+    </div>
+    <div class="dlg-actions"><button class="secondary" id="wwRefresh" type="button">โหลดใหม่</button><button class="primary" id="wwClose" type="button">ปิด</button></div>
   </div>
 </div>
 
@@ -2479,6 +2494,37 @@ window.addEventListener("online", () => { sessionOrNull(); });
 sessionOrNull();   // เปิดเว็บ: ตรวจ session ถ้ายังไม่มีให้ล็อกอินแบบ anonymous (ครั้งเดียว)
 
 
+/* ---------- กำแพงคำอธิษฐาน: ใช้ข้อมูล wishes เดิม ไม่มี request ใหม่ กรอง blocked/ว่างออก ไม่แสดงชื่อ ---------- */
+const WW = {shown:0, step:48, list:[]};
+function wwCollect() {
+  return wishes.filter(w => !w.blocked && typeof w.wish === "string" && w.wish.trim() && w.wish.trim() !== "—");
+}
+function wwCard(w) {
+  const d = dateLabel(w.created_at);
+  return '<article class="ww-card"><p class="ww-wish">' + escapeHTML(w.wish.trim()) + '</p>' + (d ? '<time class="ww-date" datetime="' + escapeHTML(String(w.created_at)) + '">' + escapeHTML(d) + '</time>' : "") + '</article>';
+}
+function wwRender(more) {
+  const grid = $("wwGrid"), st = $("wwState");
+  if (!more) { WW.list = wwCollect(); WW.shown = 0; grid.innerHTML = ""; }
+  const next = WW.list.slice(WW.shown, WW.shown + WW.step);
+  if (next.length) grid.insertAdjacentHTML("beforeend", next.map(wwCard).join(""));
+  WW.shown += next.length;
+  $("wwMore").hidden = WW.shown >= WW.list.length;
+  if (!WW.list.length) {
+    st.hidden = false;
+    st.innerHTML = hasLoaded ? "<b>ยังไม่มีคำอธิษฐาน</b>เป็นคนแรกที่ฝากคำอธิษฐานไว้กับสายน้ำคืนนี้" : "<b>โหลดคำอธิษฐานไม่สำเร็จ</b>ตรวจสอบอินเทอร์เน็ตแล้วกด “โหลดใหม่”";
+  } else st.hidden = true;
+  $("wwSub").textContent = WW.list.length ? "คำอธิษฐาน " + WW.list.length.toLocaleString("th-TH") + " ดวงที่ลอยอยู่ในสายน้ำคืนนี้" : "คำอธิษฐานที่ลอยอยู่ในสายน้ำคืนนี้";
+}
+$("wallBtn").addEventListener("click", () => { wwRender(false); openModal($("wallModal")); $("wwBody").scrollTop = 0; });
+$("wwClose").addEventListener("click", closeModal);
+$("wwMore").addEventListener("click", () => wwRender(true));
+$("wwRefresh").addEventListener("click", async () => {
+  const b = $("wwRefresh"); b.disabled = true;
+  try { await loadKrathongs(true); } finally { b.disabled = false; }
+  if ($("wallModal").classList.contains("open")) { wwRender(false); $("wwBody").scrollTop = 0; }
+});
+
 /* ---------- สถิติแห่งแสงจันทร์: ดึงจาก RPC festival_stats (ยอดรวมเท่านั้น) ---------- */
 const MS = {ttl:60000, minGap:10000, last:0, busy:false, timer:null, seen:false, loaded:false, top:null};
 const msNum = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
@@ -2497,15 +2543,6 @@ function msRender(d) {
   if (t && CODE_RE.test(String(t.flower))) { try { $("msTopT").innerHTML = krathongSVG(decode(t.flower), {anim:false}); } catch (_) { $("msTopT").innerHTML = ""; } } else $("msTopT").innerHTML = "";
   $("msTopN").textContent = t ? shownName(t.display_name) : "ยังไม่มีหัวใจ";
   $("msTopH").textContent = t ? "♥ " + msFmt(t.n) + " หัวใจ" : "รอหัวใจดวงแรก";
-  const tl = Array.isArray(d.timeline) ? d.timeline.map(x => ({t:Date.parse(x.t), n:msNum(x.n)})).filter(x => Number.isFinite(x.t)) : [];
-  const max = Math.max(1, ...tl.map(x => x.n)), w = 240 / Math.max(1, tl.length);
-  const sx = i => ((i + .5) * w).toFixed(1), sy = n => (60 - (max ? n / max * 52 : 0)).toFixed(1);
-  const pts = tl.map((x, i) => sx(i) + " " + sy(x.n));
-  $("msChart").innerHTML = (tl.length ? '<path class="ms-area" d="M' + sx(0) + ' 64 L' + pts.join(" L") + ' L' + sx(tl.length - 1) + ' 64Z"/><path class="ms-line" d="M' + pts.join(" L") + '"/>' : "") + tl.map((x, i) =>
-    '<rect class="ms-hit" x="' + (i * w).toFixed(1) + '" y="0" width="' + w.toFixed(1) + '" height="64"><title>' + escapeHTML(msTime(x.t) + " · " + x.n + " กระทง") + '</title></rect>'
-  ).join("");
-  $("msA0").textContent = tl.length ? msTime(tl[0].t) : ""; $("msA1").textContent = tl.length ? msTime(tl[tl.length - 1].t) : "";
-  $("msChart").setAttribute("aria-label", "กราฟจำนวนกระทงรายชั่วโมง รวม " + tl.reduce((a, x) => a + x.n, 0) + " กระทงใน 24 ชั่วโมง");
 }
 async function loadStats(force) {
   const now = Date.now();
